@@ -5,4 +5,7 @@
 	<f:entry title="${%Name}" field="name">
 		<f:textbox/>
 	</f:entry>
+	<f:entry title="${%Deployment Inputs}" field="inputs">
+		<f:textarea/>
+	</f:entry>
 </j:jelly>

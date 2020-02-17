@@ -53,11 +53,13 @@
 			<artifactId>rest-client</artifactId>
 			<version>5.0.5</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20190722</version>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

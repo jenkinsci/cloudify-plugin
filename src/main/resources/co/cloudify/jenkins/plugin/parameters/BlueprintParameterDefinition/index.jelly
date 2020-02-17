@@ -12,11 +12,7 @@
 						selected="${it.defaultParameterValue.value==value}">${value}</f:option>
 				</j:forEach>
 			</select>
+			<textarea name="inputs">${it.inputs}</textarea>
 		</div>
-		<!--
-		<div name="parameter">
-			<textarea name="inputs"/>
-		</div>
-		-->
 	</f:entry>
 </j:jelly>

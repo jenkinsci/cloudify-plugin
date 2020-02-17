@@ -20,24 +20,32 @@ import co.cloudify.rest.model.ListResponse;
 import hudson.Extension;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
-import hudson.model.StringParameterValue;
 import net.sf.json.JSONObject;
 
 public class BlueprintParameterDefinition extends ParameterDefinition {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LoggerFactory.getLogger(BlueprintParameterDefinition.class);
 	
+	private	String inputs;
+	
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this)
+				.appendSuper(super.toString())
 				.append("name", getName())
 				.append("description", getDescription())
+				.append("inputs", getInputs())
 				.toString();
 	}
 
+	public String getInputs() {
+		return inputs;
+	}
+	
 	@DataBoundConstructor
-	public BlueprintParameterDefinition(String name, String description) {
+	public BlueprintParameterDefinition(String name, String description, String inputs) {
 		super(name, description);
+		this.inputs = inputs;
 		logger.info("In DataBoundCtor; this={}", this);
 	}
 	
@@ -58,7 +66,13 @@ public class BlueprintParameterDefinition extends ParameterDefinition {
 	
 	@Override
 	public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-		return new StringParameterValue(jo.getString("name"), jo.getString("blueprintId"));
+		logger.info("createValue; req={}, jo={}", req, jo);
+		String name = jo.getString("name");
+		String blueprintId = jo.getString("blueprintId");
+		String inputs = jo.getString("inputs");
+		EnvironmentParameterValue value = new EnvironmentParameterValue(name, blueprintId, inputs);
+		logger.info("Returning: {}", value);
+		return value;
 	}
 
 	@Extension @Symbol({"cloudify","cloudifyBlueprintParam"})
