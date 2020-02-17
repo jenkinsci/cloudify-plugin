@@ -5,7 +5,4 @@
 	<f:entry title="${%Name}" field="name">
 		<f:textbox/>
 	</f:entry>
-	<f:entry title="${%Environment Blueprint}" field="blueprintId">
-		<f:select/>
-	</f:entry>
 </j:jelly>
