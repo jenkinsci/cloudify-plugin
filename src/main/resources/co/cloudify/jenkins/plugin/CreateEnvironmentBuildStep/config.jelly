@@ -1,0 +1,9 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+	<j:set var="escapeEntryTitleAndDescription" value="false"/>
+	<!--
+	<f:entry title="${%Environment Blueprint}" field="blueprintId" description="${%Cloudify blueprint representing the environment to build}">
+		<f:select/>
+	</f:entry>
+	-->
+</j:jelly>
