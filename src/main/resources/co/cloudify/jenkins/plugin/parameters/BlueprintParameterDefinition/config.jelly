@@ -5,7 +5,4 @@
 	<f:entry title="${%Environment Code}" field="name">
 		<f:textbox/>
 	</f:entry>
-	<f:entry title="${%Default Inputs}" field="inputs">
-		<f:textarea/>
-	</f:entry>
 </j:jelly>
