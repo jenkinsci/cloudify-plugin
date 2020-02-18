@@ -28,16 +28,6 @@ public class BlueprintParameterDefinition extends ParameterDefinition {
 	
 	private	String inputs;
 	
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("name", getName())
-				.append("description", getDescription())
-				.append("inputs", getInputs())
-				.toString();
-	}
-
 	public String getInputs() {
 		return inputs;
 	}
@@ -46,7 +36,6 @@ public class BlueprintParameterDefinition extends ParameterDefinition {
 	public BlueprintParameterDefinition(String name, String description, String inputs) {
 		super(name, description);
 		this.inputs = inputs;
-		logger.info("In DataBoundCtor; this={}", this);
 	}
 	
 	@Exported
@@ -60,19 +49,16 @@ public class BlueprintParameterDefinition extends ParameterDefinition {
 	
 	@Override
 	public ParameterValue createValue(StaplerRequest req) {
-		logger.info("createValue; req={}", req);
 		return null;
 	}
 	
 	@Override
 	public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-		logger.info("createValue; req={}, jo={}", req, jo);
 		String name = jo.getString("name");
 		String blueprintId = jo.getString("blueprintId");
+		String deploymentId = jo.getString("deploymentId");
 		String inputs = jo.getString("inputs");
-		EnvironmentParameterValue value = new EnvironmentParameterValue(name, blueprintId, inputs);
-		logger.info("Returning: {}", value);
-		return value;
+		return new EnvironmentParameterValue(name, blueprintId, deploymentId, inputs);
 	}
 
 	@Extension @Symbol({"cloudify","cloudifyBlueprintParam"})
@@ -82,5 +68,15 @@ public class BlueprintParameterDefinition extends ParameterDefinition {
 		public String getDisplayName() {
 			return "Cloudify Blueprint Selector";
 		}
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this)
+				.appendSuper(super.toString())
+				.append("name", getName())
+				.append("description", getDescription())
+				.append("inputs", getInputs())
+				.toString();
 	}
 }

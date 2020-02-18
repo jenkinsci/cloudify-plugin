@@ -2,10 +2,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-	<f:entry title="${%Name}" field="name">
+	<f:entry title="${%Environment Code}" field="name">
 		<f:textbox/>
 	</f:entry>
-	<f:entry title="${%Deployment Inputs}" field="inputs">
+	<f:entry title="${%Default Inputs}" field="inputs">
 		<f:textarea/>
 	</f:entry>
 </j:jelly>

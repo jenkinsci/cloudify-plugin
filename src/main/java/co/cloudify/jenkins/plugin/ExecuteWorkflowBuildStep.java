@@ -1,13 +1,12 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
@@ -15,16 +14,14 @@ import org.slf4j.LoggerFactory;
 
 import co.cloudify.jenkins.plugin.parameters.EnvironmentParameterValue;
 import co.cloudify.rest.client.CloudifyClient;
-import co.cloudify.rest.helpers.DeploymentsHelper;
+import co.cloudify.rest.client.ExecutionsClient;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
 import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
-import co.cloudify.rest.model.Deployment;
 import co.cloudify.rest.model.Execution;
 import co.cloudify.rest.model.ExecutionStatus;
 import hudson.AbortException;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -36,27 +33,33 @@ import hudson.tasks.Builder;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
-public class CreateEnvironmentBuildStep extends Builder {
-	private static final Logger logger = LoggerFactory.getLogger(CreateEnvironmentBuildStep.class);
+public class ExecuteWorkflowBuildStep extends Builder {
+	private static final Logger logger = LoggerFactory.getLogger(ExecuteWorkflowBuildStep.class);
 	
-	private String envId;
-	private	String outputFile;
-
+	private	String envId;
+	private String workflowId;
+	private String executionParameters;
+	
 	@DataBoundConstructor
-	public CreateEnvironmentBuildStep(String envId, String outputFile) {
+	public ExecuteWorkflowBuildStep(final String envId, final String workflowId, final String executionParameters) {
 		super();
 		this.envId = envId;
-		this.outputFile = outputFile;
+		this.workflowId = workflowId;
+		this.executionParameters = executionParameters;
 	}
-
+	
 	public String getEnvId() {
 		return envId;
 	}
 	
-	public String getOutputFile() {
-		return outputFile;
+	public String getWorkflowId() {
+		return workflowId;
 	}
-
+	
+	public String getExecutionParameters() {
+		return executionParameters;
+	}
+	
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
 			throws InterruptedException, IOException {
@@ -71,47 +74,32 @@ public class CreateEnvironmentBuildStep extends Builder {
 		} catch (JSONException ex) {
 			throw new IllegalArgumentException(String.format("Failed parsing environment info to JSON; string=%s", envInfoStr), ex);
 		}
-		
-		String blueprintId = EnvironmentParameterValue.getBlueprintId(envObj);
+		String strippedParameters = StringUtils.trimToNull(executionParameters);
+		JSONObject executionParametersAsMap = strippedParameters != null ?
+				JSONObject.fromObject(strippedParameters) :
+					null;
 		String deploymentId = EnvironmentParameterValue.getDeploymentId(envObj);
-		Map<String, Object> inputs = EnvironmentParameterValue.getInputs(envObj);
 		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
 		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog);
+		ExecutionsClient executionsClient = cloudifyClient.getExecutionsClient();
 		
 		try {
-			jenkinsLog.println(String.format("Creating deployment %s from blueprint %s", deploymentId, blueprintId));
-			Deployment deployment = DeploymentsHelper.createDeploymentAndWait(cloudifyClient, deploymentId, blueprintId, inputs, follower);
-			jenkinsLog.println("Executing the 'install' workflow'");
-			Execution execution = cloudifyClient.getExecutionsClient().start(deployment, "install", null);
+			Execution execution = executionsClient.start(deploymentId, workflowId, executionParametersAsMap);
 			execution = ExecutionsHelper.followExecution(cloudifyClient, execution, follower);
-			ExecutionStatus status = execution.getStatus();
-			if (status == ExecutionStatus.terminated) {
-				jenkinsLog.println("Execution finished successfully");
-			} else {
-				throw new Exception(String.format("Execution didn't end well; status=%s", status));
+			if (execution.getStatus() != ExecutionStatus.terminated) {
+				throw new Exception(String.format("Execution did not end successfully; execution=", execution));
 			}
-			jenkinsLog.println("Retrieving outputs and capabilities");
-			Map<String, Object> outputs = cloudifyClient.getDeploymentsClient().getOutputs(deployment);
-			Map<String, Object> capabilities = cloudifyClient.getDeploymentsClient().getCapabilities(deployment);
-			JSONObject output = new JSONObject();
-			output.put("outputs", outputs);
-			output.put("capabilities", capabilities);
-			FilePath outputFilePath = build.getWorkspace().child(outputFile);
-			jenkinsLog.println(String.format("Writing outputs and capabilities to %s", outputFilePath));
-			try (OutputStreamWriter osw = new OutputStreamWriter(outputFilePath.write())) {
-				osw.write(output.toString(4));
-			}
+			listener.finished(Result.SUCCESS);
 		} catch (Exception ex) {
 			//	Jenkins doesn't like Exception causes (doesn't print them).
-			logger.error("Exception encountered during environment creation", ex);
+			logger.error("Exception encountered running execution", ex);
 			listener.finished(Result.FAILURE);
-			throw new AbortException(String.format("Exception encountered during environment creation: %s", ex));
+			throw new AbortException("Exception encountered running execution");
 		}
-		listener.finished(Result.SUCCESS);
 		return true;
 	}
 
-	@Symbol("createCloudifyEnv")
+	@Symbol("executeCloudifyWorkflow")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {
 		@Override
@@ -121,16 +109,7 @@ public class CreateEnvironmentBuildStep extends Builder {
 
 		@Override
 		public String getDisplayName() {
-			return "Build Cloudify environment";
+			return "Execute Cloudify workflow";
 		}
-	}
-
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("envId", envId)
-				.append("outputFile", outputFile)
-				.toString();
 	}
 }

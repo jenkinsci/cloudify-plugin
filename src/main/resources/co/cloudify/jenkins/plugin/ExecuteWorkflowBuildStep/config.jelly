@@ -4,7 +4,10 @@
 	<f:entry title="${%Environment Code}" field="envId">
 		<f:textbox/>
 	</f:entry>
-	<f:entry title="${%Output file}" field="outputFile">
+	<f:entry title="${%Workflow ID}" field="workflowId">
 		<f:textbox/>
+	</f:entry>
+	<f:entry title="${%Workflow Parameters}" field="executionParameters">
+		<f:textarea/>
 	</f:entry>
 </j:jelly>

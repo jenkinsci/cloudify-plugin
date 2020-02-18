@@ -6,13 +6,27 @@
 	<f:entry title="${h.escape(it.name)}">
 		<div name="parameter">
 			<input type="hidden" name="name" value="${it.name}" />
-			<select name="blueprintId">
-				<j:forEach var="value" items="${it.choices}">
-					<f:option
-						selected="${it.defaultParameterValue.value==value}">${value}</f:option>
-				</j:forEach>
-			</select>
-			<textarea name="inputs">${it.inputs}</textarea>
+			<table>
+				<tr>
+					<td>Environment Type:</td>
+					<td>
+						<select name="blueprintId">
+							<j:forEach var="value" items="${it.choices}">
+								<f:option
+									selected="${it.defaultParameterValue.value==value}">${value}</f:option>
+							</j:forEach>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>Deployment ID:</td>
+					<td><input name="deploymentId">${it.deploymentd}</input></td>
+				</tr>
+				<tr>
+					<td>Inputs (as JSON):</td>
+					<td><textarea name="inputs">${it.inputs}</textarea></td>
+				</tr>
+			</table>
 		</div>
 	</f:entry>
 </j:jelly>

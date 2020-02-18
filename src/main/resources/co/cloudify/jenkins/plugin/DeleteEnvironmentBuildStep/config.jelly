@@ -4,7 +4,7 @@
 	<f:entry title="${%Environment Code}" field="envId">
 		<f:textbox/>
 	</f:entry>
-	<f:entry title="${%Output file}" field="outputFile">
-		<f:textbox/>
+	<f:entry title="${%Ignore failures during uninstallation}" field="ignoreFailure">
+		<f:checkbox/>
 	</f:entry>
 </j:jelly>
