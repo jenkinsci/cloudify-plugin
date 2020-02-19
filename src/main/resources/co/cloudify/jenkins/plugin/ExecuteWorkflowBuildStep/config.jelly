@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 	<j:set var="escapeEntryTitleAndDescription" value="false"/>
-	<f:entry title="${%Environment Code}" field="envId">
+	<f:entry title="${%Deployment ID}" field="deploymentId">
 		<f:textbox/>
 	</f:entry>
 	<f:entry title="${%Workflow ID}" field="workflowId">

@@ -1,19 +1,25 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.lang3.Validate;
+import javax.servlet.ServletException;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import co.cloudify.jenkins.plugin.parameters.EnvironmentParameterValue;
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.helpers.DeploymentsHelper;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
@@ -26,6 +32,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -33,54 +40,97 @@ import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import net.sf.json.JSONException;
+import hudson.util.FormValidation;
+import hudson.util.VariableResolver;
 import net.sf.json.JSONObject;
 
 public class CreateEnvironmentBuildStep extends Builder {
 	private static final Logger logger = LoggerFactory.getLogger(CreateEnvironmentBuildStep.class);
 	
-	private String envId;
+	private String blueprintId;
+	private String deploymentId;
+	private String inputs;
+	private String inputsFile;
 	private	String outputFile;
 
 	@DataBoundConstructor
-	public CreateEnvironmentBuildStep(String envId, String outputFile) {
+	public CreateEnvironmentBuildStep() {
 		super();
-		this.envId = envId;
-		this.outputFile = outputFile;
 	}
 
-	public String getEnvId() {
-		return envId;
+	public String getBlueprintId() {
+		return blueprintId;
+	}
+	
+	@DataBoundSetter
+	public void setBlueprintId(String blueprintId) {
+		this.blueprintId = blueprintId;
+	}
+	
+	public String getDeploymentId() {
+		return deploymentId;
+	}
+
+	@DataBoundSetter
+	public void setDeploymentId(String deploymentId) {
+		this.deploymentId = deploymentId;
+	}
+	
+	public String getInputs() {
+		return inputs;
+	}
+	
+	@DataBoundSetter
+	public void setInputs(String inputs) {
+		this.inputs = inputs;
+	}
+
+	public String getInputsFile() {
+		return inputsFile;
+	}
+	
+	@DataBoundSetter
+	public void setInputsFile(String inputsFile) {
+		this.inputsFile = inputsFile;
 	}
 	
 	public String getOutputFile() {
 		return outputFile;
 	}
 
+	@DataBoundSetter
+	public void setOutputFile(String outputFile) {
+		this.outputFile = outputFile;
+	}
+	
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
 			throws InterruptedException, IOException {
 		PrintStream jenkinsLog = listener.getLogger();
 		listener.started(Arrays.asList(new Cause.UserIdCause()));
-		Map<String, String> buildVariables = build.getBuildVariables();
-		String envInfoStr = buildVariables.get(envId);
-		Validate.notEmpty(envInfoStr, "Couldn't find environment description in build variables; environment id=%s, build variables=%s", envId, buildVariables);
-		JSONObject envObj;
-		try {
-			envObj = JSONObject.fromObject(envInfoStr);
-		} catch (JSONException ex) {
-			throw new IllegalArgumentException(String.format("Failed parsing environment info to JSON; string=%s", envInfoStr), ex);
+		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
+		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
+		String effectiveBlueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
+		String effectiveDeploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
+		String effectiveInputs = Util.replaceMacro(inputs, buildVariableResolver);
+		String effectiveInputsFile = Util.replaceMacro(inputsFile, buildVariableResolver);
+		String effectiveOutputFile = Util.replaceMacro(outputFile, buildVariableResolver);
+		
+		String inputsAsString = effectiveInputs;
+		
+		if (StringUtils.isBlank(inputsAsString) && StringUtils.isNotBlank(effectiveInputsFile)) {
+			try (InputStream is = build.getWorkspace().child(effectiveInputsFile).read()) {
+				inputsAsString = IOUtils.toString(is, StandardCharsets.UTF_8);
+			}
 		}
 		
-		String blueprintId = EnvironmentParameterValue.getBlueprintId(envObj);
-		String deploymentId = EnvironmentParameterValue.getDeploymentId(envObj);
-		Map<String, Object> inputs = EnvironmentParameterValue.getInputs(envObj);
-		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
+		inputsAsString = StringUtils.trimToNull(inputsAsString);
+		Map<String, Object> inputsMap = inputsAsString != null ? JSONObject.fromObject(inputsAsString) : null;
 		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog);
 		
 		try {
-			jenkinsLog.println(String.format("Creating deployment %s from blueprint %s", deploymentId, blueprintId));
-			Deployment deployment = DeploymentsHelper.createDeploymentAndWait(cloudifyClient, deploymentId, blueprintId, inputs, follower);
+			jenkinsLog.println(String.format("Creating deployment %s from blueprint %s", effectiveDeploymentId, effectiveBlueprintId));
+			Deployment deployment = DeploymentsHelper.createDeploymentAndWait(cloudifyClient, effectiveDeploymentId, effectiveBlueprintId, inputsMap, follower);
 			jenkinsLog.println("Executing the 'install' workflow'");
 			Execution execution = cloudifyClient.getExecutionsClient().start(deployment, "install", null);
 			execution = ExecutionsHelper.followExecution(cloudifyClient, execution, follower);
@@ -96,7 +146,7 @@ public class CreateEnvironmentBuildStep extends Builder {
 			JSONObject output = new JSONObject();
 			output.put("outputs", outputs);
 			output.put("capabilities", capabilities);
-			FilePath outputFilePath = build.getWorkspace().child(outputFile);
+			FilePath outputFilePath = build.getWorkspace().child(effectiveOutputFile);
 			jenkinsLog.println(String.format("Writing outputs and capabilities to %s", outputFilePath));
 			try (OutputStreamWriter osw = new OutputStreamWriter(outputFilePath.write())) {
 				osw.write(output.toString(4));
@@ -119,7 +169,24 @@ public class CreateEnvironmentBuildStep extends Builder {
 			return true;
 		}
 
-		@Override
+		protected FormValidation inputsValidation(final String inputs, final String inputsFile) {
+			if (StringUtils.isNotBlank(inputs) && StringUtils.isNotBlank(inputsFile)) {
+				return FormValidation.error("Either inputs or inputs file may be provided, not both");
+			}
+			return FormValidation.ok();
+		}
+		
+        public FormValidation doCheckInputs(@QueryParameter String value, @QueryParameter String inputsFile)
+                throws IOException, ServletException {
+        	return inputsValidation(value, inputsFile);
+        }
+
+        public FormValidation doCheckInputsFile(@QueryParameter String value, @QueryParameter String inputs)
+                throws IOException, ServletException {
+        	return inputsValidation(inputs, value);
+        }
+
+        @Override
 		public String getDisplayName() {
 			return "Build Cloudify environment";
 		}
@@ -129,7 +196,8 @@ public class CreateEnvironmentBuildStep extends Builder {
 	public String toString() {
 		return new ToStringBuilder(this)
 				.appendSuper(super.toString())
-				.append("envId", envId)
+				.append("blueprintId", blueprintId)
+				.append("deploymentId", deploymentId)
 				.append("outputFile", outputFile)
 				.toString();
 	}

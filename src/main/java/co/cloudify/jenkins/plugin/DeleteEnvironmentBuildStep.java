@@ -6,14 +6,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import co.cloudify.jenkins.plugin.parameters.EnvironmentParameterValue;
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.helpers.DeploymentsHelper;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
@@ -24,6 +22,7 @@ import co.cloudify.rest.model.ExecutionStatus;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -31,24 +30,23 @@ import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
+import hudson.util.VariableResolver;
 
 public class DeleteEnvironmentBuildStep extends Builder {
 	private static final Logger logger = LoggerFactory.getLogger(DeleteEnvironmentBuildStep.class);
 	
-	private String envId;
+	private String deploymentId;
 	private boolean ignoreFailure;
 
 	@DataBoundConstructor
-	public DeleteEnvironmentBuildStep(final String envId, final boolean ignoreFailure) {
+	public DeleteEnvironmentBuildStep(final String deploymentId, final boolean ignoreFailure) {
 		super();
-		this.envId = envId;
+		this.deploymentId = deploymentId;
 		this.ignoreFailure = ignoreFailure;
 	}
 
-	public String getEnvId() {
-		return envId;
+	public String getDeploymentId() {
+		return deploymentId;
 	}
 	
 	public boolean isIgnoreFailure() {
@@ -59,7 +57,7 @@ public class DeleteEnvironmentBuildStep extends Builder {
 	public String toString() {
 		return new ToStringBuilder(this)
 				.appendSuper(super.toString())
-				.append("envId", envId)
+				.append("deploymentId", deploymentId)
 				.append("ignoreFailure", ignoreFailure)
 				.toString();
 	}
@@ -69,24 +67,16 @@ public class DeleteEnvironmentBuildStep extends Builder {
 			throws InterruptedException, IOException {
 		PrintStream jenkinsLog = listener.getLogger();
 		listener.started(Arrays.asList(new Cause.UserIdCause()));
-		Map<String, String> buildVariables = build.getBuildVariables();
-		String envInfoStr = buildVariables.get(envId);
-		Validate.notEmpty(envInfoStr, "Couldn't find environment description in build variables; environment id=%s, build variables=%s", envId, buildVariables);
-		JSONObject envObj;
-		try {
-			envObj = JSONObject.fromObject(envInfoStr);
-		} catch (JSONException ex) {
-			throw new IllegalArgumentException(String.format("Failed parsing environment info to JSON; string=%s", envInfoStr), ex);
-		}
-		
-		String deploymentId = EnvironmentParameterValue.getDeploymentId(envObj);
 		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
 		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog);
+		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
+		String effectiveDeploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
+		
 		try {
 			Map<String, Object> executionParams = new HashMap<String, Object>();
 			executionParams.put("ignore_failure", ignoreFailure);
 			jenkinsLog.println("Executing the 'uninstall' workflow'");
-			Execution execution = cloudifyClient.getExecutionsClient().start(deploymentId, "uninstall", executionParams);
+			Execution execution = cloudifyClient.getExecutionsClient().start(effectiveDeploymentId, "uninstall", executionParams);
 			execution = ExecutionsHelper.followExecution(cloudifyClient, execution, follower);
 			ExecutionStatus status = execution.getStatus();
 			if (status == ExecutionStatus.terminated) {
@@ -95,7 +85,7 @@ public class DeleteEnvironmentBuildStep extends Builder {
 				throw new Exception(String.format("Execution didn't end well; status=%s", status));
 			}
 			jenkinsLog.println("Deleting deployment");
-			DeploymentsHelper.deleteDeploymentAndCheck(cloudifyClient, deploymentId);
+			DeploymentsHelper.deleteDeploymentAndCheck(cloudifyClient, effectiveDeploymentId);
 			listener.finished(Result.SUCCESS);
 		} catch (Exception ex) {
 			//	Jenkins doesn't like Exception causes (doesn't print them).

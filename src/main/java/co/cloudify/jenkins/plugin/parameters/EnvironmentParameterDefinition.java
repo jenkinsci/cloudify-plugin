@@ -10,8 +10,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.rest.client.CloudifyClient;
@@ -20,22 +18,22 @@ import co.cloudify.rest.model.ListResponse;
 import hudson.Extension;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
+import hudson.model.StringParameterValue;
 import net.sf.json.JSONObject;
 
-public class BlueprintParameterDefinition extends ParameterDefinition {
+public class EnvironmentParameterDefinition extends ParameterDefinition {
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = LoggerFactory.getLogger(BlueprintParameterDefinition.class);
 	
-	private	String inputs;
+	private	String blueprintId;
 	
-	public String getInputs() {
-		return inputs;
+	public String getBlueprintId() {
+		return blueprintId;
 	}
 	
 	@DataBoundConstructor
-	public BlueprintParameterDefinition(String name, String description, String inputs) {
+	public EnvironmentParameterDefinition(String name, String description, String blueprintId) {
 		super(name, description);
-		this.inputs = inputs;
+		this.blueprintId = blueprintId;
 	}
 	
 	@Exported
@@ -56,9 +54,7 @@ public class BlueprintParameterDefinition extends ParameterDefinition {
 	public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
 		String name = jo.getString("name");
 		String blueprintId = jo.getString("blueprintId");
-		String deploymentId = jo.getString("deploymentId");
-		String inputs = jo.getString("inputs");
-		return new EnvironmentParameterValue(name, blueprintId, deploymentId, inputs);
+		return new StringParameterValue(name, blueprintId);
 	}
 
 	@Extension @Symbol({"cloudify","cloudifyBlueprintParam"})
@@ -76,7 +72,6 @@ public class BlueprintParameterDefinition extends ParameterDefinition {
 				.appendSuper(super.toString())
 				.append("name", getName())
 				.append("description", getDescription())
-				.append("inputs", getInputs())
 				.toString();
 	}
 }

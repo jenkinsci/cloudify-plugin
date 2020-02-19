@@ -18,14 +18,6 @@
 						</select>
 					</td>
 				</tr>
-				<tr>
-					<td>Deployment ID:</td>
-					<td><input name="deploymentId">${it.deploymentd}</input></td>
-				</tr>
-				<tr>
-					<td>Inputs (as JSON):</td>
-					<td><textarea name="inputs">${it.inputs}</textarea></td>
-				</tr>
 			</table>
 		</div>
 	</f:entry>

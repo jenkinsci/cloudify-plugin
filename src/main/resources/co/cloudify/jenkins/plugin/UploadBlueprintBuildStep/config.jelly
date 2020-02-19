@@ -4,16 +4,16 @@
 	<f:entry title="${%Blueprint ID}" field="blueprintId">
 		<f:textbox/>
 	</f:entry>
-	<f:entry title="${%Deployment ID}" field="deploymentId">
+	<f:entry title="${%Archive URL}" field="archiveUrl">
 		<f:textbox/>
 	</f:entry>
-	<f:entry title="${%Deployment Inputs}" field="inputs">
+	<f:entry title="${%Archive Path}" field="archivePath">
 		<f:textarea/>
 	</f:entry>
-	<f:entry title="${%Deployment Inputs File}" field="inputsFile">
+	<f:entry title="${%Root Directory}" field="rootDirectory">
 		<f:textarea/>
 	</f:entry>
-	<f:entry title="${%Output file}" field="outputFile">
+	<f:entry title="${%Main File Name}" field="mainFileName">
 		<f:textbox/>
 	</f:entry>
 </j:jelly>
