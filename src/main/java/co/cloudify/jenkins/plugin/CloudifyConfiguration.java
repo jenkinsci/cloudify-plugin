@@ -1,6 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
-import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -18,11 +18,12 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	private String host;
 	private String username;
 	private String password;
-	private	boolean	secured;
+	private	Boolean	secured = Boolean.FALSE;
 	private String tenant;
 
+	@DataBoundConstructor
 	public CloudifyConfiguration() {
-		load();
+		super();
 	}
 
 	public String getHost() {
@@ -32,7 +33,6 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setHost(String host) {
 		this.host = host;
-		save();
 	}
 
 	public String getUsername() {
@@ -42,7 +42,6 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setUsername(String username) {
 		this.username = username;
-		save();
 	}
 
 	public String getPassword() {
@@ -52,7 +51,6 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setPassword(String password) {
 		this.password = password;
-		save();
 	}
 
 	public boolean isSecured() {
@@ -62,7 +60,6 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setSecured(boolean secured) {
 		this.secured = secured;
-		save();
 	}
 
 	public String getTenant() {
@@ -72,28 +69,27 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setTenant(String tenant) {
 		this.tenant = tenant;
-		save();
 	}
 
-	public FormValidation doCheckLabel(@QueryParameter String value) {
-		if (StringUtils.isEmpty(host)) {
-			return FormValidation.error("Please specify a host");
-		}
-		if (StringUtils.isEmpty(username)) {
-			return FormValidation.error("Please specify a username");
-		}
-		if (StringUtils.isEmpty(password)) {
-			return FormValidation.error("Please specify a password");
-		}
-		if (StringUtils.isEmpty(tenant)) {
-			return FormValidation.error("Please specify a tenant");
-		}
-		return FormValidation.ok();
+	public FormValidation doCheckHost(@QueryParameter String value) {
+		return FormValidation.validateRequired(value);
+	}
+	
+	public FormValidation doCheckUsername(@QueryParameter String value) {
+		return FormValidation.validateRequired(value);
+	}
+	
+	public FormValidation doCheckPassword(@QueryParameter String value) {
+		return FormValidation.validateRequired(value);
+	}
+	
+	public FormValidation doCheckTenant(@QueryParameter String value) {
+		return FormValidation.validateRequired(value);
 	}
 	
 	public static CloudifyClient getCloudifyClient() {
 		CloudifyConfiguration config = CloudifyConfiguration.get();
-		//return CloudifyClient.create(config.getHost(), config.getUsername(), config.getPassword(), config.isSecured(), config.getTenant());
-		return CloudifyClient.create("10.239.3.110", "admin", "admin", false, "default_tenant");
+		return CloudifyClient.create(
+				config.getHost(), config.getUsername(), config.getPassword(), config.isSecured(), config.getTenant());
 	}
 }
