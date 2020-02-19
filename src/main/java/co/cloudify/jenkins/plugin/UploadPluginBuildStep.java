@@ -1,9 +1,11 @@
 package co.cloudify.jenkins.plugin;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -33,6 +35,7 @@ public class UploadPluginBuildStep extends Builder {
 
 	private String wagonLocation;
 	private String yamlLocation;
+	private String outputLocation;
 
 	@DataBoundConstructor
 	public UploadPluginBuildStep() {
@@ -57,6 +60,15 @@ public class UploadPluginBuildStep extends Builder {
 		return yamlLocation;
 	}
 
+	@DataBoundSetter
+	public void setOutputLocation(String outputLocation) {
+		this.outputLocation = outputLocation;
+	}
+	
+	public String getOutputLocation() {
+		return outputLocation;
+	}
+	
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
 	        throws InterruptedException, IOException {
@@ -66,10 +78,18 @@ public class UploadPluginBuildStep extends Builder {
 
 		String effectiveWagonLocation = Util.replaceMacro(wagonLocation, buildVariableResolver);
 		String effectiveYamlLocation = Util.replaceMacro(yamlLocation, buildVariableResolver);
+		String effectiveOutputLocation = Util.replaceMacro(outputLocation, buildVariableResolver);
 		PluginsClient client = CloudifyConfiguration.getCloudifyClient().getPluginsClient();
 
 		try {
 			Plugin plugin = client.upload(effectiveWagonLocation, effectiveYamlLocation);
+			listener.finished(Result.SUCCESS);
+			
+			if (StringUtils.isNotBlank(effectiveOutputLocation)) {
+				File outputFile = new File(build.getWorkspace().child(effectiveOutputLocation).getRemote());
+				jenkinsLog.println(String.format("Saving plugin information to %s", outputFile));
+				CloudifyPluginUtilities.writeJson(plugin, outputFile);
+			}
 		} catch (Exception ex) {
 			// Jenkins doesn't like Exception causes (doesn't print them).
 			logger.error("Exception encountered during plugin upload", ex);
@@ -77,7 +97,6 @@ public class UploadPluginBuildStep extends Builder {
 			throw new AbortException(String.format("Exception encountered during plugin upload: %s", ex));
 		}
 		jenkinsLog.println("Plugin uploaded successfully");
-		listener.finished(Result.SUCCESS);
 		return true;
 	}
 
