@@ -33,11 +33,11 @@ import hudson.util.VariableResolver;
 public class UploadBlueprintBuildStep extends Builder {
 	private static final Logger logger = LoggerFactory.getLogger(UploadBlueprintBuildStep.class);
 
-	private String blueprintId;
-	private String archiveUrl;
-	private String archivePath;
-	private	String rootDirectory;
-	private	String mainFileName;
+	private String              blueprintId;
+	private String              archiveUrl;
+	private String              archivePath;
+	private String              rootDirectory;
+	private String              mainFileName;
 
 	@DataBoundConstructor
 	public UploadBlueprintBuildStep() {
@@ -74,23 +74,23 @@ public class UploadBlueprintBuildStep extends Builder {
 	public String getRootDirectory() {
 		return rootDirectory;
 	}
-	
+
 	@DataBoundSetter
 	public void setRootDirectory(String rootDirectory) {
 		this.rootDirectory = rootDirectory;
 	}
-	
+
 	public String getMainFileName() {
 		return mainFileName;
 	}
-	
+
 	public void setMainFileName(String mainFileName) {
 		this.mainFileName = mainFileName;
 	}
-	
+
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-			throws InterruptedException, IOException {
+	        throws InterruptedException, IOException {
 		PrintStream jenkinsLog = listener.getLogger();
 		listener.started(Arrays.asList(new Cause.UserIdCause()));
 		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
@@ -101,17 +101,19 @@ public class UploadBlueprintBuildStep extends Builder {
 		String effectiveMainFileName = Util.replaceMacro(mainFileName, buildVariableResolver);
 
 		BlueprintsClient client = CloudifyConfiguration.getCloudifyClient().getBlueprintsClient();
-		
+
 		try {
 			if (StringUtils.isNotBlank(effectiveArchiveUrl)) {
 				jenkinsLog.println(String.format("Uploading blueprint from %s", effectiveArchiveUrl));
 				client.upload(effectiveBlueprintId, new URL(effectiveArchiveUrl), effectiveMainFileName);
 			} else if (StringUtils.isNotBlank(effectiveArchivePath)) {
-				jenkinsLog.println(String.format("Uploading blueprint from %s", effectiveArchivePath));
-				client.uploadArchive(effectiveBlueprintId, new File(effectiveArchivePath), effectiveMainFileName);
+				File absoluteArchivePath = new File(build.getWorkspace().child(effectiveArchivePath).getRemote());
+				jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteArchivePath));
+				client.uploadArchive(effectiveBlueprintId, absoluteArchivePath, effectiveMainFileName);
 			} else {
-				jenkinsLog.println(String.format("Uploading blueprint from %s", effectiveRootDirectory));
-				client.upload(effectiveBlueprintId, new File(effectiveRootDirectory), effectiveMainFileName);
+				File absoluteRootDir = new File(build.getWorkspace().child(effectiveRootDirectory).getRemote());
+				jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteRootDir));
+				client.upload(effectiveBlueprintId, absoluteRootDir, effectiveMainFileName);
 			}
 		} catch (Exception ex) {
 			// Jenkins doesn't like Exception causes (doesn't print them).
@@ -133,30 +135,34 @@ public class UploadBlueprintBuildStep extends Builder {
 		}
 
 		protected FormValidation blueprintLocationValidation(
-				final String archiveUrl,
-				final String archivePath,
-				final String rootDirectory) {
+		        final String archiveUrl,
+		        final String archivePath,
+		        final String rootDirectory) {
 			long argsProvided = Arrays.asList(archiveUrl, archivePath, rootDirectory)
-					.stream()
-					.filter(StringUtils::isNotBlank)
-					.count();
-			
+			        .stream()
+			        .filter(StringUtils::isNotBlank)
+			        .count();
+
 			if (argsProvided != 1) {
-				return FormValidation.error("Please provide exactly one of 'archive URL', 'archive path' or 'root directory'");
+				return FormValidation
+				        .error("Please provide exactly one of 'archive URL', 'archive path' or 'root directory'");
 			}
-			
+
 			return FormValidation.ok();
 		}
 
-		public FormValidation doCheckArchiveUrl(@QueryParameter String value, @QueryParameter String archivePath, @QueryParameter String rootDirectory) {
+		public FormValidation doCheckArchiveUrl(@QueryParameter String value, @QueryParameter String archivePath,
+		        @QueryParameter String rootDirectory) {
 			return blueprintLocationValidation(value, archivePath, rootDirectory);
 		}
 
-		public FormValidation doCheckArchivePath(@QueryParameter String value, @QueryParameter String archiveUrl, @QueryParameter String rootDirectory) {
+		public FormValidation doCheckArchivePath(@QueryParameter String value, @QueryParameter String archiveUrl,
+		        @QueryParameter String rootDirectory) {
 			return blueprintLocationValidation(archiveUrl, value, rootDirectory);
 		}
 
-		public FormValidation doCheckRootDirectory(@QueryParameter String value, @QueryParameter String archivePath, @QueryParameter String archiveUrl) {
+		public FormValidation doCheckRootDirectory(@QueryParameter String value, @QueryParameter String archivePath,
+		        @QueryParameter String archiveUrl) {
 			return blueprintLocationValidation(archiveUrl, archivePath, value);
 		}
 
@@ -169,12 +175,12 @@ public class UploadBlueprintBuildStep extends Builder {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("blueprintId", blueprintId)
-				.append("archiveUrl", archiveUrl)
-				.append("archivePath", archivePath)
-				.append("rootDirectory", rootDirectory)
-				.append("mainFileName", mainFileName)
-				.toString();
+		        .appendSuper(super.toString())
+		        .append("blueprintId", blueprintId)
+		        .append("archiveUrl", archiveUrl)
+		        .append("archivePath", archivePath)
+		        .append("rootDirectory", rootDirectory)
+		        .append("mainFileName", mainFileName)
+		        .toString();
 	}
 }

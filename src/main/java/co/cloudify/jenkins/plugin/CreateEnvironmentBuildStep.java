@@ -140,16 +140,19 @@ public class CreateEnvironmentBuildStep extends Builder {
 			} else {
 				throw new Exception(String.format("Execution didn't end well; status=%s", status));
 			}
-			jenkinsLog.println("Retrieving outputs and capabilities");
-			Map<String, Object> outputs = cloudifyClient.getDeploymentsClient().getOutputs(deployment);
-			Map<String, Object> capabilities = cloudifyClient.getDeploymentsClient().getCapabilities(deployment);
-			JSONObject output = new JSONObject();
-			output.put("outputs", outputs);
-			output.put("capabilities", capabilities);
-			FilePath outputFilePath = build.getWorkspace().child(effectiveOutputFile);
-			jenkinsLog.println(String.format("Writing outputs and capabilities to %s", outputFilePath));
-			try (OutputStreamWriter osw = new OutputStreamWriter(outputFilePath.write())) {
-				osw.write(output.toString(4));
+			
+			if (StringUtils.isNotBlank(effectiveOutputFile)) {
+				jenkinsLog.println("Retrieving outputs and capabilities");
+				Map<String, Object> outputs = cloudifyClient.getDeploymentsClient().getOutputs(deployment);
+				Map<String, Object> capabilities = cloudifyClient.getDeploymentsClient().getCapabilities(deployment);
+				JSONObject output = new JSONObject();
+				output.put("outputs", outputs);
+				output.put("capabilities", capabilities);
+				FilePath outputFilePath = build.getWorkspace().child(effectiveOutputFile);
+				jenkinsLog.println(String.format("Writing outputs and capabilities to %s", outputFilePath));
+				try (OutputStreamWriter osw = new OutputStreamWriter(outputFilePath.write())) {
+					osw.write(output.toString(4));
+				}
 			}
 		} catch (Exception ex) {
 			//	Jenkins doesn't like Exception causes (doesn't print them).
@@ -171,9 +174,17 @@ public class CreateEnvironmentBuildStep extends Builder {
 
 		protected FormValidation inputsValidation(final String inputs, final String inputsFile) {
 			if (StringUtils.isNotBlank(inputs) && StringUtils.isNotBlank(inputsFile)) {
-				return FormValidation.error("Either inputs or inputs file may be provided, not both");
+				return FormValidation.error("Either inputs or inputs file may be provided (not both)");
 			}
 			return FormValidation.ok();
+		}
+		
+		public FormValidation doCheckBlueprintId(@QueryParameter String value) {
+			return FormValidation.validateRequired(value);
+		}
+		
+		public FormValidation doCheckDeploymentId(@QueryParameter String value) {
+			return FormValidation.validateRequired(value);
 		}
 		
         public FormValidation doCheckInputs(@QueryParameter String value, @QueryParameter String inputsFile)

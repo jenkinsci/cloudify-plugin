@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+	<j:set var="escapeEntryTitleAndDescription" value="false"/>
+	<f:entry title="${%Blueprint ID}" field="blueprintId">
+		<f:textbox/>
+	</f:entry>
+</j:jelly>
