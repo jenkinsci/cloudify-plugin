@@ -24,6 +24,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundConstructor
 	public CloudifyConfiguration() {
 		super();
+		load();
 	}
 
 	public String getHost() {
@@ -33,6 +34,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setHost(String host) {
 		this.host = host;
+		save();
 	}
 
 	public String getUsername() {
@@ -42,6 +44,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setUsername(String username) {
 		this.username = username;
+		save();
 	}
 
 	public String getPassword() {
@@ -51,6 +54,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setPassword(String password) {
 		this.password = password;
+		save();
 	}
 
 	public boolean isSecured() {
@@ -60,6 +64,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setSecured(boolean secured) {
 		this.secured = secured;
+		save();
 	}
 
 	public String getTenant() {
@@ -69,6 +74,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 	@DataBoundSetter
 	public void setTenant(String tenant) {
 		this.tenant = tenant;
+		save();
 	}
 
 	public FormValidation doCheckHost(@QueryParameter String value) {
