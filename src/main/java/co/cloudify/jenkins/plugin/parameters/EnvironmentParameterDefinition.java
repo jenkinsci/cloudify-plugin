@@ -70,8 +70,7 @@ public class EnvironmentParameterDefinition extends ParameterDefinition {
 	public String toString() {
 		return new ToStringBuilder(this)
 				.appendSuper(super.toString())
-				.append("name", getName())
-				.append("description", getDescription())
+				.append("blueprintId", blueprintId)
 				.toString();
 	}
 }

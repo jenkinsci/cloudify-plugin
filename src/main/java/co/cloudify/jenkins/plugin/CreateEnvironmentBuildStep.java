@@ -111,10 +111,16 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 					JSONObject.fromObject(effectiveInputs));
 		}
 		if (StringUtils.isNotBlank(effectiveInputsFile)) {
-			try (InputStream is = build.getWorkspace().child(effectiveInputsFile).read()) {
-				inputsMap.putAll(
-						JSONObject.fromObject(
-								IOUtils.toString(is, StandardCharsets.UTF_8)));
+			FilePath expectedLocation = build.getWorkspace().child(effectiveInputsFile);
+			if (expectedLocation.exists()) {
+				jenkinsLog.println(String.format("Reading inputs from %s", expectedLocation));
+				try (InputStream is = expectedLocation.read()) {
+					inputsMap.putAll(
+							JSONObject.fromObject(
+									IOUtils.toString(is, StandardCharsets.UTF_8)));
+				}
+			} else {
+				jenkinsLog.println(String.format("Deployment inputs file not found, skipping: %s", effectiveInputsFile));
 			}
 		}
 		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog);
