@@ -1,8 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Arrays;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
@@ -12,25 +10,20 @@ import org.kohsuke.stapler.QueryParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import co.cloudify.rest.client.BlueprintsClient;
-import hudson.AbortException;
+import co.cloudify.rest.client.CloudifyClient;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Cause;
-import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
-public class DeleteBlueprintBuildStep extends Builder {
-	private static final Logger logger = LoggerFactory.getLogger(DeleteBlueprintBuildStep.class);
-
-	private String              blueprintId;
+public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
+	private String blueprintId;
 
 	@DataBoundConstructor
 	public DeleteBlueprintBuildStep() {
@@ -47,26 +40,13 @@ public class DeleteBlueprintBuildStep extends Builder {
 	}
 
 	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-	        throws InterruptedException, IOException {
+	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
+	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
-		listener.started(Arrays.asList(new Cause.UserIdCause()));
 		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
 		String effectiveBlueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
-
-		BlueprintsClient client = CloudifyConfiguration.getCloudifyClient().getBlueprintsClient();
-
-		try {
-			client.delete(effectiveBlueprintId);
-		} catch (Exception ex) {
-			// Jenkins doesn't like Exception causes (doesn't print them).
-			logger.error("Exception encountered during blueprint deletion", ex);
-			listener.finished(Result.FAILURE);
-			throw new AbortException(String.format("Exception encountered during blueprint deletion: %s", ex));
-		}
-		jenkinsLog.println("Blueprint deleted successfully");
-		listener.finished(Result.SUCCESS);
-		return true;
+		jenkinsLog.println(String.format("Deleting blueprint: %s", effectiveBlueprintId));
+		cloudifyClient.getBlueprintsClient().delete(effectiveBlueprintId);
 	}
 
 	@Symbol("deleteCloudifyBlueprint")

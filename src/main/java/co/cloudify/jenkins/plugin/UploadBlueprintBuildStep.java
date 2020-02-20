@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Arrays;
@@ -12,32 +11,26 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import co.cloudify.rest.client.BlueprintsClient;
-import hudson.AbortException;
+import co.cloudify.rest.client.CloudifyClient;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Cause;
-import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
-public class UploadBlueprintBuildStep extends Builder {
-	private static final Logger logger = LoggerFactory.getLogger(UploadBlueprintBuildStep.class);
-
-	private String              blueprintId;
-	private String              archiveUrl;
-	private String              archivePath;
-	private String              rootDirectory;
-	private String              mainFileName;
+public class UploadBlueprintBuildStep extends CloudifyBuildStep {
+	private String blueprintId;
+	private String archiveUrl;
+	private String archivePath;
+	private String rootDirectory;
+	private String mainFileName;
 
 	@DataBoundConstructor
 	public UploadBlueprintBuildStep() {
@@ -89,10 +82,9 @@ public class UploadBlueprintBuildStep extends Builder {
 	}
 
 	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-	        throws InterruptedException, IOException {
+	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
+	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
-		listener.started(Arrays.asList(new Cause.UserIdCause()));
 		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
 		String effectiveBlueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
 		String effectiveArchiveUrl = Util.replaceMacro(archiveUrl, buildVariableResolver);
@@ -100,30 +92,21 @@ public class UploadBlueprintBuildStep extends Builder {
 		String effectiveRootDirectory = Util.replaceMacro(rootDirectory, buildVariableResolver);
 		String effectiveMainFileName = Util.replaceMacro(mainFileName, buildVariableResolver);
 
-		BlueprintsClient client = CloudifyConfiguration.getCloudifyClient().getBlueprintsClient();
-
-		try {
-			if (StringUtils.isNotBlank(effectiveArchiveUrl)) {
-				jenkinsLog.println(String.format("Uploading blueprint from %s", effectiveArchiveUrl));
-				client.upload(effectiveBlueprintId, new URL(effectiveArchiveUrl), effectiveMainFileName);
-			} else if (StringUtils.isNotBlank(effectiveArchivePath)) {
-				File absoluteArchivePath = new File(build.getWorkspace().child(effectiveArchivePath).getRemote());
-				jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteArchivePath));
-				client.uploadArchive(effectiveBlueprintId, absoluteArchivePath, effectiveMainFileName);
-			} else {
-				File absoluteRootDir = new File(build.getWorkspace().child(effectiveRootDirectory).getRemote());
-				jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteRootDir));
-				client.upload(effectiveBlueprintId, absoluteRootDir, effectiveMainFileName);
-			}
-		} catch (Exception ex) {
-			// Jenkins doesn't like Exception causes (doesn't print them).
-			logger.error("Exception encountered during blueprint upload", ex);
-			listener.finished(Result.FAILURE);
-			throw new AbortException(String.format("Exception encountered during blueprint upload: %s", ex));
+		BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();
+		
+		if (StringUtils.isNotBlank(effectiveArchiveUrl)) {
+			jenkinsLog.println(String.format("Uploading blueprint from %s", effectiveArchiveUrl));
+			blueprintsClient.upload(effectiveBlueprintId, new URL(effectiveArchiveUrl), effectiveMainFileName);
+		} else if (StringUtils.isNotBlank(effectiveArchivePath)) {
+			File absoluteArchivePath = new File(build.getWorkspace().child(effectiveArchivePath).getRemote());
+			jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteArchivePath));
+			blueprintsClient.uploadArchive(effectiveBlueprintId, absoluteArchivePath, effectiveMainFileName);
+		} else {
+			File absoluteRootDir = new File(build.getWorkspace().child(effectiveRootDirectory).getRemote());
+			jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteRootDir));
+			blueprintsClient.upload(effectiveBlueprintId, absoluteRootDir, effectiveMainFileName);
 		}
 		jenkinsLog.println("Blueprint uploaded successfully");
-		listener.finished(Result.SUCCESS);
-		return true;
 	}
 
 	@Symbol("uploadCloudifyBlueprint")
@@ -132,6 +115,10 @@ public class UploadBlueprintBuildStep extends Builder {
 		@Override
 		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
 			return true;
+		}
+
+		public FormValidation doCheckBlueprintId(@QueryParameter String value) {
+			return FormValidation.validateRequired(value);
 		}
 
 		protected FormValidation blueprintLocationValidation(

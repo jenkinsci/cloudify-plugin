@@ -1,9 +1,7 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -11,28 +9,21 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import co.cloudify.rest.client.PluginsClient;
+import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.model.Plugin;
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Cause;
-import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
-public class UploadPluginBuildStep extends Builder {
-	private static final Logger logger = LoggerFactory.getLogger(UploadPluginBuildStep.class);
-
+public class UploadPluginBuildStep extends CloudifyBuildStep {
 	private String wagonLocation;
 	private String yamlLocation;
 	private String outputLocation;
@@ -70,34 +61,23 @@ public class UploadPluginBuildStep extends Builder {
 	}
 	
 	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-	        throws InterruptedException, IOException {
+	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
+	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
-		listener.started(Arrays.asList(new Cause.UserIdCause()));
 		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
 
 		String effectiveWagonLocation = Util.replaceMacro(wagonLocation, buildVariableResolver);
 		String effectiveYamlLocation = Util.replaceMacro(yamlLocation, buildVariableResolver);
 		String effectiveOutputLocation = Util.replaceMacro(outputLocation, buildVariableResolver);
-		PluginsClient client = CloudifyConfiguration.getCloudifyClient().getPluginsClient();
 
-		try {
-			Plugin plugin = client.upload(effectiveWagonLocation, effectiveYamlLocation);
-			listener.finished(Result.SUCCESS);
-			
-			if (StringUtils.isNotBlank(effectiveOutputLocation)) {
-				File outputFile = new File(build.getWorkspace().child(effectiveOutputLocation).getRemote());
-				jenkinsLog.println(String.format("Saving plugin information to %s", outputFile));
-				CloudifyPluginUtilities.writeJson(plugin, outputFile);
-			}
-		} catch (Exception ex) {
-			// Jenkins doesn't like Exception causes (doesn't print them).
-			logger.error("Exception encountered during plugin upload", ex);
-			listener.finished(Result.FAILURE);
-			throw new AbortException(String.format("Exception encountered during plugin upload: %s", ex));
+		Plugin plugin = cloudifyClient.getPluginsClient().upload(effectiveWagonLocation, effectiveYamlLocation);
+		
+		if (StringUtils.isNotBlank(effectiveOutputLocation)) {
+			File outputFile = new File(build.getWorkspace().child(effectiveOutputLocation).getRemote());
+			jenkinsLog.println(String.format("Saving plugin information to %s", outputFile));
+			CloudifyPluginUtilities.writeJson(plugin, outputFile);
 		}
 		jenkinsLog.println("Plugin uploaded successfully");
-		return true;
 	}
 
 	@Symbol("uploadCloudifyBlueprint")
@@ -128,6 +108,7 @@ public class UploadPluginBuildStep extends Builder {
 		        .appendSuper(super.toString())
 		        .append("wagonLocation", wagonLocation)
 		        .append("yamlLocation", yamlLocation)
+		        .append("outputLocation", outputLocation)
 		        .toString();
 	}
 }

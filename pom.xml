@@ -17,9 +17,7 @@
 		<java.level>8</java.level>
 		<!-- Needs to be called this way... it's used by the parent project -->
 		<slf4jVersion>1.7.26</slf4jVersion>
-		<jersey.version>2.27</jersey.version>
-		<!-- The Jackson version must be compatible with both Jersey and Jenkins' parent POM. -->
-		<jackson.version>2.9.0</jackson.version>
+		<jersey.version>2.30</jersey.version>
 	</properties>
 	<name>Cloudify Plugin for Jenkins</name>
 	<!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for 
@@ -51,43 +49,25 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<dependencies>
-		<!--
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>structs</artifactId>
-			<version>1.10</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>co.cloudify</groupId>
 			<artifactId>rest-client</artifactId>
 			<version>5.0.5</version>
 		</dependency>
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
-		</dependency>
-		<!--
-		We need these Jackson dependencies during compile time as well.
-		These are already included in Jersey (see below), however we depend
-		on Jersey at runtime scope, which means that Jackson wouldn't be available
-		at compile time. Changing Jersey's scope to "compile" would be less desireable,
-		as I'd like my compile-time classpath to be as narrow as possible.
-		-->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>jackson2-api</artifactId>
+			<version>2.9.9</version>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-jaxb-annotations</artifactId>
-			<version>${jackson.version}</version>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>git</artifactId>
+			<version>[4.1.1,)</version>
 		</dependency>
 		<!--
 		Runtime dependencies.
 		We ship with the latest version of Jersey that is supported by Jenkins' POM.
+		Also, Jenkins uses JUL for logging, so include the SLF4J adapter here.
 		-->
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
@@ -117,6 +97,11 @@
 					<artifactId>jakarta.ws.rs-api</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>${slf4jVersion}</version>
 		</dependency>
 	</dependencies>
 	<build>
