@@ -1,0 +1,64 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+	<l:layout title="Greeting">
+		<l:side-panel>
+			<st:include page="sidepanel.jelly" it="${it.run}" optional="true" /> 
+		</l:side-panel>
+		<l:main-panel>
+			<h1>Cloudify Environment: ${it.name}</h1>
+			<p><b>Blueprint ID: </b>${it.blueprintId}</p>
+			<p><b>Deployment ID: </b>${it.deploymentId}</p>
+			<h2>Inputs</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<j:forEach var="iter" items="${it.inputs}">
+						<tr>
+							<td>${iter.key}</td>
+							<td>${iter.value}</td>
+						</tr>
+					</j:forEach>
+				</tbody>
+			</table>
+			<h2>Outputs</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<j:forEach var="iter" items="${it.outputs}">
+						<tr>
+							<td>${iter.key}</td>
+							<td>${iter.value}</td>
+						</tr>
+					</j:forEach>
+				</tbody>
+			</table>
+			<h2>Capabilities</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<j:forEach var="iter" items="${it.capabilities}">
+						<tr>
+							<td>${iter.key}</td>
+							<td>${iter.value}</td>
+						</tr>
+					</j:forEach>
+				</tbody>
+			</table>
+		</l:main-panel>
+	</l:layout>
+</j:jelly>

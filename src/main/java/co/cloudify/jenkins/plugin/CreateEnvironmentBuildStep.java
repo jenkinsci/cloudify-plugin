@@ -15,6 +15,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import co.cloudify.jenkins.plugin.actions.EnvironmentBuildAction;
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.client.DeploymentsClient;
 import co.cloudify.rest.helpers.DeploymentsHelper;
@@ -104,7 +105,12 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		String effectiveInputs = Util.replaceMacro(inputs, buildVariableResolver);
 		String effectiveInputsFile = Util.replaceMacro(inputsFile, buildVariableResolver);
 		String effectiveOutputFile = Util.replaceMacro(outputFile, buildVariableResolver);
-		
+
+		EnvironmentBuildAction action = new EnvironmentBuildAction();
+		action.setBlueprintId(effectiveBlueprintId);
+		action.setDeploymentId(effectiveDeploymentId);
+		build.addOrReplaceAction(action);
+
 		Map<String, Object> inputsMap = new HashMap<String, Object>();
 		if (StringUtils.isNotBlank(effectiveInputs)) {
 			inputsMap.putAll(
@@ -130,6 +136,8 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 						effectiveDeploymentId, effectiveBlueprintId));
 		Deployment deployment = DeploymentsHelper.createDeploymentAndWait(
 				cloudifyClient, effectiveDeploymentId, effectiveBlueprintId, inputsMap, follower);
+		action.setInputs(deployment.getInputs());
+		
 		jenkinsLog.println("Executing the 'install' workflow'");
 		Execution execution = cloudifyClient.getExecutionsClient().start(deployment, "install", null);
 		execution = ExecutionsHelper.followExecution(cloudifyClient, execution, follower);
@@ -140,11 +148,15 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		}
 		jenkinsLog.println("Execution finished successfully");
 		
+		DeploymentsClient deploymentsClient = cloudifyClient.getDeploymentsClient();
+		Map<String, Object> outputs = deploymentsClient.getOutputs(deployment);
+		Map<String, Object> capabilities = deploymentsClient.getCapabilities(deployment);
+		
+		action.setOutputs(outputs);
+		action.setCapabilities(capabilities);
+		
 		if (StringUtils.isNotBlank(effectiveOutputFile)) {
 			jenkinsLog.println("Retrieving outputs and capabilities");
-			DeploymentsClient deploymentsClient = cloudifyClient.getDeploymentsClient();
-			Map<String, Object> outputs = deploymentsClient.getOutputs(deployment);
-			Map<String, Object> capabilities = deploymentsClient.getCapabilities(deployment);
 			JSONObject output = new JSONObject();
 			output.put("outputs", outputs);
 			output.put("capabilities", capabilities);
