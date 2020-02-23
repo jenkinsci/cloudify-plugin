@@ -23,14 +23,14 @@ import hudson.model.ParameterValue;
 import hudson.model.StringParameterValue;
 import net.sf.json.JSONObject;
 
-public class EnvironmentParameterDefinition extends ParameterDefinition {
+public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
 	private static final long serialVersionUID = 1L;
 	
 	private	String blueprintId;
 	private String filter;
 	
 	@DataBoundConstructor
-	public EnvironmentParameterDefinition(String name, String description) {
+	public BlueprintSelectorParameterDefinition(String name, String description) {
 		super(name, description);
 	}
 	
