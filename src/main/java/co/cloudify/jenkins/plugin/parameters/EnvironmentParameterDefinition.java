@@ -5,9 +5,11 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 
@@ -25,22 +27,37 @@ public class EnvironmentParameterDefinition extends ParameterDefinition {
 	private static final long serialVersionUID = 1L;
 	
 	private	String blueprintId;
+	private String filter;
+	
+	@DataBoundConstructor
+	public EnvironmentParameterDefinition(String name, String description) {
+		super(name, description);
+	}
 	
 	public String getBlueprintId() {
 		return blueprintId;
 	}
-	
-	@DataBoundConstructor
-	public EnvironmentParameterDefinition(String name, String description, String blueprintId) {
-		super(name, description);
+
+	@DataBoundSetter
+	public void setBlueprintId(String blueprintId) {
 		this.blueprintId = blueprintId;
+	}
+	
+	public String getFilter() {
+		return filter;
+	}
+	
+	@DataBoundSetter
+	public void setFilter(String filter) {
+		this.filter = filter;
 	}
 	
 	@Exported
 	public List<String> getChoices() {
+		String effectiveFilter = StringUtils.trimToNull(filter);
 		List<String> choices = new LinkedList<>();
 		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
-		ListResponse<Blueprint> blueprints = cloudifyClient.getBlueprintsClient().list();
+		ListResponse<Blueprint> blueprints = cloudifyClient.getBlueprintsClient().list(effectiveFilter);
 		blueprints.forEach(item -> choices.add(item.getId()));
 		return choices;
 	}
@@ -71,6 +88,7 @@ public class EnvironmentParameterDefinition extends ParameterDefinition {
 		return new ToStringBuilder(this)
 				.appendSuper(super.toString())
 				.append("blueprintId", blueprintId)
+				.append("filter", filter)
 				.toString();
 	}
 }
