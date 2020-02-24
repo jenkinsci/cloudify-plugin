@@ -25,6 +25,11 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
+/**
+ * A build step for uploading a blueprint.
+ * 
+ * @author	Isaac Shabtay
+ */
 public class UploadBlueprintBuildStep extends CloudifyBuildStep {
 	private String blueprintId;
 	private String archiveUrl;
@@ -155,7 +160,7 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
 
 		@Override
 		public String getDisplayName() {
-			return "Upload Cloudify blueprint";
+			return "Upload Cloudify Blueprint";
 		}
 	}
 

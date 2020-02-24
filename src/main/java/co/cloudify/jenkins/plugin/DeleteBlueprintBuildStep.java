@@ -22,6 +22,11 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
+/**
+ * A build step for deleting a Cloudify blueprint.
+ * 
+ * @author	Isaac Shabtay
+ */
 public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
 	private String blueprintId;
 
@@ -63,7 +68,7 @@ public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
 
 		@Override
 		public String getDisplayName() {
-			return "Delete Cloudify blueprint";
+			return "Delete Cloudify Blueprint";
 		}
 	}
 

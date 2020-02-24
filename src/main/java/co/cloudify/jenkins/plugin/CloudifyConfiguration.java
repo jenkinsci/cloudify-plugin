@@ -10,12 +10,13 @@ import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.model.GlobalConfiguration;
 
+/**
+ * Configuration object for Cloudify.
+ * 
+ * @author	Isaac Shabtay
+ */
 @Extension
 public class CloudifyConfiguration extends GlobalConfiguration {
-	public static CloudifyConfiguration get() {
-		return GlobalConfiguration.all().get(CloudifyConfiguration.class);
-	}
-
 	private String host;
 	private String username;
 	private Secret password;
@@ -94,6 +95,18 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 		return FormValidation.validateRequired(value);
 	}
 
+	/**
+	 * @return	The {@link CloudifyConfiguration} instance for this Jenkins
+	 * 			installation.
+	 */
+	public static CloudifyConfiguration get() {
+		return GlobalConfiguration.all().get(CloudifyConfiguration.class);
+	}
+	
+	/**
+	 * @return	A {@link CloudifyClient} instance pointing at the Cloudify Manager
+	 * 			installation according to the configuration.
+	 */
 	public static CloudifyClient getCloudifyClient() {
 		CloudifyConfiguration config = CloudifyConfiguration.get();
 		return CloudifyClient.create(

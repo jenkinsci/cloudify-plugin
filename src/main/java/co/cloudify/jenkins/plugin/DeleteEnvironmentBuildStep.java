@@ -28,6 +28,11 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
+/**
+ * A build step for deleting a Cloudify environment.
+ * 
+ * @author	Isaac Shabtay
+ */
 public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 	private String deploymentId;
 	private boolean ignoreFailure;
@@ -65,10 +70,10 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 		
 		Map<String, Object> executionParams = new HashMap<String, Object>();
 		executionParams.put("ignore_failure", ignoreFailure);
+		
 		jenkinsLog.println("Executing the 'uninstall' workflow'");
-		Execution execution = cloudifyClient.getExecutionsClient().start(
-				effectiveDeploymentId, "uninstall", executionParams);
-		execution = ExecutionsHelper.followExecution(cloudifyClient, execution, follower);
+		Execution execution = ExecutionsHelper.startAndFollow(
+				cloudifyClient, effectiveDeploymentId, "uninstall", executionParams, follower);
 		ExecutionStatus status = execution.getStatus();
 		if (status != ExecutionStatus.terminated) {
 			throw new Exception(String.format("Execution didn't end well; status=%s", status));
@@ -91,7 +96,7 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 		
 		@Override
 		public String getDisplayName() {
-			return "Delete Cloudify environment";
+			return "Delete Cloudify Environment";
 		}
 	}
 

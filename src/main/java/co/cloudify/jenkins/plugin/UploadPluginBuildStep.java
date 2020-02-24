@@ -23,6 +23,11 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
+/**
+ * A build step for uploading a plugin.
+ * 
+ * @author	Isaac Shabtay
+ */
 public class UploadPluginBuildStep extends CloudifyBuildStep {
 	private String wagonLocation;
 	private String yamlLocation;
@@ -70,12 +75,15 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
 		String effectiveYamlLocation = Util.replaceMacro(yamlLocation, buildVariableResolver);
 		String effectiveOutputLocation = Util.replaceMacro(outputLocation, buildVariableResolver);
 
+		jenkinsLog.println(String.format(
+				"Uploading plugin: wagon file=%s, YAML file=%s",effectiveWagonLocation, effectiveYamlLocation));
+		
 		Plugin plugin = cloudifyClient.getPluginsClient().upload(effectiveWagonLocation, effectiveYamlLocation);
 		
 		if (StringUtils.isNotBlank(effectiveOutputLocation)) {
 			File outputFile = new File(build.getWorkspace().child(effectiveOutputLocation).getRemote());
 			jenkinsLog.println(String.format("Saving plugin information to %s", outputFile));
-			CloudifyPluginUtilities.writeJson(plugin, outputFile);
+			CloudifyPluginUtilities.writeBoundObject(plugin, outputFile);
 		}
 		jenkinsLog.println("Plugin uploaded successfully");
 	}
@@ -98,7 +106,7 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
 
 		@Override
 		public String getDisplayName() {
-			return "Upload Cloudify plugin";
+			return "Upload Cloudify Plugin";
 		}
 	}
 

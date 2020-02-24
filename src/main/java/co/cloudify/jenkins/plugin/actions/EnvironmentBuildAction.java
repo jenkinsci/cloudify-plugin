@@ -58,12 +58,6 @@ public class EnvironmentBuildAction implements RunAction2 {
 		this.capabilities = capabilities;
 	}
 	
-//	public String getFormattedValue(final Object obj) {
-//		if (obj instanceof Map) {
-//			return JSONObject.fromObject(obj);
-//		}
-//	}
-	
 	@Override
 	public void onAttached(Run<?, ?> r) {
 		this.run = run;

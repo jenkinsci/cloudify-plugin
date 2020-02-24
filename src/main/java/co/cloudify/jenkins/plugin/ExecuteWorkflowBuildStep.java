@@ -10,7 +10,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
-import co.cloudify.rest.client.ExecutionsClient;
+import co.cloudify.rest.helpers.DefaultExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
 import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
@@ -28,10 +28,17 @@ import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 import net.sf.json.JSONObject;
 
+/**
+ * A build step for executing a Cloudify workflow.
+ * 
+ * @author	Isaac Shabtay
+ */
 public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 	private	String deploymentId;
 	private String workflowId;
 	private String executionParameters;
+	private	boolean	waitForCompletion;
+	private	boolean	printLogs;
 
 	@DataBoundConstructor
 	public ExecuteWorkflowBuildStep() {
@@ -65,12 +72,28 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 		this.executionParameters = executionParameters;
 	}
 	
+	public boolean isWaitForCompletion() {
+		return waitForCompletion;
+	}
+	
+	@DataBoundSetter
+	public void setWaitForCompletion(boolean waitForCompletion) {
+		this.waitForCompletion = waitForCompletion;
+	}
+	
+	public boolean isPrintLogs() {
+		return printLogs;
+	}
+	
+	@DataBoundSetter
+	public void setPrintLogs(boolean printLogs) {
+		this.printLogs = printLogs;
+	}
+	
 	@Override
 	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
 	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
-		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog);
-		ExecutionsClient executionsClient = cloudifyClient.getExecutionsClient();
 		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
 		String effectiveDeploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
 		String effectiveWorkflowId = Util.replaceMacro(workflowId, buildVariableResolver);
@@ -80,11 +103,19 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 		JSONObject executionParametersAsMap = strippedParameters != null ?
 				JSONObject.fromObject(strippedParameters) :
 					null;
-				
-		Execution execution = executionsClient.start(effectiveDeploymentId, effectiveWorkflowId, executionParametersAsMap);
-		execution = ExecutionsHelper.followExecution(cloudifyClient, execution, follower);
-		if (execution.getStatus() != ExecutionStatus.terminated) {
-			throw new Exception(String.format("Execution did not end successfully; execution=", execution));
+		Execution execution = cloudifyClient.getExecutionsClient().start(effectiveDeploymentId, effectiveWorkflowId, executionParametersAsMap);
+		jenkinsLog.println(String.format("Execution started; id=%s", execution.getId()));
+		
+		if (waitForCompletion || printLogs) {
+			jenkinsLog.println("Waiting for execution to end...");
+			ExecutionFollowCallback callback = printLogs ?
+					new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog) :
+						DefaultExecutionFollowCallback.getInstance();
+			execution = ExecutionsHelper.followExecution(cloudifyClient, execution, callback);
+			if (execution.getStatus() != ExecutionStatus.terminated) {
+				throw new Exception(String.format("Execution did not end successfully; execution=", execution));
+			}
+			jenkinsLog.println("Execution ended successfully");
 		}
 	}
 
@@ -106,7 +137,7 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 		
 		@Override
 		public String getDisplayName() {
-			return "Execute Cloudify workflow";
+			return "Execute Cloudify Workflow";
 		}
 	}
 
@@ -117,6 +148,8 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 				.append("deploymentId", deploymentId)
 				.append("workflowId", workflowId)
 				.append("executionParametrs", executionParameters)
+				.append("waitForCompletion", waitForCompletion)
+				.append("printLogs", printLogs)
 				.toString();
 	}
 }

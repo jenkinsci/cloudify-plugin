@@ -1,13 +1,9 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
@@ -38,6 +34,11 @@ import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 import net.sf.json.JSONObject;
 
+/**
+ * A Build Step for creating an environment.
+ * 
+ * @author	Isaac Shabtay
+ */
 public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 	private String blueprintId;
 	private String deploymentId;
@@ -120,11 +121,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 			FilePath expectedLocation = build.getWorkspace().child(effectiveInputsFile);
 			if (expectedLocation.exists()) {
 				jenkinsLog.println(String.format("Reading inputs from %s", expectedLocation));
-				try (InputStream is = expectedLocation.read()) {
-					inputsMap.putAll(
-							JSONObject.fromObject(
-									IOUtils.toString(is, StandardCharsets.UTF_8)));
-				}
+				inputsMap.putAll(CloudifyPluginUtilities.readJson(expectedLocation));
 			} else {
 				jenkinsLog.println(String.format("Deployment inputs file not found, skipping: %s", effectiveInputsFile));
 			}
@@ -139,8 +136,8 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		action.setInputs(deployment.getInputs());
 		
 		jenkinsLog.println("Executing the 'install' workflow'");
-		Execution execution = cloudifyClient.getExecutionsClient().start(deployment, "install", null);
-		execution = ExecutionsHelper.followExecution(cloudifyClient, execution, follower);
+		Execution execution = ExecutionsHelper.startAndFollow(
+				cloudifyClient, deployment.getId(), "install", null, follower);
 		ExecutionStatus status = execution.getStatus();
 		if (status != ExecutionStatus.terminated) {
 			throw new Exception(String.format(
@@ -163,10 +160,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 			FilePath outputFilePath = build.getWorkspace().child(effectiveOutputFile);
 			jenkinsLog.println(String.format(
 					"Writing outputs and capabilities to %s", outputFilePath));
-			try (OutputStreamWriter osw = new OutputStreamWriter(
-					outputFilePath.write())) {
-				osw.write(output.toString(4));
-			}
+			CloudifyPluginUtilities.writeJson(output, outputFilePath);
 		}
 	}
 
@@ -188,7 +182,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		
         @Override
 		public String getDisplayName() {
-			return "Build Cloudify environment";
+			return "Build Cloudify Environment";
 		}
 	}
 

@@ -1,13 +1,10 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.io.PrintStream;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -26,9 +23,16 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 
+/**
+ * A build step for converting outputs and capabilities of one deployment,
+ * to inputs of another.
+ * 
+ * @author	Isaac Shabtay
+ */
 public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 	private String	outputsLocation;
 	private String	mapping;
+	private	String	mappingLocation;
 	private	String	inputsLocation;
 	
 	@DataBoundConstructor
@@ -50,6 +54,15 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 	}
 	
 	@DataBoundSetter
+	public void setMappingLocation(String mappingLocation) {
+		this.mappingLocation = mappingLocation;
+	}
+	
+	public String getMappingLocation() {
+		return mappingLocation;
+	}
+	
+	@DataBoundSetter
 	public void setOutputsLocation(String outputsLocation) {
 		this.outputsLocation = outputsLocation;
 	}
@@ -63,7 +76,7 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 		this.inputsLocation = inputsLocation;
 	}
 	
-	protected void transform(JSONObject mapping, JSONObject inputs, JSONObject source) {
+	private void transform(JSONObject mapping, JSONObject inputs, JSONObject source) {
 		for (Map.Entry<String, String> entry: (Set<Map.Entry<String, String>>) mapping.entrySet()) {
 			String from = entry.getKey();
 			String to = entry.getValue();
@@ -74,16 +87,19 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 	@Override
 	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
 	        CloudifyClient cloudifyClient) throws Exception {
+		PrintStream logger = listener.getLogger();
 		FilePath workspace = build.getWorkspace();
 		FilePath inputsFile = workspace.child(inputsLocation);
 		FilePath outputsFile = workspace.child(outputsLocation);
 		
-		JSONObject mappingJson = JSONObject.fromObject(mapping);
-		JSONObject outputsJson;
-		
-		try (InputStream is = outputsFile.read()) {
-			outputsJson = JSONObject.fromObject(IOUtils.toString(is, StandardCharsets.UTF_8));
+		JSONObject mappingJson;
+		if (StringUtils.isNotBlank(mapping)) {
+			mappingJson = JSONObject.fromObject(mapping);
+		} else {
+			logger.println(String.format("Reading inputs mapping from %s", mappingLocation));
+			mappingJson = CloudifyPluginUtilities.readJson(workspace.child(mappingLocation));
 		}
+		JSONObject outputsJson = CloudifyPluginUtilities.readJson(outputsFile);
 		JSONObject outputs = outputsJson.getJSONObject("outputs");
 		JSONObject capabilities = outputsJson.getJSONObject("capabilities");
 		JSONObject outputMap = mappingJson.getJSONObject("outputs");
@@ -92,11 +108,7 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 		JSONObject inputs = new JSONObject();
 		transform(outputMap, inputs, outputs);
 		transform(capsMap, inputs, capabilities);
-		
-		try (OutputStreamWriter osw = new OutputStreamWriter(
-				inputsFile.write())) {
-			osw.write(inputs.toString(4));
-		}
+		CloudifyPluginUtilities.writeJson(inputs, inputsFile);
 	}
 	
 	@Symbol("cfyOutputsToInputs")
@@ -107,12 +119,23 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 			return true;
 		}
 
+		private FormValidation checkMappings(final String mapping, final String mappingLocation) {
+			if (!(StringUtils.isBlank(mapping) ^ StringUtils.isBlank(mappingLocation))) {
+				return FormValidation.error("Please specify either a JSON mapping, or the name of a file to contain the mapping (not both)");
+			}
+			return FormValidation.ok();
+		}
+		
 		public FormValidation doCheckOutputsLocation(@QueryParameter String value) {
 			return FormValidation.validateRequired(value);
 		}
 		
-		public FormValidation doCheckMapping(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
+		public FormValidation doCheckMapping(@QueryParameter String value, @QueryParameter String mappingLocation) {
+			return checkMappings(value, mappingLocation);
+		}
+		
+		public FormValidation doCheckMappingLocation(@QueryParameter String value, @QueryParameter String mapping) {
+			return checkMappings(mapping, value);
 		}
 		
 		public FormValidation doCheckInputsLocation(@QueryParameter String value) {
@@ -121,7 +144,7 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 		
         @Override
 		public String getDisplayName() {
-			return "Convert Cloudify outputs/caps to inputs";
+			return "Convert Cloudify Environment Outputs/Capabilities to Inputs";
 		}
 	}
 
@@ -131,6 +154,7 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 				.appendSuper(super.toString())
 				.append("outputsLocation", outputsLocation)
 				.append("mapping", mapping)
+				.append("mappingLocation", mappingLocation)
 				.append("inputsLocation", inputsLocation)
 				.toString();
 	}
