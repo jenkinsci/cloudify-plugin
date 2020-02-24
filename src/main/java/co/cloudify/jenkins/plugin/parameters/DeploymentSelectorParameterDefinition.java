@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -15,7 +14,7 @@ import org.kohsuke.stapler.export.Exported;
 
 import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.rest.client.CloudifyClient;
-import co.cloudify.rest.model.Blueprint;
+import co.cloudify.rest.model.Deployment;
 import co.cloudify.rest.model.ListResponse;
 import hudson.Extension;
 import hudson.model.ParameterDefinition;
@@ -23,42 +22,31 @@ import hudson.model.ParameterValue;
 import hudson.model.StringParameterValue;
 import net.sf.json.JSONObject;
 
-public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
+public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
 	private static final long serialVersionUID = 1L;
 	
-	private	String blueprintId;
-	private String filter;
+	private	String deploymentId;
 	
 	@DataBoundConstructor
-	public BlueprintSelectorParameterDefinition(String name, String description) {
+	public DeploymentSelectorParameterDefinition(String name, String description) {
 		super(name, description);
 	}
 	
-	public String getBlueprintId() {
-		return blueprintId;
+	public String getDeploymentId() {
+		return deploymentId;
 	}
 
 	@DataBoundSetter
-	public void setBlueprintId(String blueprintId) {
-		this.blueprintId = blueprintId;
-	}
-	
-	public String getFilter() {
-		return filter;
-	}
-	
-	@DataBoundSetter
-	public void setFilter(String filter) {
-		this.filter = filter;
+	public void setDeploymentId(String deploymentId) {
+		this.deploymentId = deploymentId;
 	}
 	
 	@Exported
 	public List<String> getChoices() {
-		String effectiveFilter = StringUtils.trimToNull(filter);
 		List<String> choices = new LinkedList<>();
 		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
-		ListResponse<Blueprint> blueprints = cloudifyClient.getBlueprintsClient().list(effectiveFilter);
-		blueprints.forEach(item -> choices.add(item.getId()));
+		ListResponse<Deployment> deployments = cloudifyClient.getDeploymentsClient().list();
+		deployments.forEach(item -> choices.add(item.getId()));
 		return choices;
 	}
 	
@@ -70,16 +58,16 @@ public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
 	@Override
 	public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
 		String name = jo.getString("name");
-		String blueprintId = jo.getString("blueprintId");
-		return new StringParameterValue(name, blueprintId);
+		String deploymentId = jo.getString("deploymentId");
+		return new StringParameterValue(name, deploymentId);
 	}
 
-	@Extension @Symbol({"cloudify","cloudifyBlueprintParam"})
-	public static class BlueprintSelectorParameterDescriptor extends ParameterDescriptor {
+	@Extension @Symbol({"cloudify","cloudifyDeploymentParam"})
+	public static class DeploymentSelectorParameterDescriptor extends ParameterDescriptor {
 		@Override
 		@Nonnull
 		public String getDisplayName() {
-			return "Cloudify Blueprint Selector";
+			return "Cloudify Deployment Selector";
 		}
 	}
 
@@ -87,8 +75,7 @@ public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
 	public String toString() {
 		return new ToStringBuilder(this)
 				.appendSuper(super.toString())
-				.append("blueprintId", blueprintId)
-				.append("filter", filter)
+				.append("deploymentId", deploymentId)
 				.toString();
 	}
 }

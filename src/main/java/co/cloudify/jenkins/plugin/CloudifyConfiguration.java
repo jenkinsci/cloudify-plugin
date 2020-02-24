@@ -111,7 +111,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 		CloudifyConfiguration config = CloudifyConfiguration.get();
 		return CloudifyClient.create(
 		        config.getHost(), config.getUsername(),
-		        Secret.toString(config.getPassword()),
+		        config.getPassword().getPlainText(),
 		        config.isSecured(), config.getTenant());
 	}
 }
