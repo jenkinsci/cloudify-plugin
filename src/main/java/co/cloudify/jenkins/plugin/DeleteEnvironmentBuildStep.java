@@ -1,5 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,11 +19,14 @@ import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
 import co.cloudify.rest.model.Execution;
 import co.cloudify.rest.model.ExecutionStatus;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -61,27 +65,32 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 	}
 
 	@Override
-	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
+	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
 		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog);
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		String effectiveDeploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
 		
 		Map<String, Object> executionParams = new HashMap<String, Object>();
 		executionParams.put("ignore_failure", ignoreFailure);
 		
-		jenkinsLog.println("Executing the 'uninstall' workflow'");
+		jenkinsLog.println(String.format("Executing the 'uninstall' workflow on deployment: %s", deploymentId));
 		Execution execution = ExecutionsHelper.startAndFollow(
-				cloudifyClient, effectiveDeploymentId, "uninstall", executionParams, follower);
+				cloudifyClient, deploymentId, "uninstall", executionParams, follower);
 		ExecutionStatus status = execution.getStatus();
 		if (status != ExecutionStatus.terminated) {
 			throw new Exception(String.format("Execution didn't end well; status=%s", status));
 		}
 		jenkinsLog.println("Execution finished successfully; deleting deployment");
-		DeploymentsHelper.deleteDeploymentAndWait(cloudifyClient, effectiveDeploymentId);
+		DeploymentsHelper.deleteDeploymentAndWait(cloudifyClient, deploymentId);
 	}
 
+	@Override
+	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
+		deploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
+		return super.perform(build, launcher, listener);
+	}
+	
 	@Symbol("deleteCloudifyEnv")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {

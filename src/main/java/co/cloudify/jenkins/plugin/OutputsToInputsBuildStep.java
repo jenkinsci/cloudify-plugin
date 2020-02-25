@@ -15,9 +15,9 @@ import co.cloudify.rest.client.CloudifyClient;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -85,10 +85,9 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 	}
 	
 	@Override
-	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
+	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream logger = listener.getLogger();
-		FilePath workspace = build.getWorkspace();
 		FilePath inputsFile = workspace.child(inputsLocation);
 		FilePath outputsFile = workspace.child(outputsLocation);
 		

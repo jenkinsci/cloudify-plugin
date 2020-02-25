@@ -23,7 +23,6 @@ import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
 import co.cloudify.rest.model.Deployment;
 import co.cloudify.rest.model.Execution;
 import co.cloudify.rest.model.ExecutionStatus;
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -38,7 +37,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
-import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 
 /**
@@ -46,7 +44,7 @@ import net.sf.json.JSONObject;
  * 
  * @author	Isaac Shabtay
  */
-public class CreateEnvironmentBuildStep extends CloudifyBuildStep implements SimpleBuildStep {
+public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 	private String blueprintId;
 	private String deploymentId;
 	private String inputs;
@@ -104,16 +102,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep implements Sim
 	}
 	
 	@Override
-	public Action getProjectAction(AbstractProject<?, ?> project) {
-		return super.getProjectAction(project);
-	}
-	
-	@Override
-	public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
-		return super.getProjectActions(project);
-	}
-
-	protected void perform(Run<?,?> run, TaskListener listener, FilePath workspace, String blueprintId, String deploymentId, String inputs, String inputsFile, String outputFile) throws Exception {
+	protected void performImpl(Run<?,?> run, Launcher launcher, TaskListener listener, FilePath workspace, CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
 		
 		EnvironmentBuildAction action = new EnvironmentBuildAction();
@@ -135,7 +124,6 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep implements Sim
 				jenkinsLog.println(String.format("Deployment inputs file not found, skipping: %s", inputsFile));
 			}
 		}
-		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
 		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog);
 		
 		jenkinsLog.println(
@@ -174,28 +162,16 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep implements Sim
 		}
 	}
 	
-	public void perform(Run<?,?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-		try {
-			perform(run, listener, workspace, blueprintId, deploymentId, inputs, inputsFile, outputFile);
-		} catch (IOException | InterruptedException ex) {
-			throw ex;
-		} catch (Exception ex) {
-			ex.printStackTrace(listener.getLogger());
-			throw new AbortException("Failed performing step");
-		}
-	}
-	
 	@Override
-	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
-	        CloudifyClient cloudifyClient) throws Exception {
+	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		String effectiveBlueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
-		String effectiveDeploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
-		String effectiveInputs = Util.replaceMacro(inputs, buildVariableResolver);
-		String effectiveInputsFile = Util.replaceMacro(inputsFile, buildVariableResolver);
-		String effectiveOutputFile = Util.replaceMacro(outputFile, buildVariableResolver);
+		blueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
+		deploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
+		inputs = Util.replaceMacro(inputs, buildVariableResolver);
+		inputsFile = Util.replaceMacro(inputsFile, buildVariableResolver);
+		outputFile = Util.replaceMacro(outputFile, buildVariableResolver);
 
-		perform(build, listener, build.getWorkspace(), effectiveBlueprintId, effectiveDeploymentId, effectiveInputs, effectiveInputsFile, effectiveOutputFile);
+		return super.perform(build, launcher, listener);
 	}
 
 	@Symbol("createCloudifyEnv")

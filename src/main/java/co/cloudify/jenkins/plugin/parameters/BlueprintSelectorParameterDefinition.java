@@ -1,7 +1,7 @@
 package co.cloudify.jenkins.plugin.parameters;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -55,11 +55,12 @@ public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
 	@Exported
 	public List<String> getChoices() {
 		String effectiveFilter = StringUtils.trimToNull(filter);
-		List<String> choices = new LinkedList<>();
 		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
 		ListResponse<Blueprint> blueprints = cloudifyClient.getBlueprintsClient().list(effectiveFilter);
-		blueprints.forEach(item -> choices.add(item.getId()));
-		return choices;
+		return blueprints
+				.stream()
+				.map(x -> x.getId())
+				.collect(Collectors.toList());
 	}
 	
 	@Override
@@ -74,7 +75,7 @@ public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
 		return new StringParameterValue(name, blueprintId);
 	}
 
-	@Extension @Symbol({"cloudify","cloudifyBlueprintParam"})
+	@Extension @Symbol("cloudifyBlueprintParam")
 	public static class BlueprintSelectorParameterDescriptor extends ParameterDescriptor {
 		@Override
 		@Nonnull

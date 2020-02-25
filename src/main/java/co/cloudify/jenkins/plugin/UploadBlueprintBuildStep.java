@@ -1,6 +1,7 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Arrays;
@@ -15,11 +16,14 @@ import org.kohsuke.stapler.QueryParameter;
 import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -87,33 +91,37 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
 	}
 
 	@Override
-	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
+	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		String effectiveBlueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
-		String effectiveArchiveUrl = Util.replaceMacro(archiveUrl, buildVariableResolver);
-		String effectiveArchivePath = Util.replaceMacro(archivePath, buildVariableResolver);
-		String effectiveRootDirectory = Util.replaceMacro(rootDirectory, buildVariableResolver);
-		String effectiveMainFileName = Util.replaceMacro(mainFileName, buildVariableResolver);
-
 		BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();
 		
-		if (StringUtils.isNotBlank(effectiveArchiveUrl)) {
-			jenkinsLog.println(String.format("Uploading blueprint from %s", effectiveArchiveUrl));
-			blueprintsClient.upload(effectiveBlueprintId, new URL(effectiveArchiveUrl), effectiveMainFileName);
-		} else if (StringUtils.isNotBlank(effectiveArchivePath)) {
-			File absoluteArchivePath = new File(build.getWorkspace().child(effectiveArchivePath).getRemote());
+		if (StringUtils.isNotBlank(archiveUrl)) {
+			jenkinsLog.println(String.format("Uploading blueprint from %s", archiveUrl));
+			blueprintsClient.upload(blueprintId, new URL(archiveUrl), mainFileName);
+		} else if (StringUtils.isNotBlank(archivePath)) {
+			File absoluteArchivePath = new File(workspace.child(archivePath).getRemote());
 			jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteArchivePath));
-			blueprintsClient.uploadArchive(effectiveBlueprintId, absoluteArchivePath, effectiveMainFileName);
+			blueprintsClient.uploadArchive(blueprintId, absoluteArchivePath, mainFileName);
 		} else {
-			File absoluteRootDir = new File(build.getWorkspace().child(effectiveRootDirectory).getRemote());
+			File absoluteRootDir = new File(workspace.child(rootDirectory).getRemote());
 			jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteRootDir));
-			blueprintsClient.upload(effectiveBlueprintId, absoluteRootDir, effectiveMainFileName);
+			blueprintsClient.upload(blueprintId, absoluteRootDir, mainFileName);
 		}
 		jenkinsLog.println("Blueprint uploaded successfully");
 	}
 
+	@Override
+	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException ,IOException {
+		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
+		blueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
+		archiveUrl = Util.replaceMacro(archiveUrl, buildVariableResolver);
+		archivePath = Util.replaceMacro(archivePath, buildVariableResolver);
+		rootDirectory = Util.replaceMacro(rootDirectory, buildVariableResolver);
+		mainFileName = Util.replaceMacro(mainFileName, buildVariableResolver);
+		return super.perform(build, launcher, listener);
+	}
+	
 	@Symbol("uploadCloudifyBlueprint")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {

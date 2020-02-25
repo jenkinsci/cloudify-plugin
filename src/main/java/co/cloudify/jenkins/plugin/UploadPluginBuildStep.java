@@ -1,6 +1,7 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,11 +14,14 @@ import org.kohsuke.stapler.QueryParameter;
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.model.Plugin;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -66,28 +70,32 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
 	}
 	
 	@Override
-	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
+	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-
-		String effectiveWagonLocation = Util.replaceMacro(wagonLocation, buildVariableResolver);
-		String effectiveYamlLocation = Util.replaceMacro(yamlLocation, buildVariableResolver);
-		String effectiveOutputLocation = Util.replaceMacro(outputLocation, buildVariableResolver);
 
 		jenkinsLog.println(String.format(
-				"Uploading plugin: wagon file=%s, YAML file=%s",effectiveWagonLocation, effectiveYamlLocation));
+				"Uploading plugin: wagon file=%s, YAML file=%s", wagonLocation, yamlLocation));
 		
-		Plugin plugin = cloudifyClient.getPluginsClient().upload(effectiveWagonLocation, effectiveYamlLocation);
+		Plugin plugin = cloudifyClient.getPluginsClient().upload(wagonLocation, yamlLocation);
 		
-		if (StringUtils.isNotBlank(effectiveOutputLocation)) {
-			File outputFile = new File(build.getWorkspace().child(effectiveOutputLocation).getRemote());
+		if (StringUtils.isNotBlank(outputLocation)) {
+			File outputFile = new File(workspace.child(outputLocation).getRemote());
 			jenkinsLog.println(String.format("Saving plugin information to %s", outputFile));
 			CloudifyPluginUtilities.writeBoundObject(plugin, outputFile);
 		}
 		jenkinsLog.println("Plugin uploaded successfully");
 	}
 
+	@Override
+	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
+		wagonLocation = Util.replaceMacro(wagonLocation, buildVariableResolver);
+		yamlLocation = Util.replaceMacro(yamlLocation, buildVariableResolver);
+		outputLocation = Util.replaceMacro(outputLocation, buildVariableResolver);
+		return super.perform(build, launcher, listener);
+	}
+	
 	@Symbol("uploadCloudifyBlueprint")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {

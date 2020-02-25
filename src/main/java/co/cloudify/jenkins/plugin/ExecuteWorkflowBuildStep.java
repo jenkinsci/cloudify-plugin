@@ -1,5 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,11 +18,14 @@ import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
 import co.cloudify.rest.model.Execution;
 import co.cloudify.rest.model.ExecutionStatus;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -91,19 +95,15 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 	}
 	
 	@Override
-	protected void perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener,
+	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
 		PrintStream jenkinsLog = listener.getLogger();
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		String effectiveDeploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
-		String effectiveWorkflowId = Util.replaceMacro(workflowId, buildVariableResolver);
-		String effectiveExecutionParameters = Util.replaceMacro(executionParameters, buildVariableResolver);;
 		
-		String strippedParameters = StringUtils.trimToNull(effectiveExecutionParameters);
+		String strippedParameters = StringUtils.trimToNull(executionParameters);
 		JSONObject executionParametersAsMap = strippedParameters != null ?
 				JSONObject.fromObject(strippedParameters) :
 					null;
-		Execution execution = cloudifyClient.getExecutionsClient().start(effectiveDeploymentId, effectiveWorkflowId, executionParametersAsMap);
+		Execution execution = cloudifyClient.getExecutionsClient().start(deploymentId, workflowId, executionParametersAsMap);
 		jenkinsLog.println(String.format("Execution started; id=%s", execution.getId()));
 		
 		if (waitForCompletion || printLogs) {
@@ -119,6 +119,15 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 		}
 	}
 
+	@Override
+	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
+		deploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
+		workflowId = Util.replaceMacro(workflowId, buildVariableResolver);
+		executionParameters = Util.replaceMacro(executionParameters, buildVariableResolver);
+		return super.perform(build, launcher, listener);
+	}
+	
 	@Symbol("executeCloudifyWorkflow")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {
