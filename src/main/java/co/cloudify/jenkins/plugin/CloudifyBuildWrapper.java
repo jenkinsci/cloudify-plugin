@@ -201,7 +201,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		}
 		
 		private FormValidation checkBlueprintParams(final String blueprintRootDirectory, final String blueprintMainFile) {
-			if (!(StringUtils.isBlank(blueprintMainFile) ^ StringUtils.isBlank(blueprintRootDirectory))) {
+			if (StringUtils.isBlank(blueprintMainFile) ^ StringUtils.isBlank(blueprintRootDirectory)) {
 				return FormValidation.error("Both blueprint root directory and main file must either be populated, or remain empty");
 			}
 			return FormValidation.ok();
