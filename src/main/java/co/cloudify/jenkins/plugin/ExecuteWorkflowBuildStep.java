@@ -16,7 +16,6 @@ import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
 import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
 import co.cloudify.rest.model.Execution;
-import co.cloudify.rest.model.ExecutionStatus;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -112,9 +111,7 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 					new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog) :
 						DefaultExecutionFollowCallback.getInstance();
 			execution = ExecutionsHelper.followExecution(cloudifyClient, execution, callback);
-			if (execution.getStatus() != ExecutionStatus.terminated) {
-				throw new Exception(String.format("Execution did not end successfully; execution=", execution));
-			}
+			ExecutionsHelper.validate(execution, "Execution did not end successfully");
 			jenkinsLog.println("Execution ended successfully");
 		}
 	}

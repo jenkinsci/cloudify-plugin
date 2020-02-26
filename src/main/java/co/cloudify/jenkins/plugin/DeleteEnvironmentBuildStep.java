@@ -1,9 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
@@ -12,12 +9,6 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
-import co.cloudify.rest.helpers.DeploymentsHelper;
-import co.cloudify.rest.helpers.ExecutionFollowCallback;
-import co.cloudify.rest.helpers.ExecutionsHelper;
-import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
-import co.cloudify.rest.model.Execution;
-import co.cloudify.rest.model.ExecutionStatus;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -67,21 +58,7 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 	@Override
 	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
-		PrintStream jenkinsLog = listener.getLogger();
-		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog);
-		
-		Map<String, Object> executionParams = new HashMap<String, Object>();
-		executionParams.put("ignore_failure", ignoreFailure);
-		
-		jenkinsLog.println(String.format("Executing the 'uninstall' workflow on deployment: %s", deploymentId));
-		Execution execution = ExecutionsHelper.startAndFollow(
-				cloudifyClient, deploymentId, "uninstall", executionParams, follower);
-		ExecutionStatus status = execution.getStatus();
-		if (status != ExecutionStatus.terminated) {
-			throw new Exception(String.format("Execution didn't end well; status=%s", status));
-		}
-		jenkinsLog.println("Execution finished successfully; deleting deployment");
-		DeploymentsHelper.deleteDeploymentAndWait(cloudifyClient, deploymentId);
+		CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure);
 	}
 
 	@Override
