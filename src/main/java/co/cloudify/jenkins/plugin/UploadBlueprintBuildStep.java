@@ -15,6 +15,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -93,6 +94,14 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
 	@Override
 	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
+		EnvVars env = run.getEnvironment(listener);
+		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+		String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
+		String archiveUrl = Util.replaceMacro(this.archiveUrl, resolver);
+		String archivePath = Util.replaceMacro(this.archivePath, resolver);
+		String rootDirectory = Util.replaceMacro(this.rootDirectory, resolver);
+		String mainFileName = Util.replaceMacro(this.mainFileName, resolver);
+
 		PrintStream jenkinsLog = listener.getLogger();
 		BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();
 		
@@ -111,17 +120,6 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
 		jenkinsLog.println("Blueprint uploaded successfully");
 	}
 
-	@Override
-	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException ,IOException {
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		blueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
-		archiveUrl = Util.replaceMacro(archiveUrl, buildVariableResolver);
-		archivePath = Util.replaceMacro(archivePath, buildVariableResolver);
-		rootDirectory = Util.replaceMacro(rootDirectory, buildVariableResolver);
-		mainFileName = Util.replaceMacro(mainFileName, buildVariableResolver);
-		return super.perform(build, launcher, listener);
-	}
-	
 	@Symbol("uploadCloudifyBlueprint")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {

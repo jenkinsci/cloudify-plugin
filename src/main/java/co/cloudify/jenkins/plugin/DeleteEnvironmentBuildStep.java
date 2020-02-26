@@ -1,7 +1,5 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -9,13 +7,12 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -58,16 +55,12 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 	@Override
 	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
+		EnvVars env = run.getEnvironment(listener);
+		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
 		CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure);
 	}
 
-	@Override
-	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		deploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
-		return super.perform(build, launcher, listener);
-	}
-	
 	@Symbol("deleteCloudifyEnv")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {

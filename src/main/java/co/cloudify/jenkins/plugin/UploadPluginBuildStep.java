@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,13 +12,12 @@ import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.model.Plugin;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -72,6 +70,12 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
 	@Override
 	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
+		EnvVars env = run.getEnvironment(listener);
+		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+		String wagonLocation = Util.replaceMacro(this.wagonLocation, resolver);
+		String yamlLocation = Util.replaceMacro(this.yamlLocation, resolver);
+		String outputLocation = Util.replaceMacro(this.outputLocation, resolver);
+
 		PrintStream jenkinsLog = listener.getLogger();
 
 		jenkinsLog.println(String.format(
@@ -87,15 +91,6 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
 		jenkinsLog.println("Plugin uploaded successfully");
 	}
 
-	@Override
-	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		wagonLocation = Util.replaceMacro(wagonLocation, buildVariableResolver);
-		yamlLocation = Util.replaceMacro(yamlLocation, buildVariableResolver);
-		outputLocation = Util.replaceMacro(outputLocation, buildVariableResolver);
-		return super.perform(build, launcher, listener);
-	}
-	
 	@Symbol("uploadCloudifyBlueprint")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {

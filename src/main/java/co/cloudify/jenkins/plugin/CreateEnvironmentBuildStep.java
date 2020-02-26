@@ -1,9 +1,5 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.IOException;
-import java.io.PrintStream;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -12,21 +8,18 @@ import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.jenkins.plugin.actions.EnvironmentBuildAction;
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
 
 /**
  * A Build Step for creating an environment.
@@ -92,29 +85,25 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 	
 	@Override
 	protected void performImpl(Run<?,?> run, Launcher launcher, TaskListener listener, FilePath workspace, CloudifyClient cloudifyClient) throws Exception {
+		EnvVars env = run.getEnvironment(listener);
+		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+		String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
+		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
+		String inputs = Util.replaceMacro(this.inputs, resolver);
+		String inputsFile = Util.replaceMacro(this.inputsFile, resolver);
+		String outputFile = Util.replaceMacro(this.outputFile, resolver);
+
 		EnvironmentBuildAction action = new EnvironmentBuildAction();
 		action.setBlueprintId(blueprintId);
 		action.setDeploymentId(deploymentId);
 		run.addOrReplaceAction(action);
 
 		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
-				listener, workspace, cloudifyClient, blueprintId, deploymentId, inputsFile, inputsFile, outputFile);
+				listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile, outputFile);
 
 		action.setInputs(envData.getDeployment().getInputs());
 		action.setOutputs(envData.getOutputs());
 		action.setCapabilities(envData.getCapabilities());
-	}
-	
-	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		blueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
-		deploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
-		inputs = Util.replaceMacro(inputs, buildVariableResolver);
-		inputsFile = Util.replaceMacro(inputsFile, buildVariableResolver);
-		outputFile = Util.replaceMacro(outputFile, buildVariableResolver);
-
-		return super.perform(build, launcher, listener);
 	}
 
 	@Symbol("createCloudifyEnv")

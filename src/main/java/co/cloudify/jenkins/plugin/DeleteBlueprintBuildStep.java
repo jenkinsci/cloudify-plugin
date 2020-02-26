@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -10,13 +9,12 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -48,16 +46,13 @@ public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
 
 	@Override
 	protected void performImpl(Run<?,?> run, Launcher launcher, TaskListener listener, FilePath workspace, CloudifyClient cloudifyClient) throws Exception {
+		EnvVars env = run.getEnvironment(listener);
+		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+		String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
+
 		PrintStream jenkinsLog = listener.getLogger();
 		jenkinsLog.println(String.format("Deleting blueprint: %s", blueprintId));
 		cloudifyClient.getBlueprintsClient().delete(blueprintId);
-	}
-
-	@Override
-	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException ,IOException {
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		blueprintId = Util.replaceMacro(blueprintId, buildVariableResolver);
-		return super.perform(build, launcher, listener);
 	}
 	
 	@Symbol("deleteCloudifyBlueprint")

@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -16,13 +15,12 @@ import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
 import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
 import co.cloudify.rest.model.Execution;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -96,6 +94,12 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 	@Override
 	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
+		EnvVars env = run.getEnvironment(listener);
+		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
+		String workflowId = Util.replaceMacro(this.workflowId, resolver);
+		String executionParameters = Util.replaceMacro(this.executionParameters, resolver);
+
 		PrintStream jenkinsLog = listener.getLogger();
 		
 		String strippedParameters = StringUtils.trimToNull(executionParameters);
@@ -116,15 +120,6 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 		}
 	}
 
-	@Override
-	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-		VariableResolver<String> buildVariableResolver = build.getBuildVariableResolver();
-		deploymentId = Util.replaceMacro(deploymentId, buildVariableResolver);
-		workflowId = Util.replaceMacro(workflowId, buildVariableResolver);
-		executionParameters = Util.replaceMacro(executionParameters, buildVariableResolver);
-		return super.perform(build, launcher, listener);
-	}
-	
 	@Symbol("executeCloudifyWorkflow")
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {

@@ -12,15 +12,18 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import hudson.util.VariableResolver;
 import net.sf.json.JSONObject;
 
 /**
@@ -87,6 +90,14 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 	@Override
 	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
+		EnvVars env = run.getEnvironment(listener);
+		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+
+		String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
+		String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
+		String mapping = Util.replaceMacro(this.mapping, resolver);
+		String mappingLocation = Util.replaceMacro(this.mappingLocation, resolver);
+		
 		PrintStream logger = listener.getLogger();
 		FilePath inputsFile = workspace.child(inputsLocation);
 		FilePath outputsFile = workspace.child(outputsLocation);

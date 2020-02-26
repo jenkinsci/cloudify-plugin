@@ -23,6 +23,8 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
+import hudson.util.VariableResolver;
+import hudson.util.VariableResolver.ByMap;
 import jenkins.tasks.SimpleBuildWrapper;
 
 public class CloudifyBuildWrapper extends SimpleBuildWrapper {
@@ -115,13 +117,14 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 	@Override
 	public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
 	        EnvVars initialEnvironment) throws IOException, InterruptedException {
-		String blueprintId = Util.replaceMacro(this.blueprintId, initialEnvironment);
-		String blueprintRootDirectory = Util.replaceMacro(this.blueprintRootDirectory, initialEnvironment);
-		String blueprintMainFile = Util.replaceMacro(this.blueprintMainFile, initialEnvironment);
-		String deploymentId = Util.replaceMacro(this.deploymentId, initialEnvironment);
-		String inputs = Util.replaceMacro(this.inputs, initialEnvironment);
-		String inputsLocation = Util.replaceMacro(this.inputsLocation, initialEnvironment);
-		String outputsLocation = Util.replaceMacro(this.outputsLocation, initialEnvironment);
+		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(initialEnvironment);
+		String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
+		String blueprintRootDirectory = Util.replaceMacro(this.blueprintRootDirectory, resolver);
+		String blueprintMainFile = Util.replaceMacro(this.blueprintMainFile, resolver);
+		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
+		String inputs = Util.replaceMacro(this.inputs, resolver);
+		String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
+		String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
 		
 		CloudifyDisposer disposer = new CloudifyDisposer();
 		context.setDisposer(disposer);
