@@ -23,6 +23,7 @@ import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
 import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
 import co.cloudify.rest.model.Deployment;
+import co.cloudify.rest.model.EventLevel;
 import co.cloudify.rest.model.Execution;
 import hudson.AbortException;
 import hudson.FilePath;
@@ -107,12 +108,14 @@ public class CloudifyPluginUtilities {
 			String deploymentId,
 			String inputs,
 			String inputsLocation,
-			String outputsLocation
+			String outputsLocation,
+			boolean debugOutput
 			) throws IOException, InterruptedException {
 		PrintStream logger = listener.getLogger();
 
 		Map<String, Object> inputsMap = CloudifyPluginUtilities.createInputsMap(workspace, listener, inputs, inputsLocation);
-		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(client, logger);
+		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(
+				client, logger, debugOutput ? EventLevel.debug : EventLevel.info);
 		
 		try {
 			Deployment deployment = DeploymentsHelper.createDeploymentAndWait(client, deploymentId, blueprintId, inputsMap, follower);
@@ -148,10 +151,12 @@ public class CloudifyPluginUtilities {
 			final TaskListener listener,
 			final CloudifyClient client,
 			final String deploymentId,
-			final Boolean ignoreFailure
+			final Boolean ignoreFailure,
+			final boolean debugOutput
 			) throws IOException, InterruptedException {
 		PrintStream logger = listener.getLogger();
-		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(client, logger);
+		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(
+				client, logger, debugOutput ? EventLevel.debug : EventLevel.info);
 		
 		try {
 			logger.println(String.format("Uninstalling Cloudify environment; deployment ID: %s", deploymentId));

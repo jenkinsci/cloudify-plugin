@@ -14,6 +14,7 @@ import co.cloudify.rest.helpers.DefaultExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
 import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
+import co.cloudify.rest.model.EventLevel;
 import co.cloudify.rest.model.Execution;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -40,6 +41,7 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 	private String executionParameters;
 	private	boolean	waitForCompletion;
 	private	boolean	printLogs;
+	private boolean debugOutput;
 
 	@DataBoundConstructor
 	public ExecuteWorkflowBuildStep() {
@@ -85,10 +87,19 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 	public boolean isPrintLogs() {
 		return printLogs;
 	}
-	
+
 	@DataBoundSetter
 	public void setPrintLogs(boolean printLogs) {
 		this.printLogs = printLogs;
+	}
+
+	public boolean isDebugOutput() {
+		return debugOutput;
+	}
+	
+	@DataBoundSetter
+	public void setDebugOutput(boolean debugOutput) {
+		this.debugOutput = debugOutput;
 	}
 	
 	@Override
@@ -112,7 +123,7 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 		if (waitForCompletion || printLogs) {
 			jenkinsLog.println("Waiting for execution to end...");
 			ExecutionFollowCallback callback = printLogs ?
-					new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog) :
+					new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog, debugOutput ? EventLevel.debug : EventLevel.info) :
 						DefaultExecutionFollowCallback.getInstance();
 			execution = ExecutionsHelper.followExecution(cloudifyClient, execution, callback);
 			ExecutionsHelper.validate(execution, "Execution did not end successfully");
@@ -151,6 +162,7 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 				.append("executionParametrs", executionParameters)
 				.append("waitForCompletion", waitForCompletion)
 				.append("printLogs", printLogs)
+				.append("debugOutput", debugOutput)
 				.toString();
 	}
 }

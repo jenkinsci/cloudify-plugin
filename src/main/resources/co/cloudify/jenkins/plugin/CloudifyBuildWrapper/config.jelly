@@ -25,4 +25,7 @@
 	<f:entry title="${%Ignore Failures on Teardown}" field="ignoreFailureOnTeardown">
 		<f:checkbox/>
 	</f:entry>
+	<f:entry title="${%Show debug-level Cloudify output}" field="debugOutput">
+		<f:checkbox/>
+	</f:entry>
 </j:jelly>

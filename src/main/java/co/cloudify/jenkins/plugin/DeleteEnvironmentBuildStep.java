@@ -28,6 +28,7 @@ import hudson.util.VariableResolver;
 public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 	private String deploymentId;
 	private boolean ignoreFailure;
+	private boolean debugOutput;
 
 	@DataBoundConstructor
 	public DeleteEnvironmentBuildStep() {
@@ -52,13 +53,22 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 		this.ignoreFailure = ignoreFailure;
 	}
 
+	public boolean isDebugOutput() {
+		return debugOutput;
+	}
+	
+	@DataBoundSetter
+	public void setDebugOutput(boolean debugOutput) {
+		this.debugOutput = debugOutput;
+	}
+	
 	@Override
 	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
 		EnvVars env = run.getEnvironment(listener);
 		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
 		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
-		CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure);
+		CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure, debugOutput);
 	}
 
 	@Symbol("deleteCloudifyEnv")
@@ -85,6 +95,7 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 				.appendSuper(super.toString())
 				.append("deploymentId", deploymentId)
 				.append("ignoreFailure", ignoreFailure)
+				.append("debugOutput", debugOutput)
 				.toString();
 	}
 }

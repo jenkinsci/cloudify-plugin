@@ -10,4 +10,7 @@
 	<f:entry title="${%Workflow Parameters}" field="executionParameters">
 		<f:textarea/>
 	</f:entry>
+	<f:entry title="${%Show debug-level Cloudify output}" field="debugOutput">
+		<f:checkbox/>
+	</f:entry>
 </j:jelly>

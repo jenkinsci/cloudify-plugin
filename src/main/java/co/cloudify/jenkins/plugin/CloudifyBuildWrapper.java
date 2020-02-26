@@ -24,7 +24,6 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
-import hudson.util.VariableResolver.ByMap;
 import jenkins.tasks.SimpleBuildWrapper;
 
 public class CloudifyBuildWrapper extends SimpleBuildWrapper {
@@ -36,6 +35,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 	private String inputsLocation;
 	private	String outputsLocation;
 	private boolean ignoreFailureOnTeardown;
+	private boolean debugOutput;
 
 	@DataBoundConstructor
 	public CloudifyBuildWrapper() {
@@ -114,6 +114,15 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		this.ignoreFailureOnTeardown = ignoreFailureOnTeardown;
 	}
 	
+	public boolean isDebugOutput() {
+		return debugOutput;
+	}
+	
+	@DataBoundSetter
+	public void setDebugOutput(boolean debugOutput) {
+		this.debugOutput = debugOutput;
+	}
+
 	@Override
 	public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
 	        EnvVars initialEnvironment) throws IOException, InterruptedException {
@@ -126,7 +135,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
 		String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
 		
-		CloudifyDisposer disposer = new CloudifyDisposer();
+		CloudifyDisposer disposer = new CloudifyDisposer(debugOutput);
 		context.setDisposer(disposer);
 		
 		CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
@@ -145,7 +154,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		
 		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
 				listener, workspace, client, blueprint.getId(),
-				deploymentId, inputs, inputsLocation, outputsLocation);
+				deploymentId, inputs, inputsLocation, outputsLocation, debugOutput);
 		disposer.setDeployment(envData.getDeployment());
 		disposer.setIgnoreFailure(ignoreFailureOnTeardown);
 	}
@@ -157,9 +166,11 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		private Blueprint blueprint;
 		private Deployment deployment;
 		private Boolean	ignoreFailure;
+		private boolean debugOutput;
 		
-		public CloudifyDisposer() {
+		public CloudifyDisposer(boolean debugOutput) {
 			super();
+			this.debugOutput = debugOutput;
 		}
 		
 		public void setBlueprint(Blueprint blueprint) {
@@ -181,7 +192,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 			PrintStream logger = listener.getLogger();
 			
 			if (deployment != null) {
-				CloudifyPluginUtilities.deleteEnvironment(listener, client, deployment.getId(), ignoreFailure);
+				CloudifyPluginUtilities.deleteEnvironment(listener, client, deployment.getId(), ignoreFailure, debugOutput);
 			}
 
 			if (blueprint != null) {

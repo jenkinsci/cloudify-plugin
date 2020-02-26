@@ -32,6 +32,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 	private String inputs;
 	private String inputsFile;
 	private	String outputFile;
+	private boolean debugOutput;
 
 	@DataBoundConstructor
 	public CreateEnvironmentBuildStep() {
@@ -83,6 +84,15 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		this.outputFile = outputFile;
 	}
 	
+	public boolean isDebugOutput() {
+		return debugOutput;
+	}
+	
+	@DataBoundSetter
+	public void setDebugOutput(boolean debugOutput) {
+		this.debugOutput = debugOutput;
+	}
+	
 	@Override
 	protected void performImpl(Run<?,?> run, Launcher launcher, TaskListener listener, FilePath workspace, CloudifyClient cloudifyClient) throws Exception {
 		EnvVars env = run.getEnvironment(listener);
@@ -99,7 +109,8 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		run.addOrReplaceAction(action);
 
 		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
-				listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile, outputFile);
+				listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile, outputFile,
+				debugOutput);
 
 		action.setInputs(envData.getDeployment().getInputs());
 		action.setOutputs(envData.getOutputs());
@@ -141,6 +152,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 				.append("inputs", inputs)
 				.append("inputsFile", inputsFile)
 				.append("outputFile", outputFile)
+				.append("debugOutput", debugOutput)
 				.toString();
 	}
 }
