@@ -115,13 +115,13 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 	@Override
 	public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
 	        EnvVars initialEnvironment) throws IOException, InterruptedException {
-		blueprintId = Util.replaceMacro(blueprintId, initialEnvironment);
-		blueprintRootDirectory = Util.replaceMacro(blueprintRootDirectory, initialEnvironment);
-		blueprintMainFile = Util.replaceMacro(blueprintMainFile, initialEnvironment);
-		deploymentId = Util.replaceMacro(deploymentId, initialEnvironment);
-		inputs = Util.replaceMacro(inputs, initialEnvironment);
-		inputsLocation = Util.replaceMacro(inputsLocation, initialEnvironment);
-		outputsLocation = Util.replaceMacro(outputsLocation, initialEnvironment);
+		String blueprintId = Util.replaceMacro(this.blueprintId, initialEnvironment);
+		String blueprintRootDirectory = Util.replaceMacro(this.blueprintRootDirectory, initialEnvironment);
+		String blueprintMainFile = Util.replaceMacro(this.blueprintMainFile, initialEnvironment);
+		String deploymentId = Util.replaceMacro(this.deploymentId, initialEnvironment);
+		String inputs = Util.replaceMacro(this.inputs, initialEnvironment);
+		String inputsLocation = Util.replaceMacro(this.inputsLocation, initialEnvironment);
+		String outputsLocation = Util.replaceMacro(this.outputsLocation, initialEnvironment);
 		
 		CloudifyDisposer disposer = new CloudifyDisposer();
 		context.setDisposer(disposer);
