@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
@@ -21,6 +22,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.util.FormValidation;
 import jenkins.tasks.SimpleBuildWrapper;
 
 public class CloudifyBuildWrapper extends SimpleBuildWrapper {
@@ -194,6 +196,33 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 			return true;
 		}
 
+		public FormValidation doCheckBlueprintId(@QueryParameter String value) {
+			return FormValidation.validateRequired(value);
+		}
+		
+		private FormValidation checkBlueprintParams(final String blueprintRootDirectory, final String blueprintMainFile) {
+			if (!(StringUtils.isBlank(blueprintMainFile) ^ StringUtils.isBlank(blueprintRootDirectory))) {
+				return FormValidation.error("Both blueprint root directory and main file must either be populated, or remain empty");
+			}
+			return FormValidation.ok();
+		}
+		
+		public FormValidation doCheckBlueprintMainFile(@QueryParameter String value, @QueryParameter String blueprintRootDirectory) {
+			return checkBlueprintParams(blueprintRootDirectory, value);
+		}
+
+		public FormValidation doCheckBlueprintRootDirectory(@QueryParameter String value, @QueryParameter String blueprintMainFile) {
+			return checkBlueprintParams(value, blueprintMainFile);
+		}
+
+		public FormValidation doCheckDeploymentId(@QueryParameter String value) {
+			return FormValidation.validateRequired(value);
+		}
+		
+		public FormValidation doCheckInputs(@QueryParameter String value) {
+			return CloudifyPluginUtilities.validateInputs(value);
+		}
+		
 		@Override
 		public String getDisplayName() {
 			return "Cloudify Environment";

@@ -3,6 +3,7 @@ package co.cloudify.jenkins.plugin;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -24,6 +25,8 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
 
 /**
  * A Build Step for creating an environment.
@@ -128,6 +131,10 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		
 		public FormValidation doCheckDeploymentId(@QueryParameter String value) {
 			return FormValidation.validateRequired(value);
+		}
+		
+		public FormValidation doCheckInputs(@QueryParameter String value) {
+			return CloudifyPluginUtilities.validateInputs(value);
 		}
 		
         @Override

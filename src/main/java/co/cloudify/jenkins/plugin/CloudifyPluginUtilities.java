@@ -27,6 +27,8 @@ import co.cloudify.rest.model.Execution;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
 public class CloudifyPluginUtilities {
@@ -161,5 +163,16 @@ public class CloudifyPluginUtilities {
 			ex.printStackTrace(logger);
 			throw new AbortException("Failed tearing down environment");
 		}
+	}
+	
+	public static FormValidation validateInputs(final String value) {
+		if (StringUtils.isNotBlank(value)) {
+			try {
+				JSONObject.fromObject(value);
+			} catch (JSONException ex) {
+				return FormValidation.error("Invalid JSON string");
+			}
+		}
+		return FormValidation.ok();
 	}
 }
