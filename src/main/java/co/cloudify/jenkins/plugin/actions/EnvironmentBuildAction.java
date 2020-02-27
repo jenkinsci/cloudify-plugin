@@ -60,14 +60,15 @@ public class EnvironmentBuildAction implements RunAction2 {
 	
 	@Override
 	public void onAttached(Run<?, ?> r) {
-		this.run = run;
+		this.run = r;
 	}
 	
 	@Override
 	public void onLoad(Run<?, ?> r) {
-		this.run = run;
+		this.run = r;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public Run getRun() {
 		return run;
 	}

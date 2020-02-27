@@ -95,7 +95,7 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
 	@Extension
 	public static class Descriptor extends BuildStepDescriptor<Builder> {
 		@Override
-		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
 			return true;
 		}
 
