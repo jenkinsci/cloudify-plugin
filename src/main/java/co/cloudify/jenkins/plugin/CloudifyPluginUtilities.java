@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 import co.cloudify.rest.client.CloudifyClient;
@@ -52,22 +53,6 @@ public class CloudifyPluginUtilities {
 	}
 	
 	/**
-	 * Reads a JSON file from a {@link FilePath}.
-	 * 
-	 * @param	path	path to the resource
-	 * 
-	 * @return	A JSON object.
-	 * 
-	 * @throws	IOException				May be thrown by underlying framework.
-	 * @throws	InterruptedException	May be thrown by underlying framework.
-	 */
-	public static JSONObject readJson(final FilePath path) throws IOException, InterruptedException {
-		try (InputStream is = path.read()) {
-			return JSONObject.fromObject(IOUtils.toString(is, StandardCharsets.UTF_8));
-		}
-	}
-	
-	/**
 	 * Writes a JSON object to a {@link FilePath}.
 	 * 
 	 * @param	object	JSON object to write
@@ -81,18 +66,49 @@ public class CloudifyPluginUtilities {
 		}
 	}
 	
+	/**
+	 * Reads a JSON file from a {@link FilePath}.
+	 * 
+	 * @param	path	path to the resource
+	 * 
+	 * @return	A JSON object.
+	 * 
+	 * @throws	IOException				May be thrown by underlying framework.
+	 * @throws	InterruptedException	May be thrown by underlying framework.
+	 */
+	public static JSONObject readYamlOrJson(final FilePath path) throws IOException, InterruptedException {
+		try {
+			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+			try (InputStream is = path.read()) {
+				return mapper.readValue(is, JSONObject.class);
+			}
+		} catch (IOException ex) {
+			try (InputStream is = path.read()) {
+				return JSONObject.fromObject(IOUtils.toString(is, StandardCharsets.UTF_8));
+			}
+		}
+	}
+	
+	public static JSONObject readYamlOrJson(final String str) {
+		try {
+			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+			return mapper.readValue(str, JSONObject.class);
+		} catch (IOException ex) {
+			return JSONObject.fromObject(str);
+		}
+	}
+	
 	public static Map<String, Object> createInputsMap(final FilePath workspace, final TaskListener listener, final String inputsText, final String inputsFile) throws IOException, InterruptedException {
 		PrintStream jenkinsLog = listener.getLogger();
 		Map<String, Object> inputsMap = new HashMap<String, Object>();
 		if (StringUtils.isNotBlank(inputsText)) {
-			inputsMap.putAll(
-					JSONObject.fromObject(inputsText));
+			inputsMap.putAll(readYamlOrJson(inputsText));
 		}
 		if (StringUtils.isNotBlank(inputsFile)) {
 			FilePath expectedLocation = workspace.child(inputsFile);
 			if (expectedLocation.exists()) {
 				jenkinsLog.println(String.format("Reading inputs from %s", expectedLocation));
-				inputsMap.putAll(CloudifyPluginUtilities.readJson(expectedLocation));
+				inputsMap.putAll(CloudifyPluginUtilities.readYamlOrJson(expectedLocation));
 			} else {
 				jenkinsLog.println(String.format("Deployment inputs file not found, skipping: %s", inputsFile));
 			}
@@ -173,9 +189,9 @@ public class CloudifyPluginUtilities {
 	public static FormValidation validateInputs(final String value) {
 		if (StringUtils.isNotBlank(value)) {
 			try {
-				JSONObject.fromObject(value);
+				readYamlOrJson(value);
 			} catch (JSONException ex) {
-				return FormValidation.error("Invalid JSON string");
+				return FormValidation.error("Invalid YAML/JSON string");
 			}
 		}
 		return FormValidation.ok();

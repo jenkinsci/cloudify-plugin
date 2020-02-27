@@ -1,7 +1,7 @@
 package co.cloudify.jenkins.plugin.parameters;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -43,11 +43,12 @@ public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
 	
 	@Exported
 	public List<String> getChoices() {
-		List<String> choices = new LinkedList<>();
 		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
 		ListResponse<Deployment> deployments = cloudifyClient.getDeploymentsClient().list();
-		deployments.forEach(item -> choices.add(item.getId()));
-		return choices;
+		return deployments
+				.stream()
+				.map(x -> x.getId())
+				.collect(Collectors.toList());
 	}
 	
 	@Override

@@ -107,9 +107,9 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 			mappingJson = JSONObject.fromObject(mapping);
 		} else {
 			logger.println(String.format("Reading inputs mapping from %s", mappingLocation));
-			mappingJson = CloudifyPluginUtilities.readJson(workspace.child(mappingLocation));
+			mappingJson = CloudifyPluginUtilities.readYamlOrJson(workspace.child(mappingLocation));
 		}
-		JSONObject outputsJson = CloudifyPluginUtilities.readJson(outputsFile);
+		JSONObject outputsJson = CloudifyPluginUtilities.readYamlOrJson(outputsFile);
 		JSONObject outputs = outputsJson.getJSONObject("outputs");
 		JSONObject capabilities = outputsJson.getJSONObject("capabilities");
 		JSONObject outputMap = mappingJson.getJSONObject("outputs");

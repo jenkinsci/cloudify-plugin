@@ -84,10 +84,11 @@ public class BlueprintInputConstraintSelector extends ParameterDefinition{
 							"Input '%' of blueprint '%s' contains %d constraints of type '%s'; expected exactly one",
 							inputName, blueprintId, relevant.size(), ConstraintType.valid_values));
 		}
+		@SuppressWarnings("unchecked")
 		List<Object> options = (List<Object>) relevant.get(0).getValue();
 		return options
 				.stream()
-				.map(x -> x.toString())
+				.map(Object::toString)
 				.collect(Collectors.toList());
 	}
 	
