@@ -1,8 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.PrintStream;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -79,14 +77,6 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 		this.inputsLocation = inputsLocation;
 	}
 	
-	private void transform(JSONObject mapping, JSONObject inputs, JSONObject source) {
-		for (Map.Entry<String, String> entry: (Set<Map.Entry<String, String>>) mapping.entrySet()) {
-			String from = entry.getKey();
-			String to = entry.getValue();
-			inputs.put(to, source.get(from));
-		}
-	}
-	
 	@Override
 	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
 	        CloudifyClient cloudifyClient) throws Exception {
@@ -110,14 +100,8 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 			mappingJson = CloudifyPluginUtilities.readYamlOrJson(workspace.child(mappingLocation));
 		}
 		JSONObject outputsJson = CloudifyPluginUtilities.readYamlOrJson(outputsFile);
-		JSONObject outputs = outputsJson.getJSONObject("outputs");
-		JSONObject capabilities = outputsJson.getJSONObject("capabilities");
-		JSONObject outputMap = mappingJson.getJSONObject("outputs");
-		JSONObject capsMap = mappingJson.getJSONObject("capabilities");
-		
 		JSONObject inputs = new JSONObject();
-		transform(outputMap, inputs, outputs);
-		transform(capsMap, inputs, capabilities);
+		CloudifyPluginUtilities.transformOutputsFile(outputsJson, mappingJson, inputs);
 		CloudifyPluginUtilities.writeJson(inputs, inputsFile);
 	}
 	

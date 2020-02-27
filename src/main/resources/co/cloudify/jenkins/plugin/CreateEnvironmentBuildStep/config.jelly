@@ -7,10 +7,16 @@
 	<f:entry title="${%Deployment ID}" field="deploymentId">
 		<f:textbox/>
 	</f:entry>
-	<f:entry title="${%Deployment Inputs}" field="inputs">
+	<f:entry title="${%Deployment inputs}" field="inputs">
 		<f:textarea/>
 	</f:entry>
-	<f:entry title="${%Deployment Inputs File}" field="inputsFile">
+	<f:entry title="${%Deployment inputs file}" field="inputsFile">
+		<f:textarea/>
+	</f:entry>
+	<f:entry title="${%Inputs mapping}" field="mapping">
+		<f:textarea/>
+	</f:entry>
+	<f:entry title="${%Inputs mapping file}" field="mappingFile">
 		<f:textarea/>
 	</f:entry>
 	<f:entry title="${%Output file}" field="outputFile">

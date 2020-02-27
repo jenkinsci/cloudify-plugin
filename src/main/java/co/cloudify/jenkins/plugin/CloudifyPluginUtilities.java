@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -98,7 +99,37 @@ public class CloudifyPluginUtilities {
 		}
 	}
 	
-	public static Map<String, Object> createInputsMap(final FilePath workspace, final TaskListener listener, final String inputsText, final String inputsFile) throws IOException, InterruptedException {
+	public static JSONObject createMapping(final FilePath workspace, final String mappingString, final String mappingLocation) throws IOException, InterruptedException {
+		JSONObject mapping = null;
+		if (StringUtils.isNotBlank(mappingLocation)) {
+			FilePath mappingFile = workspace.child(mappingLocation);
+			mapping = readYamlOrJson(mappingFile);
+		} else if (StringUtils.isNotBlank(mappingString)) {
+			mapping = readYamlOrJson(mappingString);
+		}
+		return mapping;
+	}
+	
+	private static void transform(JSONObject mapping, Map<String, Object> result, JSONObject source) {
+		for (Map.Entry<String, String> entry: (Set<Map.Entry<String, String>>) mapping.entrySet()) {
+			String from = entry.getKey();
+			String to = entry.getValue();
+			result.put(to, source.get(from));
+		}
+	}
+
+	public static void transformOutputsFile(final JSONObject outputsContents, final JSONObject mapping, final Map<String, Object> result) {
+		JSONObject outputs = outputsContents.getJSONObject("outputs");
+		JSONObject capabilities = outputsContents.getJSONObject("capabilities");
+		JSONObject outputMap = mapping.getJSONObject("outputs");
+		JSONObject capsMap = mapping.getJSONObject("capabilities");
+		transform(outputMap, result, outputs);
+		transform(capsMap, result, capabilities);
+	}
+	
+	public static Map<String, Object> createInputsMap(
+			final FilePath workspace, final TaskListener listener, final String inputsText, final String inputsFile,
+			final String mapping, final String mappingFile) throws IOException, InterruptedException {
 		PrintStream jenkinsLog = listener.getLogger();
 		Map<String, Object> inputsMap = new HashMap<String, Object>();
 		if (StringUtils.isNotBlank(inputsText)) {
@@ -108,7 +139,11 @@ public class CloudifyPluginUtilities {
 			FilePath expectedLocation = workspace.child(inputsFile);
 			if (expectedLocation.exists()) {
 				jenkinsLog.println(String.format("Reading inputs from %s", expectedLocation));
-				inputsMap.putAll(CloudifyPluginUtilities.readYamlOrJson(expectedLocation));
+				JSONObject inputsFromFile = CloudifyPluginUtilities.readYamlOrJson(expectedLocation);
+				JSONObject mappingJson = createMapping(workspace, mapping, mappingFile);
+				if (mappingJson != null) {
+					transformOutputsFile(inputsFromFile, mappingJson, inputsMap);
+				}
 			} else {
 				jenkinsLog.println(String.format("Deployment inputs file not found, skipping: %s", inputsFile));
 			}
@@ -124,16 +159,22 @@ public class CloudifyPluginUtilities {
 			String deploymentId,
 			String inputs,
 			String inputsLocation,
+			String mapping,
+			String mappingLocation,
 			String outputsLocation,
 			boolean debugOutput
 			) throws IOException, InterruptedException {
 		PrintStream logger = listener.getLogger();
 
-		Map<String, Object> inputsMap = CloudifyPluginUtilities.createInputsMap(workspace, listener, inputs, inputsLocation);
+		Map<String, Object> inputsMap = CloudifyPluginUtilities.createInputsMap(
+				workspace, listener, inputs, inputsLocation,
+				mapping, mappingLocation);
 		ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(
 				client, logger, debugOutput ? EventLevel.debug : EventLevel.info);
 		
 		try {
+			logger.println(String.format("Creating deployment '%s' from blueprint '%s' using the following inputs: %s",
+					deploymentId, blueprintId, JSONObject.fromObject(inputsMap).toString(4)));
 			Deployment deployment = DeploymentsHelper.createDeploymentAndWait(client, deploymentId, blueprintId, inputsMap, follower);
 			Execution execution = ExecutionsHelper.install(client, deployment.getId(), follower);
 			ExecutionsHelper.validate(execution, "Environment setup failed");
@@ -186,7 +227,7 @@ public class CloudifyPluginUtilities {
 		}
 	}
 	
-	public static FormValidation validateInputs(final String value) {
+	public static FormValidation validateStringIsYamlOrJson(final String value) {
 		if (StringUtils.isNotBlank(value)) {
 			try {
 				readYamlOrJson(value);

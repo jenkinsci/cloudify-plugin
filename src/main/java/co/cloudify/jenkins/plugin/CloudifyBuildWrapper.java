@@ -154,7 +154,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		
 		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
 				listener, workspace, client, blueprint.getId(),
-				deploymentId, inputs, inputsLocation, outputsLocation, debugOutput);
+				deploymentId, inputs, inputsLocation, null, null, outputsLocation, debugOutput);
 		disposer.setDeployment(envData.getDeployment());
 		disposer.setIgnoreFailure(ignoreFailureOnTeardown);
 	}
@@ -234,7 +234,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		}
 		
 		public FormValidation doCheckInputs(@QueryParameter String value) {
-			return CloudifyPluginUtilities.validateInputs(value);
+			return CloudifyPluginUtilities.validateStringIsYamlOrJson(value);
 		}
 		
 		@Override

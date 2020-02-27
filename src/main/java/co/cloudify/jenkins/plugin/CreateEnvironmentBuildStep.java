@@ -1,5 +1,6 @@
 package co.cloudify.jenkins.plugin;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -31,6 +32,8 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 	private String deploymentId;
 	private String inputs;
 	private String inputsFile;
+	private	String mapping;
+	private	String mappingFile;
 	private	String outputFile;
 	private boolean debugOutput;
 
@@ -75,6 +78,24 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		this.inputsFile = inputsFile;
 	}
 	
+	public String getMapping() {
+		return mapping;
+	}
+	
+	@DataBoundSetter
+	public void setMapping(String mapping) {
+		this.mapping = mapping;
+	}
+	
+	public String getMappingFile() {
+		return mappingFile;
+	}
+	
+	@DataBoundSetter
+	public void setMappingFile(String mappingFile) {
+		this.mappingFile = mappingFile;
+	}
+	
 	public String getOutputFile() {
 		return outputFile;
 	}
@@ -101,6 +122,8 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
 		String inputs = Util.replaceMacro(this.inputs, resolver);
 		String inputsFile = Util.replaceMacro(this.inputsFile, resolver);
+		String mapping = Util.replaceMacro(this.mapping, resolver);
+		String mappingFile = Util.replaceMacro(this.mappingFile, resolver);
 		String outputFile = Util.replaceMacro(this.outputFile, resolver);
 
 		EnvironmentBuildAction action = new EnvironmentBuildAction();
@@ -109,8 +132,8 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		run.addOrReplaceAction(action);
 
 		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
-				listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile, outputFile,
-				debugOutput);
+				listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile,
+				mapping, mappingFile, outputFile, debugOutput);
 
 		action.setInputs(envData.getDeployment().getInputs());
 		action.setOutputs(envData.getOutputs());
@@ -134,7 +157,22 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		}
 		
 		public FormValidation doCheckInputs(@QueryParameter String value) {
-			return CloudifyPluginUtilities.validateInputs(value);
+			return CloudifyPluginUtilities.validateStringIsYamlOrJson(value);
+		}
+		
+		private FormValidation checkMappingParams(final String mapping, final String mappingFile) {
+			if (StringUtils.isNotBlank(mapping) && StringUtils.isNotBlank(mappingFile)) {
+				return FormValidation.error("Either mapping or mapping file may be specified, not both");
+			}
+			return FormValidation.ok();
+		}
+		
+		public FormValidation doCheckMapping(@QueryParameter String value, @QueryParameter String mappingFile) {
+			return checkMappingParams(value, mappingFile);
+		}
+		
+		public FormValidation doCheckMappingFile(@QueryParameter String value, @QueryParameter String mapping) {
+			return checkMappingParams(mapping, value);
 		}
 		
         @Override
@@ -151,6 +189,8 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 				.append("deploymentId", deploymentId)
 				.append("inputs", inputs)
 				.append("inputsFile", inputsFile)
+				.append("mapping", mapping)
+				.append("mappingFile", mappingFile)
 				.append("outputFile", outputFile)
 				.append("debugOutput", debugOutput)
 				.toString();
