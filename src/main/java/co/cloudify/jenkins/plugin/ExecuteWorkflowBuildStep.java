@@ -114,9 +114,11 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 		PrintStream jenkinsLog = listener.getLogger();
 		
 		String strippedParameters = StringUtils.trimToNull(executionParameters);
-		JSONObject executionParametersAsMap = strippedParameters != null ?
-				JSONObject.fromObject(strippedParameters) :
-					null;
+		JSONObject executionParametersAsMap = null;
+		if (strippedParameters != null) {
+			executionParametersAsMap = CloudifyPluginUtilities.readYamlOrJson(strippedParameters);
+		}
+		
 		Execution execution = cloudifyClient.getExecutionsClient().start(deploymentId, workflowId, executionParametersAsMap);
 		jenkinsLog.println(String.format("Execution started; id=%s", execution.getId()));
 		

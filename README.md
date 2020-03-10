@@ -7,12 +7,6 @@ Cloudify Manager through Jenkins jobs and pipelines.
 
 There are no prerequisites for this plugin.
 
-## Installation
-
-At the moment, this plugin is not available through Jenkins' official plugins repository.
-To install the plugin, download the HPI file from the "releases" section and install it
-via Jenkins' "Advanced" panel in the "Manage Plugins" section.
-
 ## Terminology
 
 ### Deployment Outputs File
@@ -102,5 +96,92 @@ The resultant JSON file will look like this:
 }
 ```
 
+## Installation
+
+At the moment, this plugin is not available through Jenkins' official plugins repository.
+To install the plugin, download the HPI file from the "releases" section and install it
+via Jenkins' "Advanced" panel in the "Manage Plugins" section.
+
+## Configuration
+
+You should define the Cloudify Manager endpoint and credentials in Jenkins' console ("Manage Jenkins" ->
+"Configure System", look for "Cloudify Manager").
+
+## Parameter Types
+
+Jenkins provides the capability of parameterized builds. Users can configure jobs and pipelines to
+accept parameters prior to execution.
+
+Cloudify's plugin for Jenkins provides a few parameter types, which can simplify the definition of
+jobs and pipelines.
+
+The following parameter types are available:
+
+### Cloudify Blueprint Selector
+
+During job definition, the job admin provides a parameter name (in the "Name" field),
+as well as an optional filter.
+
+When running the job with parameters, the user will be shown a dropdown box, containing a list of
+blueprints from Cloudify Manager. If a filter was provided, then the list will only contain
+blueprints with ID's containing the filter string.
+
+### Cloudify Deployment Selector
+
+Similar to the Blueprint Selector, however this parameter type displays a dropdown box containing
+existing deployment ID's.
+
+### Cloudify Constrained Input Value Selector
+
+Given (during job definition) a blueprint ID and an input name, this parameter type
+will render a dropdown box containing all allowed values for the input.
+
+For this to work, the input must be defined in the blueprint so it has exactly
+one constraint of type `valid_values` (it may have other constraints, but exactly one of them
+must be of type `valid_values`).
+
 ## Available Build Steps
 
+### Upload Cloudify Plugin
+
+Use this build-step to upload a plugin to Cloudify Manager.
+
+### Upload Cloudify Blueprint
+
+This build-step uploads a blueprint to Cloudify Manager. The blueprint source may be provided as either:
+
+* Path to a directory on the local filesystem
+* Path to an archive on the local filesystem
+* A URL to a `tar.gz` file
+
+In addition, the blueprint's main YAML file must be provided.
+
+### Delete Cloudify Blueprint
+
+Use this build-step to delete a blueprint from Cloudify Manager by its ID.
+
+### Build Cloudify Environment
+
+Use this build-step to create a Cloudify deployment.
+
+### Delete Cloudify Environment
+
+Use this build-step to delete a Cloudify deployment.
+
+### Execute Cloudify Workflow
+
+Use this build-step to execute a workflow on a deployment.
+
+### Convert Cloudify Environment Outputs/Capabilities to Inputs
+
+Use this build-step to transform a Deployment Outputs File to a standard Deployment Inputs File
+(see "Inputs Mapping File" above).
+
+## Cloudify's Build Wrapper
+
+The Cloudify Plugin for Jenkins also provides a Jenkins *Build Wrapper*.
+
+## Planned Improvements
+
+* Supporting multiple Cloudify Manager installations
+* Propagating Jenkins authentication info to Cloudify

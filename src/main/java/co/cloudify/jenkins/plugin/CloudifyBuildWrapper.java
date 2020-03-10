@@ -158,8 +158,15 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 			logger.println(String.format("Retrieving blueprint: %s", blueprintId));
 			blueprint = blueprintsClient.get(blueprintId);
 		} else {
-			blueprint = blueprintsClient.upload(blueprintId, new File(blueprintRootDirectory), blueprintMainFile);
-			//	This blueprint will need to be disposed.
+			FilePath rootFilePath = workspace.child(blueprintRootDirectory);
+			logger.println(String.format(
+					"Uploading blueprint from %s (main filename: %s)",
+					rootFilePath, blueprintMainFile));
+			blueprint = blueprintsClient.upload(
+					blueprintId,
+					new File(rootFilePath.getRemote()),
+					blueprintMainFile);
+			//	This blueprint will need to be disposed of.
 			disposer.setBlueprint(blueprint);
 		}
 		
