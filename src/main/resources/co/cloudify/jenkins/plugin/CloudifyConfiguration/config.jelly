@@ -3,19 +3,19 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:section title="${%Cloudify Manager}">
         <f:entry field="host" title="${%Host}">
-            <f:textbox/>
+            <f:textbox />
         </f:entry>
         <f:entry field="username" title="${%Username}">
-            <f:textbox/>
+            <f:textbox />
         </f:entry>
         <f:entry field="password" title="${%Password}">
-            <f:password/>
+            <f:password />
         </f:entry>
         <f:entry field="tenant" title="${%Tenant}">
-            <f:textbox/>
+            <f:textbox />
         </f:entry>
         <f:entry field="secured" title="${%Use SSL}">
-            <f:checkbox/>
+            <f:checkbox />
         </f:entry>
     </f:section>
 </j:jelly>

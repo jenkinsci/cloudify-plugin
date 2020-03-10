@@ -30,152 +30,152 @@ import hudson.util.VariableResolver;
 /**
  * A build step for uploading a blueprint.
  * 
- * @author	Isaac Shabtay
+ * @author Isaac Shabtay
  */
 public class UploadBlueprintBuildStep extends CloudifyBuildStep {
-	private String blueprintId;
-	private String archiveUrl;
-	private String archivePath;
-	private String rootDirectory;
-	private String mainFileName;
+    private String blueprintId;
+    private String archiveUrl;
+    private String archivePath;
+    private String rootDirectory;
+    private String mainFileName;
 
-	@DataBoundConstructor
-	public UploadBlueprintBuildStep() {
-		super();
-	}
+    @DataBoundConstructor
+    public UploadBlueprintBuildStep() {
+        super();
+    }
 
-	public String getBlueprintId() {
-		return blueprintId;
-	}
+    public String getBlueprintId() {
+        return blueprintId;
+    }
 
-	@DataBoundSetter
-	public void setBlueprintId(String blueprintId) {
-		this.blueprintId = blueprintId;
-	}
+    @DataBoundSetter
+    public void setBlueprintId(String blueprintId) {
+        this.blueprintId = blueprintId;
+    }
 
-	public String getArchiveUrl() {
-		return archiveUrl;
-	}
+    public String getArchiveUrl() {
+        return archiveUrl;
+    }
 
-	@DataBoundSetter
-	public void setArchiveUrl(String archiveUrl) {
-		this.archiveUrl = archiveUrl;
-	}
+    @DataBoundSetter
+    public void setArchiveUrl(String archiveUrl) {
+        this.archiveUrl = archiveUrl;
+    }
 
-	public String getArchivePath() {
-		return archivePath;
-	}
+    public String getArchivePath() {
+        return archivePath;
+    }
 
-	@DataBoundSetter
-	public void setArchivePath(String archivePath) {
-		this.archivePath = archivePath;
-	}
+    @DataBoundSetter
+    public void setArchivePath(String archivePath) {
+        this.archivePath = archivePath;
+    }
 
-	public String getRootDirectory() {
-		return rootDirectory;
-	}
+    public String getRootDirectory() {
+        return rootDirectory;
+    }
 
-	@DataBoundSetter
-	public void setRootDirectory(String rootDirectory) {
-		this.rootDirectory = rootDirectory;
-	}
+    @DataBoundSetter
+    public void setRootDirectory(String rootDirectory) {
+        this.rootDirectory = rootDirectory;
+    }
 
-	public String getMainFileName() {
-		return mainFileName;
-	}
+    public String getMainFileName() {
+        return mainFileName;
+    }
 
-	public void setMainFileName(String mainFileName) {
-		this.mainFileName = mainFileName;
-	}
+    public void setMainFileName(String mainFileName) {
+        this.mainFileName = mainFileName;
+    }
 
-	@Override
-	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-	        CloudifyClient cloudifyClient) throws Exception {
-		EnvVars env = run.getEnvironment(listener);
-		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-		String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
-		String archiveUrl = Util.replaceMacro(this.archiveUrl, resolver);
-		String archivePath = Util.replaceMacro(this.archivePath, resolver);
-		String rootDirectory = Util.replaceMacro(this.rootDirectory, resolver);
-		String mainFileName = Util.replaceMacro(this.mainFileName, resolver);
+    @Override
+    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
+            CloudifyClient cloudifyClient) throws Exception {
+        EnvVars env = run.getEnvironment(listener);
+        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+        String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
+        String archiveUrl = Util.replaceMacro(this.archiveUrl, resolver);
+        String archivePath = Util.replaceMacro(this.archivePath, resolver);
+        String rootDirectory = Util.replaceMacro(this.rootDirectory, resolver);
+        String mainFileName = Util.replaceMacro(this.mainFileName, resolver);
 
-		PrintStream jenkinsLog = listener.getLogger();
-		BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();
-		
-		if (StringUtils.isNotBlank(archiveUrl)) {
-			jenkinsLog.println(String.format("Uploading blueprint from %s", archiveUrl));
-			blueprintsClient.upload(blueprintId, new URL(archiveUrl), mainFileName);
-		} else if (StringUtils.isNotBlank(archivePath)) {
-			File absoluteArchivePath = new File(workspace.child(archivePath).getRemote());
-			jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteArchivePath));
-			blueprintsClient.uploadArchive(blueprintId, absoluteArchivePath, mainFileName);
-		} else {
-			File absoluteRootDir = new File(workspace.child(rootDirectory).getRemote());
-			jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteRootDir));
-			blueprintsClient.upload(blueprintId, absoluteRootDir, mainFileName);
-		}
-		jenkinsLog.println("Blueprint uploaded successfully");
-	}
+        PrintStream jenkinsLog = listener.getLogger();
+        BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();
 
-	@Symbol("uploadCloudifyBlueprint")
-	@Extension
-	public static class Descriptor extends BuildStepDescriptor<Builder> {
-		@Override
-		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-			return true;
-		}
+        if (StringUtils.isNotBlank(archiveUrl)) {
+            jenkinsLog.println(String.format("Uploading blueprint from %s", archiveUrl));
+            blueprintsClient.upload(blueprintId, new URL(archiveUrl), mainFileName);
+        } else if (StringUtils.isNotBlank(archivePath)) {
+            File absoluteArchivePath = new File(workspace.child(archivePath).getRemote());
+            jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteArchivePath));
+            blueprintsClient.uploadArchive(blueprintId, absoluteArchivePath, mainFileName);
+        } else {
+            File absoluteRootDir = new File(workspace.child(rootDirectory).getRemote());
+            jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteRootDir));
+            blueprintsClient.upload(blueprintId, absoluteRootDir, mainFileName);
+        }
+        jenkinsLog.println("Blueprint uploaded successfully");
+    }
 
-		public FormValidation doCheckBlueprintId(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
+    @Symbol("uploadCloudifyBlueprint")
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Builder> {
+        @Override
+        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            return true;
+        }
 
-		protected FormValidation blueprintLocationValidation(
-		        final String archiveUrl,
-		        final String archivePath,
-		        final String rootDirectory) {
-			long argsProvided = Arrays.asList(archiveUrl, archivePath, rootDirectory)
-			        .stream()
-			        .filter(StringUtils::isNotBlank)
-			        .count();
+        public FormValidation doCheckBlueprintId(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
 
-			if (argsProvided != 1) {
-				return FormValidation
-				        .error("Please provide exactly one of 'archive URL', 'archive path' or 'root directory'");
-			}
+        protected FormValidation blueprintLocationValidation(
+                final String archiveUrl,
+                final String archivePath,
+                final String rootDirectory) {
+            long argsProvided = Arrays.asList(archiveUrl, archivePath, rootDirectory)
+                    .stream()
+                    .filter(StringUtils::isNotBlank)
+                    .count();
 
-			return FormValidation.ok();
-		}
+            if (argsProvided != 1) {
+                return FormValidation
+                        .error("Please provide exactly one of 'archive URL', 'archive path' or 'root directory'");
+            }
 
-		public FormValidation doCheckArchiveUrl(@QueryParameter String value, @QueryParameter String archivePath,
-		        @QueryParameter String rootDirectory) {
-			return blueprintLocationValidation(value, archivePath, rootDirectory);
-		}
+            return FormValidation.ok();
+        }
 
-		public FormValidation doCheckArchivePath(@QueryParameter String value, @QueryParameter String archiveUrl,
-		        @QueryParameter String rootDirectory) {
-			return blueprintLocationValidation(archiveUrl, value, rootDirectory);
-		}
+        public FormValidation doCheckArchiveUrl(@QueryParameter String value, @QueryParameter String archivePath,
+                @QueryParameter String rootDirectory) {
+            return blueprintLocationValidation(value, archivePath, rootDirectory);
+        }
 
-		public FormValidation doCheckRootDirectory(@QueryParameter String value, @QueryParameter String archivePath,
-		        @QueryParameter String archiveUrl) {
-			return blueprintLocationValidation(archiveUrl, archivePath, value);
-		}
+        public FormValidation doCheckArchivePath(@QueryParameter String value, @QueryParameter String archiveUrl,
+                @QueryParameter String rootDirectory) {
+            return blueprintLocationValidation(archiveUrl, value, rootDirectory);
+        }
 
-		@Override
-		public String getDisplayName() {
-			return "Upload Cloudify Blueprint";
-		}
-	}
+        public FormValidation doCheckRootDirectory(@QueryParameter String value, @QueryParameter String archivePath,
+                @QueryParameter String archiveUrl) {
+            return blueprintLocationValidation(archiveUrl, archivePath, value);
+        }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-		        .appendSuper(super.toString())
-		        .append("blueprintId", blueprintId)
-		        .append("archiveUrl", archiveUrl)
-		        .append("archivePath", archivePath)
-		        .append("rootDirectory", rootDirectory)
-		        .append("mainFileName", mainFileName)
-		        .toString();
-	}
+        @Override
+        public String getDisplayName() {
+            return "Upload Cloudify Blueprint";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("blueprintId", blueprintId)
+                .append("archiveUrl", archiveUrl)
+                .append("archivePath", archivePath)
+                .append("rootDirectory", rootDirectory)
+                .append("mainFileName", mainFileName)
+                .toString();
+    }
 }

@@ -30,7 +30,7 @@ public class CloudifyConfigurationTest {
     public void uiAndStorage() {
         rr.then(r -> {
             CloudifyConfiguration cloudifyConfiguration = CloudifyConfiguration.get();
-			assertNull("not set initially", cloudifyConfiguration.getHost());
+            assertNull("not set initially", cloudifyConfiguration.getHost());
             HtmlForm config = r.createWebClient().goTo("configure").getFormByName("config");
             HtmlTextInput hostTextBox = config.getInputByName("_.host");
             hostTextBox.setText("hello");

@@ -28,98 +28,98 @@ import hudson.util.VariableResolver;
 /**
  * A build step for uploading a plugin.
  * 
- * @author	Isaac Shabtay
+ * @author Isaac Shabtay
  */
 public class UploadPluginBuildStep extends CloudifyBuildStep {
-	private String wagonLocation;
-	private String yamlLocation;
-	private String outputLocation;
+    private String wagonLocation;
+    private String yamlLocation;
+    private String outputLocation;
 
-	@DataBoundConstructor
-	public UploadPluginBuildStep() {
-		super();
-	}
+    @DataBoundConstructor
+    public UploadPluginBuildStep() {
+        super();
+    }
 
-	@DataBoundSetter
-	public void setWagonLocation(String wagonLocation) {
-		this.wagonLocation = wagonLocation;
-	}
+    @DataBoundSetter
+    public void setWagonLocation(String wagonLocation) {
+        this.wagonLocation = wagonLocation;
+    }
 
-	public String getWagonLocation() {
-		return wagonLocation;
-	}
+    public String getWagonLocation() {
+        return wagonLocation;
+    }
 
-	@DataBoundSetter
-	public void setYamlLocation(String yamlLocation) {
-		this.yamlLocation = yamlLocation;
-	}
+    @DataBoundSetter
+    public void setYamlLocation(String yamlLocation) {
+        this.yamlLocation = yamlLocation;
+    }
 
-	public String getYamlLocation() {
-		return yamlLocation;
-	}
+    public String getYamlLocation() {
+        return yamlLocation;
+    }
 
-	@DataBoundSetter
-	public void setOutputLocation(String outputLocation) {
-		this.outputLocation = outputLocation;
-	}
-	
-	public String getOutputLocation() {
-		return outputLocation;
-	}
-	
-	@Override
-	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-	        CloudifyClient cloudifyClient) throws Exception {
-		EnvVars env = run.getEnvironment(listener);
-		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-		String wagonLocation = Util.replaceMacro(this.wagonLocation, resolver);
-		String yamlLocation = Util.replaceMacro(this.yamlLocation, resolver);
-		String outputLocation = Util.replaceMacro(this.outputLocation, resolver);
+    @DataBoundSetter
+    public void setOutputLocation(String outputLocation) {
+        this.outputLocation = outputLocation;
+    }
 
-		PrintStream jenkinsLog = listener.getLogger();
+    public String getOutputLocation() {
+        return outputLocation;
+    }
 
-		jenkinsLog.println(String.format(
-				"Uploading plugin: wagon file=%s, YAML file=%s", wagonLocation, yamlLocation));
-		
-		Plugin plugin = cloudifyClient.getPluginsClient().upload(wagonLocation, yamlLocation);
-		
-		if (StringUtils.isNotBlank(outputLocation)) {
-			File outputFile = new File(workspace.child(outputLocation).getRemote());
-			jenkinsLog.println(String.format("Saving plugin information to %s", outputFile));
-			CloudifyPluginUtilities.writeBoundObject(plugin, outputFile);
-		}
-		jenkinsLog.println("Plugin uploaded successfully");
-	}
+    @Override
+    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
+            CloudifyClient cloudifyClient) throws Exception {
+        EnvVars env = run.getEnvironment(listener);
+        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+        String wagonLocation = Util.replaceMacro(this.wagonLocation, resolver);
+        String yamlLocation = Util.replaceMacro(this.yamlLocation, resolver);
+        String outputLocation = Util.replaceMacro(this.outputLocation, resolver);
 
-	@Symbol("uploadCloudifyBlueprint")
-	@Extension
-	public static class Descriptor extends BuildStepDescriptor<Builder> {
-		@Override
-		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-			return true;
-		}
+        PrintStream jenkinsLog = listener.getLogger();
 
-		public FormValidation doCheckWagonLocation(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
+        jenkinsLog.println(String.format(
+                "Uploading plugin: wagon file=%s, YAML file=%s", wagonLocation, yamlLocation));
 
-		public FormValidation doCheckYamlLocation(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
+        Plugin plugin = cloudifyClient.getPluginsClient().upload(wagonLocation, yamlLocation);
 
-		@Override
-		public String getDisplayName() {
-			return "Upload Cloudify Plugin";
-		}
-	}
+        if (StringUtils.isNotBlank(outputLocation)) {
+            File outputFile = new File(workspace.child(outputLocation).getRemote());
+            jenkinsLog.println(String.format("Saving plugin information to %s", outputFile));
+            CloudifyPluginUtilities.writeBoundObject(plugin, outputFile);
+        }
+        jenkinsLog.println("Plugin uploaded successfully");
+    }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-		        .appendSuper(super.toString())
-		        .append("wagonLocation", wagonLocation)
-		        .append("yamlLocation", yamlLocation)
-		        .append("outputLocation", outputLocation)
-		        .toString();
-	}
+    @Symbol("uploadCloudifyBlueprint")
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Builder> {
+        @Override
+        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            return true;
+        }
+
+        public FormValidation doCheckWagonLocation(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        public FormValidation doCheckYamlLocation(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Upload Cloudify Plugin";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("wagonLocation", wagonLocation)
+                .append("yamlLocation", yamlLocation)
+                .append("outputLocation", outputLocation)
+                .toString();
+    }
 }

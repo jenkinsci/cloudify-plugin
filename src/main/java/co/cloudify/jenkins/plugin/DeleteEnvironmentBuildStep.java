@@ -23,79 +23,79 @@ import hudson.util.VariableResolver;
 /**
  * A build step for deleting a Cloudify environment.
  * 
- * @author	Isaac Shabtay
+ * @author Isaac Shabtay
  */
 public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
-	private String deploymentId;
-	private boolean ignoreFailure;
-	private boolean debugOutput;
+    private String deploymentId;
+    private boolean ignoreFailure;
+    private boolean debugOutput;
 
-	@DataBoundConstructor
-	public DeleteEnvironmentBuildStep() {
-		super();
-	}
+    @DataBoundConstructor
+    public DeleteEnvironmentBuildStep() {
+        super();
+    }
 
-	public String getDeploymentId() {
-		return deploymentId;
-	}
+    public String getDeploymentId() {
+        return deploymentId;
+    }
 
-	@DataBoundSetter
-	public void setDeploymentId(String deploymentId) {
-		this.deploymentId = deploymentId;
-	}
-	
-	public boolean isIgnoreFailure() {
-		return ignoreFailure;
-	}
-	
-	@DataBoundSetter
-	public void setIgnoreFailure(boolean ignoreFailure) {
-		this.ignoreFailure = ignoreFailure;
-	}
+    @DataBoundSetter
+    public void setDeploymentId(String deploymentId) {
+        this.deploymentId = deploymentId;
+    }
 
-	public boolean isDebugOutput() {
-		return debugOutput;
-	}
-	
-	@DataBoundSetter
-	public void setDebugOutput(boolean debugOutput) {
-		this.debugOutput = debugOutput;
-	}
-	
-	@Override
-	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-	        CloudifyClient cloudifyClient) throws Exception {
-		EnvVars env = run.getEnvironment(listener);
-		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
-		CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure, debugOutput);
-	}
+    public boolean isIgnoreFailure() {
+        return ignoreFailure;
+    }
 
-	@Symbol("deleteCloudifyEnv")
-	@Extension
-	public static class Descriptor extends BuildStepDescriptor<Builder> {
-		@Override
-		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-			return true;
-		}
+    @DataBoundSetter
+    public void setIgnoreFailure(boolean ignoreFailure) {
+        this.ignoreFailure = ignoreFailure;
+    }
 
-		public FormValidation doCheckDeploymentId(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
-		
-		@Override
-		public String getDisplayName() {
-			return "Delete Cloudify Environment";
-		}
-	}
+    public boolean isDebugOutput() {
+        return debugOutput;
+    }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("deploymentId", deploymentId)
-				.append("ignoreFailure", ignoreFailure)
-				.append("debugOutput", debugOutput)
-				.toString();
-	}
+    @DataBoundSetter
+    public void setDebugOutput(boolean debugOutput) {
+        this.debugOutput = debugOutput;
+    }
+
+    @Override
+    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
+            CloudifyClient cloudifyClient) throws Exception {
+        EnvVars env = run.getEnvironment(listener);
+        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+        String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
+        CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure, debugOutput);
+    }
+
+    @Symbol("deleteCloudifyEnv")
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Builder> {
+        @Override
+        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            return true;
+        }
+
+        public FormValidation doCheckDeploymentId(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Delete Cloudify Environment";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("deploymentId", deploymentId)
+                .append("ignoreFailure", ignoreFailure)
+                .append("debugOutput", debugOutput)
+                .toString();
+    }
 }

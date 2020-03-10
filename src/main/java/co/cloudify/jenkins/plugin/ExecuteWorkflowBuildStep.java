@@ -33,138 +33,140 @@ import net.sf.json.JSONObject;
 /**
  * A build step for executing a Cloudify workflow.
  * 
- * @author	Isaac Shabtay
+ * @author Isaac Shabtay
  */
 public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
-	private	String deploymentId;
-	private String workflowId;
-	private String executionParameters;
-	private	boolean	waitForCompletion;
-	private	boolean	printLogs;
-	private boolean debugOutput;
+    private String deploymentId;
+    private String workflowId;
+    private String executionParameters;
+    private boolean waitForCompletion;
+    private boolean printLogs;
+    private boolean debugOutput;
 
-	@DataBoundConstructor
-	public ExecuteWorkflowBuildStep() {
-		super();
-	}
-	
-	public String getDeploymentId() {
-		return deploymentId;
-	}
+    @DataBoundConstructor
+    public ExecuteWorkflowBuildStep() {
+        super();
+    }
 
-	@DataBoundSetter
-	public void setDeploymentId(String deploymentId) {
-		this.deploymentId = deploymentId;
-	}
-	
-	public String getWorkflowId() {
-		return workflowId;
-	}
+    public String getDeploymentId() {
+        return deploymentId;
+    }
 
-	@DataBoundSetter
-	public void setWorkflowId(String workflowId) {
-		this.workflowId = workflowId;
-	}
-	
-	public String getExecutionParameters() {
-		return executionParameters;
-	}
-	
-	@DataBoundSetter
-	public void setExecutionParameters(String executionParameters) {
-		this.executionParameters = executionParameters;
-	}
-	
-	public boolean isWaitForCompletion() {
-		return waitForCompletion;
-	}
-	
-	@DataBoundSetter
-	public void setWaitForCompletion(boolean waitForCompletion) {
-		this.waitForCompletion = waitForCompletion;
-	}
-	
-	public boolean isPrintLogs() {
-		return printLogs;
-	}
+    @DataBoundSetter
+    public void setDeploymentId(String deploymentId) {
+        this.deploymentId = deploymentId;
+    }
 
-	@DataBoundSetter
-	public void setPrintLogs(boolean printLogs) {
-		this.printLogs = printLogs;
-	}
+    public String getWorkflowId() {
+        return workflowId;
+    }
 
-	public boolean isDebugOutput() {
-		return debugOutput;
-	}
-	
-	@DataBoundSetter
-	public void setDebugOutput(boolean debugOutput) {
-		this.debugOutput = debugOutput;
-	}
-	
-	@Override
-	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-	        CloudifyClient cloudifyClient) throws Exception {
-		EnvVars env = run.getEnvironment(listener);
-		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
-		String workflowId = Util.replaceMacro(this.workflowId, resolver);
-		String executionParameters = Util.replaceMacro(this.executionParameters, resolver);
+    @DataBoundSetter
+    public void setWorkflowId(String workflowId) {
+        this.workflowId = workflowId;
+    }
 
-		PrintStream jenkinsLog = listener.getLogger();
-		
-		String strippedParameters = StringUtils.trimToNull(executionParameters);
-		JSONObject executionParametersAsMap = null;
-		if (strippedParameters != null) {
-			executionParametersAsMap = CloudifyPluginUtilities.readYamlOrJson(strippedParameters);
-		}
-		
-		Execution execution = cloudifyClient.getExecutionsClient().start(deploymentId, workflowId, executionParametersAsMap);
-		jenkinsLog.println(String.format("Execution started; id=%s", execution.getId()));
-		
-		if (waitForCompletion || printLogs) {
-			jenkinsLog.println("Waiting for execution to end...");
-			ExecutionFollowCallback callback = printLogs ?
-					new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog, debugOutput ? EventLevel.debug : EventLevel.info) :
-						DefaultExecutionFollowCallback.getInstance();
-			execution = ExecutionsHelper.followExecution(cloudifyClient, execution, callback);
-			ExecutionsHelper.validate(execution, "Execution did not end successfully");
-			jenkinsLog.println("Execution ended successfully");
-		}
-	}
+    public String getExecutionParameters() {
+        return executionParameters;
+    }
 
-	@Symbol("executeCloudifyWorkflow")
-	@Extension
-	public static class Descriptor extends BuildStepDescriptor<Builder> {
-		@Override
-		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-			return true;
-		}
+    @DataBoundSetter
+    public void setExecutionParameters(String executionParameters) {
+        this.executionParameters = executionParameters;
+    }
 
-		public FormValidation doCheckDeploymentId(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
-		
-		public FormValidation doCheckWorkflowId(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
-		
-		@Override
-		public String getDisplayName() {
-			return "Execute Cloudify Workflow";
-		}
-	}
+    public boolean isWaitForCompletion() {
+        return waitForCompletion;
+    }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("deploymentId", deploymentId)
-				.append("workflowId", workflowId)
-				.append("executionParametrs", executionParameters)
-				.append("waitForCompletion", waitForCompletion)
-				.append("printLogs", printLogs)
-				.append("debugOutput", debugOutput)
-				.toString();
-	}
+    @DataBoundSetter
+    public void setWaitForCompletion(boolean waitForCompletion) {
+        this.waitForCompletion = waitForCompletion;
+    }
+
+    public boolean isPrintLogs() {
+        return printLogs;
+    }
+
+    @DataBoundSetter
+    public void setPrintLogs(boolean printLogs) {
+        this.printLogs = printLogs;
+    }
+
+    public boolean isDebugOutput() {
+        return debugOutput;
+    }
+
+    @DataBoundSetter
+    public void setDebugOutput(boolean debugOutput) {
+        this.debugOutput = debugOutput;
+    }
+
+    @Override
+    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
+            CloudifyClient cloudifyClient) throws Exception {
+        EnvVars env = run.getEnvironment(listener);
+        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+        String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
+        String workflowId = Util.replaceMacro(this.workflowId, resolver);
+        String executionParameters = Util.replaceMacro(this.executionParameters, resolver);
+
+        PrintStream jenkinsLog = listener.getLogger();
+
+        String strippedParameters = StringUtils.trimToNull(executionParameters);
+        JSONObject executionParametersAsMap = null;
+        if (strippedParameters != null) {
+            executionParametersAsMap = CloudifyPluginUtilities.readYamlOrJson(strippedParameters);
+        }
+
+        Execution execution = cloudifyClient.getExecutionsClient().start(deploymentId, workflowId,
+                executionParametersAsMap);
+        jenkinsLog.println(String.format("Execution started; id=%s", execution.getId()));
+
+        if (waitForCompletion || printLogs) {
+            jenkinsLog.println("Waiting for execution to end...");
+            ExecutionFollowCallback callback = printLogs
+                    ? new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog,
+                            debugOutput ? EventLevel.debug : EventLevel.info)
+                    : DefaultExecutionFollowCallback.getInstance();
+            execution = ExecutionsHelper.followExecution(cloudifyClient, execution, callback);
+            ExecutionsHelper.validate(execution, "Execution did not end successfully");
+            jenkinsLog.println("Execution ended successfully");
+        }
+    }
+
+    @Symbol("executeCloudifyWorkflow")
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Builder> {
+        @Override
+        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            return true;
+        }
+
+        public FormValidation doCheckDeploymentId(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        public FormValidation doCheckWorkflowId(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Execute Cloudify Workflow";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("deploymentId", deploymentId)
+                .append("workflowId", workflowId)
+                .append("executionParametrs", executionParameters)
+                .append("waitForCompletion", waitForCompletion)
+                .append("printLogs", printLogs)
+                .append("debugOutput", debugOutput)
+                .toString();
+    }
 }

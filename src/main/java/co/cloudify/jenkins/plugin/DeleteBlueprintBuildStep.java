@@ -25,59 +25,60 @@ import hudson.util.VariableResolver;
 /**
  * A build step for deleting a Cloudify blueprint.
  * 
- * @author	Isaac Shabtay
+ * @author Isaac Shabtay
  */
 public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
-	private String blueprintId;
+    private String blueprintId;
 
-	@DataBoundConstructor
-	public DeleteBlueprintBuildStep() {
-		super();
-	}
+    @DataBoundConstructor
+    public DeleteBlueprintBuildStep() {
+        super();
+    }
 
-	public String getBlueprintId() {
-		return blueprintId;
-	}
+    public String getBlueprintId() {
+        return blueprintId;
+    }
 
-	@DataBoundSetter
-	public void setBlueprintId(String blueprintId) {
-		this.blueprintId = blueprintId;
-	}
+    @DataBoundSetter
+    public void setBlueprintId(String blueprintId) {
+        this.blueprintId = blueprintId;
+    }
 
-	@Override
-	protected void performImpl(Run<?,?> run, Launcher launcher, TaskListener listener, FilePath workspace, CloudifyClient cloudifyClient) throws Exception {
-		EnvVars env = run.getEnvironment(listener);
-		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-		String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
+    @Override
+    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
+            CloudifyClient cloudifyClient) throws Exception {
+        EnvVars env = run.getEnvironment(listener);
+        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+        String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
 
-		PrintStream jenkinsLog = listener.getLogger();
-		jenkinsLog.println(String.format("Deleting blueprint: %s", blueprintId));
-		cloudifyClient.getBlueprintsClient().delete(blueprintId);
-	}
-	
-	@Symbol("deleteCloudifyBlueprint")
-	@Extension
-	public static class Descriptor extends BuildStepDescriptor<Builder> {
-		@Override
-		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-			return true;
-		}
+        PrintStream jenkinsLog = listener.getLogger();
+        jenkinsLog.println(String.format("Deleting blueprint: %s", blueprintId));
+        cloudifyClient.getBlueprintsClient().delete(blueprintId);
+    }
 
-		public FormValidation doCheckBlueprintId(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
+    @Symbol("deleteCloudifyBlueprint")
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Builder> {
+        @Override
+        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            return true;
+        }
 
-		@Override
-		public String getDisplayName() {
-			return "Delete Cloudify Blueprint";
-		}
-	}
+        public FormValidation doCheckBlueprintId(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-		        .appendSuper(super.toString())
-		        .append("blueprintId", blueprintId)
-		        .toString();
-	}
+        @Override
+        public String getDisplayName() {
+            return "Delete Cloudify Blueprint";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("blueprintId", blueprintId)
+                .toString();
+    }
 }

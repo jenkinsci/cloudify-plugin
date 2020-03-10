@@ -1,34 +1,34 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-	<j:set var="escapeEntryTitleAndDescription" value="false"/>
-	<f:entry title="${%Blueprint ID}" field="blueprintId">
-		<f:textbox/>
-	</f:entry>
-	<f:entry title="${%Blueprint Root}" field="blueprintRootDirectory">
-		<f:textbox/>
-	</f:entry>
-	<f:entry title="${%Blueprint Main File}" field="blueprintMainFile">
-		<f:textbox/>
-	</f:entry>
-	<f:entry title="${%Deployment ID}" field="deploymentId">
-		<f:textbox/>
-	</f:entry>
-	<f:entry title="${%Inputs}" field="inputs">
-		<f:textarea/>
-	</f:entry>
-	<f:entry title="${%Inputs Location}" field="inputsLocation">
-		<f:textbox/>
-	</f:entry>
-	<f:entry title="${%Outputs Location}" field="outputsLocation">
-		<f:textbox/>
-	</f:entry>
-	<f:entry title="${%Print outputs and capabilities}" field="echoOutputs">
-		<f:checkbox/>
-	</f:entry>
-	<f:entry title="${%Ignore Failures on Teardown}" field="ignoreFailureOnTeardown">
-		<f:checkbox/>
-	</f:entry>
-	<f:entry title="${%Show debug-level Cloudify output}" field="debugOutput">
-		<f:checkbox/>
-	</f:entry>
+    <j:set var="escapeEntryTitleAndDescription" value="false" />
+    <f:entry title="${%Blueprint ID}" field="blueprintId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Blueprint Root}" field="blueprintRootDirectory">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Blueprint Main File}" field="blueprintMainFile">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Deployment ID}" field="deploymentId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Inputs}" field="inputs">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Inputs Location}" field="inputsLocation">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Outputs Location}" field="outputsLocation">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Print outputs and capabilities}" field="echoOutputs">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Ignore Failures on Teardown}" field="ignoreFailureOnTeardown">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Show debug-level Cloudify output}" field="debugOutput">
+        <f:checkbox />
+    </f:entry>
 </j:jelly>

@@ -28,128 +28,129 @@ import net.sf.json.JSONObject;
  * A build step for converting outputs and capabilities of one deployment,
  * to inputs of another.
  * 
- * @author	Isaac Shabtay
+ * @author Isaac Shabtay
  */
 public class OutputsToInputsBuildStep extends CloudifyBuildStep {
-	private String	outputsLocation;
-	private String	mapping;
-	private	String	mappingLocation;
-	private	String	inputsLocation;
-	
-	@DataBoundConstructor
-	public OutputsToInputsBuildStep() {
-		super();
-	}
-	
-	public String getOutputsLocation() {
-		return outputsLocation;
-	}
+    private String outputsLocation;
+    private String mapping;
+    private String mappingLocation;
+    private String inputsLocation;
 
-	@DataBoundSetter
-	public void setMapping(String mapping) {
-		this.mapping = mapping;
-	}
-	
-	public String getMapping() {
-		return mapping;
-	}
-	
-	@DataBoundSetter
-	public void setMappingLocation(String mappingLocation) {
-		this.mappingLocation = mappingLocation;
-	}
-	
-	public String getMappingLocation() {
-		return mappingLocation;
-	}
-	
-	@DataBoundSetter
-	public void setOutputsLocation(String outputsLocation) {
-		this.outputsLocation = outputsLocation;
-	}
-	
-	public String getInputsLocation() {
-		return inputsLocation;
-	}
-	
-	@DataBoundSetter
-	public void setInputsLocation(String inputsLocation) {
-		this.inputsLocation = inputsLocation;
-	}
-	
-	@Override
-	protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-	        CloudifyClient cloudifyClient) throws Exception {
-		EnvVars env = run.getEnvironment(listener);
-		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+    @DataBoundConstructor
+    public OutputsToInputsBuildStep() {
+        super();
+    }
 
-		String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
-		String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
-		String mapping = Util.replaceMacro(this.mapping, resolver);
-		String mappingLocation = Util.replaceMacro(this.mappingLocation, resolver);
-		
-		PrintStream logger = listener.getLogger();
-		FilePath inputsFile = workspace.child(inputsLocation);
-		FilePath outputsFile = workspace.child(outputsLocation);
-		
-		JSONObject mappingJson;
-		if (StringUtils.isNotBlank(mapping)) {
-			mappingJson = JSONObject.fromObject(mapping);
-		} else {
-			logger.println(String.format("Reading inputs mapping from %s", mappingLocation));
-			mappingJson = CloudifyPluginUtilities.readYamlOrJson(workspace.child(mappingLocation));
-		}
-		JSONObject outputsJson = CloudifyPluginUtilities.readYamlOrJson(outputsFile);
-		JSONObject inputs = new JSONObject();
-		CloudifyPluginUtilities.transformOutputsFile(outputsJson, mappingJson, inputs);
-		CloudifyPluginUtilities.writeJson(inputs, inputsFile);
-	}
-	
-	@Symbol("cfyOutputsToInputs")
-	@Extension
-	public static class Descriptor extends BuildStepDescriptor<Builder> {
-		@Override
-		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-			return true;
-		}
+    public String getOutputsLocation() {
+        return outputsLocation;
+    }
 
-		private FormValidation checkMappings(final String mapping, final String mappingLocation) {
-			if (!(StringUtils.isBlank(mapping) ^ StringUtils.isBlank(mappingLocation))) {
-				return FormValidation.error("Please specify either a JSON mapping, or the name of a file to contain the mapping (not both)");
-			}
-			return FormValidation.ok();
-		}
-		
-		public FormValidation doCheckOutputsLocation(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
-		
-		public FormValidation doCheckMapping(@QueryParameter String value, @QueryParameter String mappingLocation) {
-			return checkMappings(value, mappingLocation);
-		}
-		
-		public FormValidation doCheckMappingLocation(@QueryParameter String value, @QueryParameter String mapping) {
-			return checkMappings(mapping, value);
-		}
-		
-		public FormValidation doCheckInputsLocation(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
-		
+    @DataBoundSetter
+    public void setMapping(String mapping) {
+        this.mapping = mapping;
+    }
+
+    public String getMapping() {
+        return mapping;
+    }
+
+    @DataBoundSetter
+    public void setMappingLocation(String mappingLocation) {
+        this.mappingLocation = mappingLocation;
+    }
+
+    public String getMappingLocation() {
+        return mappingLocation;
+    }
+
+    @DataBoundSetter
+    public void setOutputsLocation(String outputsLocation) {
+        this.outputsLocation = outputsLocation;
+    }
+
+    public String getInputsLocation() {
+        return inputsLocation;
+    }
+
+    @DataBoundSetter
+    public void setInputsLocation(String inputsLocation) {
+        this.inputsLocation = inputsLocation;
+    }
+
+    @Override
+    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
+            CloudifyClient cloudifyClient) throws Exception {
+        EnvVars env = run.getEnvironment(listener);
+        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
+
+        String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
+        String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
+        String mapping = Util.replaceMacro(this.mapping, resolver);
+        String mappingLocation = Util.replaceMacro(this.mappingLocation, resolver);
+
+        PrintStream logger = listener.getLogger();
+        FilePath inputsFile = workspace.child(inputsLocation);
+        FilePath outputsFile = workspace.child(outputsLocation);
+
+        JSONObject mappingJson;
+        if (StringUtils.isNotBlank(mapping)) {
+            mappingJson = JSONObject.fromObject(mapping);
+        } else {
+            logger.println(String.format("Reading inputs mapping from %s", mappingLocation));
+            mappingJson = CloudifyPluginUtilities.readYamlOrJson(workspace.child(mappingLocation));
+        }
+        JSONObject outputsJson = CloudifyPluginUtilities.readYamlOrJson(outputsFile);
+        JSONObject inputs = new JSONObject();
+        CloudifyPluginUtilities.transformOutputsFile(outputsJson, mappingJson, inputs);
+        CloudifyPluginUtilities.writeJson(inputs, inputsFile);
+    }
+
+    @Symbol("cfyOutputsToInputs")
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Builder> {
         @Override
-		public String getDisplayName() {
-			return "Convert Cloudify Environment Outputs/Capabilities to Inputs";
-		}
-	}
+        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            return true;
+        }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("outputsLocation", outputsLocation)
-				.append("mapping", mapping)
-				.append("mappingLocation", mappingLocation)
-				.append("inputsLocation", inputsLocation)
-				.toString();
-	}
+        private FormValidation checkMappings(final String mapping, final String mappingLocation) {
+            if (!(StringUtils.isBlank(mapping) ^ StringUtils.isBlank(mappingLocation))) {
+                return FormValidation.error(
+                        "Please specify either a JSON mapping, or the name of a file to contain the mapping (not both)");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckOutputsLocation(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        public FormValidation doCheckMapping(@QueryParameter String value, @QueryParameter String mappingLocation) {
+            return checkMappings(value, mappingLocation);
+        }
+
+        public FormValidation doCheckMappingLocation(@QueryParameter String value, @QueryParameter String mapping) {
+            return checkMappings(mapping, value);
+        }
+
+        public FormValidation doCheckInputsLocation(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Convert Cloudify Environment Outputs/Capabilities to Inputs";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("outputsLocation", outputsLocation)
+                .append("mapping", mapping)
+                .append("mappingLocation", mappingLocation)
+                .append("inputsLocation", inputsLocation)
+                .toString();
+    }
 }

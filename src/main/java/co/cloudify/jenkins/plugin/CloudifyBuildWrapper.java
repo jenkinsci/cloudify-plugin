@@ -28,253 +28,258 @@ import hudson.util.VariableResolver;
 import jenkins.tasks.SimpleBuildWrapper;
 
 public class CloudifyBuildWrapper extends SimpleBuildWrapper {
-	private String blueprintId;
-	private String blueprintRootDirectory;
-	private String blueprintMainFile;
-	private String deploymentId;
-	private String inputs;
-	private String inputsLocation;
-	private	String outputsLocation;
-	private boolean ignoreFailureOnTeardown;
-	private boolean echoOutputs;
-	private boolean debugOutput;
+    private String blueprintId;
+    private String blueprintRootDirectory;
+    private String blueprintMainFile;
+    private String deploymentId;
+    private String inputs;
+    private String inputsLocation;
+    private String outputsLocation;
+    private boolean ignoreFailureOnTeardown;
+    private boolean echoOutputs;
+    private boolean debugOutput;
 
-	@DataBoundConstructor
-	public CloudifyBuildWrapper() {
-		super();
-	}
+    @DataBoundConstructor
+    public CloudifyBuildWrapper() {
+        super();
+    }
 
-	public String getBlueprintId() {
-		return blueprintId;
-	}
-	
-	@DataBoundSetter
-	public void setBlueprintId(String blueprintId) {
-		this.blueprintId = blueprintId;
-	}
+    public String getBlueprintId() {
+        return blueprintId;
+    }
 
-	public String getBlueprintRootDirectory() {
-		return blueprintRootDirectory;
-	}
-	
-	@DataBoundSetter
-	public void setBlueprintRootDirectory(String blueprintRootDirectory) {
-		this.blueprintRootDirectory = blueprintRootDirectory;
-	}
-	
-	public String getBlueprintMainFile() {
-		return blueprintMainFile;
-	}
-	
-	@DataBoundSetter
-	public void setBlueprintMainFile(String blueprintMainFile) {
-		this.blueprintMainFile = blueprintMainFile;
-	}
-	
-	public String getDeploymentId() {
-		return deploymentId;
-	}
-	
-	@DataBoundSetter
-	public void setDeploymentId(String deploymentId) {
-		this.deploymentId = deploymentId;
-	}
-	
-	public String getInputs() {
-		return inputs;
-	}
-	
-	@DataBoundSetter
-	public void setInputs(String inputs) {
-		this.inputs = inputs;
-	}
-	
-	public String getInputsLocation() {
-		return inputsLocation;
-	}
-	
-	@DataBoundSetter
-	public void setInputsLocation(String inputsLocation) {
-		this.inputsLocation = inputsLocation;
-	}
-	
-	public String getOutputsLocation() {
-		return outputsLocation;
-	}
-	
-	@DataBoundSetter
-	public void setOutputsLocation(String outputsLocation) {
-		this.outputsLocation = outputsLocation;
-	}
-	
-	public boolean isIgnoreFailureOnTeardown() {
-		return ignoreFailureOnTeardown;
-	}
-	
-	@DataBoundSetter
-	public void setIgnoreFailureOnTeardown(boolean ignoreFailureOnTeardown) {
-		this.ignoreFailureOnTeardown = ignoreFailureOnTeardown;
-	}
-	
-	public boolean isEchoOutputs() {
-		return echoOutputs;
-	}
-	
-	@DataBoundSetter
-	public void setEchoOutputs(boolean echoOutputs) {
-		this.echoOutputs = echoOutputs;
-	}
-	
-	public boolean isDebugOutput() {
-		return debugOutput;
-	}
-	
-	@DataBoundSetter
-	public void setDebugOutput(boolean debugOutput) {
-		this.debugOutput = debugOutput;
-	}
+    @DataBoundSetter
+    public void setBlueprintId(String blueprintId) {
+        this.blueprintId = blueprintId;
+    }
 
-	@Override
-	public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
-	        EnvVars initialEnvironment) throws IOException, InterruptedException {
-		VariableResolver<String> resolver = new VariableResolver.ByMap<String>(initialEnvironment);
-		String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
-		String blueprintRootDirectory = Util.replaceMacro(this.blueprintRootDirectory, resolver);
-		String blueprintMainFile = Util.replaceMacro(this.blueprintMainFile, resolver);
-		String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
-		String inputs = Util.replaceMacro(this.inputs, resolver);
-		String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
-		String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
-		
-		CloudifyDisposer disposer = new CloudifyDisposer(debugOutput);
-		context.setDisposer(disposer);
-		
-		CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
-		BlueprintsClient blueprintsClient = client.getBlueprintsClient();
-		PrintStream logger = listener.getLogger();
+    public String getBlueprintRootDirectory() {
+        return blueprintRootDirectory;
+    }
 
-		Blueprint blueprint;
-		if (StringUtils.isBlank(blueprintRootDirectory)) {
-			logger.println(String.format("Retrieving blueprint: %s", blueprintId));
-			blueprint = blueprintsClient.get(blueprintId);
-		} else {
-			FilePath rootFilePath = workspace.child(blueprintRootDirectory);
-			logger.println(String.format(
-					"Uploading blueprint from %s (main filename: %s)",
-					rootFilePath, blueprintMainFile));
-			blueprint = blueprintsClient.upload(
-					blueprintId,
-					new File(rootFilePath.getRemote()),
-					blueprintMainFile);
-			//	This blueprint will need to be disposed of.
-			disposer.setBlueprint(blueprint);
-		}
-		
-		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
-				listener, workspace, client, blueprint.getId(),
-				deploymentId, inputs, inputsLocation, null, null, outputsLocation, echoOutputs, debugOutput);
-		disposer.setDeployment(envData.getDeployment());
-		disposer.setIgnoreFailure(ignoreFailureOnTeardown);
-	}
+    @DataBoundSetter
+    public void setBlueprintRootDirectory(String blueprintRootDirectory) {
+        this.blueprintRootDirectory = blueprintRootDirectory;
+    }
 
-	public static class CloudifyDisposer extends Disposer {
-		/**	Serialization UID. */
-		private static final long serialVersionUID = 1L;
+    public String getBlueprintMainFile() {
+        return blueprintMainFile;
+    }
 
-		private Blueprint blueprint;
-		private Deployment deployment;
-		private Boolean	ignoreFailure;
-		private boolean debugOutput;
-		
-		public CloudifyDisposer(boolean debugOutput) {
-			super();
-			this.debugOutput = debugOutput;
-		}
-		
-		public void setBlueprint(Blueprint blueprint) {
-			this.blueprint = blueprint;
-		}
-		
-		public void setDeployment(Deployment deployment) {
-			this.deployment = deployment;
-		}
-		
-		public void setIgnoreFailure(Boolean ignoreFailure) {
-			this.ignoreFailure = ignoreFailure;
-		}
-		
-		@Override
-		public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
-		        throws IOException, InterruptedException {
-			CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
-			PrintStream logger = listener.getLogger();
-			
-			if (deployment != null) {
-				CloudifyPluginUtilities.deleteEnvironment(listener, client, deployment.getId(), ignoreFailure, debugOutput);
-			}
+    @DataBoundSetter
+    public void setBlueprintMainFile(String blueprintMainFile) {
+        this.blueprintMainFile = blueprintMainFile;
+    }
 
-			if (blueprint != null) {
-				String blueprintId = blueprint.getId();
-				logger.println(String.format("Deleting blueprint: %s", blueprintId));
-				client.getBlueprintsClient().delete(blueprintId);
-			}
-		}
-	}
-	
-	@Extension
-	public static class Descriptor extends BuildWrapperDescriptor {
-		@Override
-		public boolean isApplicable(AbstractProject<?, ?> item) {
-			return true;
-		}
+    public String getDeploymentId() {
+        return deploymentId;
+    }
 
-		public FormValidation doCheckBlueprintId(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
-		
-		private FormValidation checkBlueprintParams(final String blueprintRootDirectory, final String blueprintMainFile) {
-			if (StringUtils.isBlank(blueprintMainFile) ^ StringUtils.isBlank(blueprintRootDirectory)) {
-				return FormValidation.error("Both blueprint root directory and main file must either be populated, or remain empty");
-			}
-			return FormValidation.ok();
-		}
-		
-		public FormValidation doCheckBlueprintMainFile(@QueryParameter String value, @QueryParameter String blueprintRootDirectory) {
-			return checkBlueprintParams(blueprintRootDirectory, value);
-		}
+    @DataBoundSetter
+    public void setDeploymentId(String deploymentId) {
+        this.deploymentId = deploymentId;
+    }
 
-		public FormValidation doCheckBlueprintRootDirectory(@QueryParameter String value, @QueryParameter String blueprintMainFile) {
-			return checkBlueprintParams(value, blueprintMainFile);
-		}
+    public String getInputs() {
+        return inputs;
+    }
 
-		public FormValidation doCheckDeploymentId(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
-		
-		public FormValidation doCheckInputs(@QueryParameter String value) {
-			return CloudifyPluginUtilities.validateStringIsYamlOrJson(value);
-		}
-		
-		@Override
-		public String getDisplayName() {
-			return "Cloudify Environment";
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("blueprintId", blueprintId)
-				.append("blueprintMainFile", blueprintMainFile)
-				.append("blueprintRootDirectory", blueprintRootDirectory)
-				.append("deploymentId", deploymentId)
-				.append("inputs", inputs)
-				.append("inputsLocation", inputsLocation)
-				.append("outputsLocation", outputsLocation)
-				.append("ignoreFailureOnTeardown", ignoreFailureOnTeardown)
-				.append("echoOutputs", echoOutputs)
-				.append("debugOutput", debugOutput)
-				.toString();
-	}
+    @DataBoundSetter
+    public void setInputs(String inputs) {
+        this.inputs = inputs;
+    }
+
+    public String getInputsLocation() {
+        return inputsLocation;
+    }
+
+    @DataBoundSetter
+    public void setInputsLocation(String inputsLocation) {
+        this.inputsLocation = inputsLocation;
+    }
+
+    public String getOutputsLocation() {
+        return outputsLocation;
+    }
+
+    @DataBoundSetter
+    public void setOutputsLocation(String outputsLocation) {
+        this.outputsLocation = outputsLocation;
+    }
+
+    public boolean isIgnoreFailureOnTeardown() {
+        return ignoreFailureOnTeardown;
+    }
+
+    @DataBoundSetter
+    public void setIgnoreFailureOnTeardown(boolean ignoreFailureOnTeardown) {
+        this.ignoreFailureOnTeardown = ignoreFailureOnTeardown;
+    }
+
+    public boolean isEchoOutputs() {
+        return echoOutputs;
+    }
+
+    @DataBoundSetter
+    public void setEchoOutputs(boolean echoOutputs) {
+        this.echoOutputs = echoOutputs;
+    }
+
+    public boolean isDebugOutput() {
+        return debugOutput;
+    }
+
+    @DataBoundSetter
+    public void setDebugOutput(boolean debugOutput) {
+        this.debugOutput = debugOutput;
+    }
+
+    @Override
+    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
+            EnvVars initialEnvironment) throws IOException, InterruptedException {
+        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(initialEnvironment);
+        String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
+        String blueprintRootDirectory = Util.replaceMacro(this.blueprintRootDirectory, resolver);
+        String blueprintMainFile = Util.replaceMacro(this.blueprintMainFile, resolver);
+        String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
+        String inputs = Util.replaceMacro(this.inputs, resolver);
+        String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
+        String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
+
+        CloudifyDisposer disposer = new CloudifyDisposer(debugOutput);
+        context.setDisposer(disposer);
+
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+        BlueprintsClient blueprintsClient = client.getBlueprintsClient();
+        PrintStream logger = listener.getLogger();
+
+        Blueprint blueprint;
+        if (StringUtils.isBlank(blueprintRootDirectory)) {
+            logger.println(String.format("Retrieving blueprint: %s", blueprintId));
+            blueprint = blueprintsClient.get(blueprintId);
+        } else {
+            FilePath rootFilePath = workspace.child(blueprintRootDirectory);
+            logger.println(String.format(
+                    "Uploading blueprint from %s (main filename: %s)",
+                    rootFilePath, blueprintMainFile));
+            blueprint = blueprintsClient.upload(
+                    blueprintId,
+                    new File(rootFilePath.getRemote()),
+                    blueprintMainFile);
+            // This blueprint will need to be disposed of.
+            disposer.setBlueprint(blueprint);
+        }
+
+        CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
+                listener, workspace, client, blueprint.getId(),
+                deploymentId, inputs, inputsLocation, null, null, outputsLocation, echoOutputs, debugOutput);
+        disposer.setDeployment(envData.getDeployment());
+        disposer.setIgnoreFailure(ignoreFailureOnTeardown);
+    }
+
+    public static class CloudifyDisposer extends Disposer {
+        /** Serialization UID. */
+        private static final long serialVersionUID = 1L;
+
+        private Blueprint blueprint;
+        private Deployment deployment;
+        private Boolean ignoreFailure;
+        private boolean debugOutput;
+
+        public CloudifyDisposer(boolean debugOutput) {
+            super();
+            this.debugOutput = debugOutput;
+        }
+
+        public void setBlueprint(Blueprint blueprint) {
+            this.blueprint = blueprint;
+        }
+
+        public void setDeployment(Deployment deployment) {
+            this.deployment = deployment;
+        }
+
+        public void setIgnoreFailure(Boolean ignoreFailure) {
+            this.ignoreFailure = ignoreFailure;
+        }
+
+        @Override
+        public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
+                throws IOException, InterruptedException {
+            CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+            PrintStream logger = listener.getLogger();
+
+            if (deployment != null) {
+                CloudifyPluginUtilities.deleteEnvironment(listener, client, deployment.getId(), ignoreFailure,
+                        debugOutput);
+            }
+
+            if (blueprint != null) {
+                String blueprintId = blueprint.getId();
+                logger.println(String.format("Deleting blueprint: %s", blueprintId));
+                client.getBlueprintsClient().delete(blueprintId);
+            }
+        }
+    }
+
+    @Extension
+    public static class Descriptor extends BuildWrapperDescriptor {
+        @Override
+        public boolean isApplicable(AbstractProject<?, ?> item) {
+            return true;
+        }
+
+        public FormValidation doCheckBlueprintId(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        private FormValidation checkBlueprintParams(final String blueprintRootDirectory,
+                final String blueprintMainFile) {
+            if (StringUtils.isBlank(blueprintMainFile) ^ StringUtils.isBlank(blueprintRootDirectory)) {
+                return FormValidation
+                        .error("Both blueprint root directory and main file must either be populated, or remain empty");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckBlueprintMainFile(@QueryParameter String value,
+                @QueryParameter String blueprintRootDirectory) {
+            return checkBlueprintParams(blueprintRootDirectory, value);
+        }
+
+        public FormValidation doCheckBlueprintRootDirectory(@QueryParameter String value,
+                @QueryParameter String blueprintMainFile) {
+            return checkBlueprintParams(value, blueprintMainFile);
+        }
+
+        public FormValidation doCheckDeploymentId(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        public FormValidation doCheckInputs(@QueryParameter String value) {
+            return CloudifyPluginUtilities.validateStringIsYamlOrJson(value);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Cloudify Environment";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("blueprintId", blueprintId)
+                .append("blueprintMainFile", blueprintMainFile)
+                .append("blueprintRootDirectory", blueprintRootDirectory)
+                .append("deploymentId", deploymentId)
+                .append("inputs", inputs)
+                .append("inputsLocation", inputsLocation)
+                .append("outputsLocation", outputsLocation)
+                .append("ignoreFailureOnTeardown", ignoreFailureOnTeardown)
+                .append("echoOutputs", echoOutputs)
+                .append("debugOutput", debugOutput)
+                .toString();
+    }
 }

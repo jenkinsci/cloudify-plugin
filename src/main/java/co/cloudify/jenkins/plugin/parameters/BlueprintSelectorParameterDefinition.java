@@ -24,72 +24,73 @@ import hudson.model.StringParameterValue;
 import net.sf.json.JSONObject;
 
 public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
-	private static final long serialVersionUID = 1L;
-	
-	private	String blueprintId;
-	private String filter;
-	
-	@DataBoundConstructor
-	public BlueprintSelectorParameterDefinition(String name, String description) {
-		super(name, description);
-	}
-	
-	public String getBlueprintId() {
-		return blueprintId;
-	}
+    private static final long serialVersionUID = 1L;
 
-	@DataBoundSetter
-	public void setBlueprintId(String blueprintId) {
-		this.blueprintId = blueprintId;
-	}
-	
-	public String getFilter() {
-		return filter;
-	}
-	
-	@DataBoundSetter
-	public void setFilter(String filter) {
-		this.filter = filter;
-	}
-	
-	@Exported
-	public List<String> getChoices() {
-		String effectiveFilter = StringUtils.trimToNull(filter);
-		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
-		ListResponse<Blueprint> blueprints = cloudifyClient.getBlueprintsClient().list(effectiveFilter);
-		return blueprints
-				.stream()
-				.map(x -> x.getId())
-				.collect(Collectors.toList());
-	}
-	
-	@Override
-	public ParameterValue createValue(StaplerRequest req) {
-		return null;
-	}
-	
-	@Override
-	public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-		String name = jo.getString("name");
-		String blueprintId = jo.getString("blueprintId");
-		return new StringParameterValue(name, blueprintId);
-	}
+    private String blueprintId;
+    private String filter;
 
-	@Extension @Symbol("cloudifyBlueprintParam")
-	public static class BlueprintSelectorParameterDescriptor extends ParameterDescriptor {
-		@Override
-		@Nonnull
-		public String getDisplayName() {
-			return "Cloudify Blueprint Selector";
-		}
-	}
+    @DataBoundConstructor
+    public BlueprintSelectorParameterDefinition(String name, String description) {
+        super(name, description);
+    }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("blueprintId", blueprintId)
-				.append("filter", filter)
-				.toString();
-	}
+    public String getBlueprintId() {
+        return blueprintId;
+    }
+
+    @DataBoundSetter
+    public void setBlueprintId(String blueprintId) {
+        this.blueprintId = blueprintId;
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
+    @DataBoundSetter
+    public void setFilter(String filter) {
+        this.filter = filter;
+    }
+
+    @Exported
+    public List<String> getChoices() {
+        String effectiveFilter = StringUtils.trimToNull(filter);
+        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
+        ListResponse<Blueprint> blueprints = cloudifyClient.getBlueprintsClient().list(effectiveFilter);
+        return blueprints
+                .stream()
+                .map(x -> x.getId())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ParameterValue createValue(StaplerRequest req) {
+        return null;
+    }
+
+    @Override
+    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        String name = jo.getString("name");
+        String blueprintId = jo.getString("blueprintId");
+        return new StringParameterValue(name, blueprintId);
+    }
+
+    @Extension
+    @Symbol("cloudifyBlueprintParam")
+    public static class BlueprintSelectorParameterDescriptor extends ParameterDescriptor {
+        @Override
+        @Nonnull
+        public String getDisplayName() {
+            return "Cloudify Blueprint Selector";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("blueprintId", blueprintId)
+                .append("filter", filter)
+                .toString();
+    }
 }

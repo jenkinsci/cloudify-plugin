@@ -23,60 +23,61 @@ import hudson.model.StringParameterValue;
 import net.sf.json.JSONObject;
 
 public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
-	private static final long serialVersionUID = 1L;
-	
-	private	String deploymentId;
-	
-	@DataBoundConstructor
-	public DeploymentSelectorParameterDefinition(String name, String description) {
-		super(name, description);
-	}
-	
-	public String getDeploymentId() {
-		return deploymentId;
-	}
+    private static final long serialVersionUID = 1L;
 
-	@DataBoundSetter
-	public void setDeploymentId(String deploymentId) {
-		this.deploymentId = deploymentId;
-	}
-	
-	@Exported
-	public List<String> getChoices() {
-		CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
-		ListResponse<Deployment> deployments = cloudifyClient.getDeploymentsClient().list();
-		return deployments
-				.stream()
-				.map(x -> x.getId())
-				.collect(Collectors.toList());
-	}
-	
-	@Override
-	public ParameterValue createValue(StaplerRequest req) {
-		return null;
-	}
-	
-	@Override
-	public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-		String name = jo.getString("name");
-		String deploymentId = jo.getString("deploymentId");
-		return new StringParameterValue(name, deploymentId);
-	}
+    private String deploymentId;
 
-	@Extension @Symbol({"cloudify","cloudifyDeploymentParam"})
-	public static class DeploymentSelectorParameterDescriptor extends ParameterDescriptor {
-		@Override
-		@Nonnull
-		public String getDisplayName() {
-			return "Cloudify Deployment Selector";
-		}
-	}
+    @DataBoundConstructor
+    public DeploymentSelectorParameterDefinition(String name, String description) {
+        super(name, description);
+    }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this)
-				.appendSuper(super.toString())
-				.append("deploymentId", deploymentId)
-				.toString();
-	}
+    public String getDeploymentId() {
+        return deploymentId;
+    }
+
+    @DataBoundSetter
+    public void setDeploymentId(String deploymentId) {
+        this.deploymentId = deploymentId;
+    }
+
+    @Exported
+    public List<String> getChoices() {
+        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
+        ListResponse<Deployment> deployments = cloudifyClient.getDeploymentsClient().list();
+        return deployments
+                .stream()
+                .map(x -> x.getId())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ParameterValue createValue(StaplerRequest req) {
+        return null;
+    }
+
+    @Override
+    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        String name = jo.getString("name");
+        String deploymentId = jo.getString("deploymentId");
+        return new StringParameterValue(name, deploymentId);
+    }
+
+    @Extension
+    @Symbol({ "cloudify", "cloudifyDeploymentParam" })
+    public static class DeploymentSelectorParameterDescriptor extends ParameterDescriptor {
+        @Override
+        @Nonnull
+        public String getDisplayName() {
+            return "Cloudify Deployment Selector";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("deploymentId", deploymentId)
+                .toString();
+    }
 }

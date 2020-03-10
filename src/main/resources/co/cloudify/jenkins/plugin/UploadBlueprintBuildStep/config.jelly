@@ -1,19 +1,19 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-	<j:set var="escapeEntryTitleAndDescription" value="false"/>
-	<f:entry title="${%Blueprint ID}" field="blueprintId">
-		<f:textbox/>
-	</f:entry>
-	<f:entry title="${%Archive URL}" field="archiveUrl">
-		<f:textbox/>
-	</f:entry>
-	<f:entry title="${%Archive Path}" field="archivePath">
-		<f:textarea/>
-	</f:entry>
-	<f:entry title="${%Root Directory}" field="rootDirectory">
-		<f:textarea/>
-	</f:entry>
-	<f:entry title="${%Main File Name}" field="mainFileName">
-		<f:textbox/>
-	</f:entry>
+    <j:set var="escapeEntryTitleAndDescription" value="false" />
+    <f:entry title="${%Blueprint ID}" field="blueprintId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Archive URL}" field="archiveUrl">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Archive Path}" field="archivePath">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Root Directory}" field="rootDirectory">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Main File Name}" field="mainFileName">
+        <f:textbox />
+    </f:entry>
 </j:jelly>
