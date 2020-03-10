@@ -35,6 +35,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 	private	String mapping;
 	private	String mappingFile;
 	private	String outputFile;
+	private boolean	echoOutputs;
 	private boolean debugOutput;
 
 	@DataBoundConstructor
@@ -105,6 +106,15 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		this.outputFile = outputFile;
 	}
 	
+	public boolean isEchoOutputs() {
+		return echoOutputs;
+	}
+	
+	@DataBoundSetter
+	public void setEchoOutputs(boolean echoOutputs) {
+		this.echoOutputs = echoOutputs;
+	}
+	
 	public boolean isDebugOutput() {
 		return debugOutput;
 	}
@@ -133,7 +143,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 
 		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
 				listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile,
-				mapping, mappingFile, outputFile, debugOutput);
+				mapping, mappingFile, outputFile, echoOutputs, debugOutput);
 
 		action.setInputs(envData.getDeployment().getInputs());
 		action.setOutputs(envData.getOutputs());
@@ -157,7 +167,10 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 		}
 		
 		public FormValidation doCheckInputs(@QueryParameter String value) {
-			return CloudifyPluginUtilities.validateStringIsYamlOrJson(value);
+			//	This may consist of expansion parameters (such as "${inputs}")
+			//	so we can't really validate anything at this stage.
+//			return CloudifyPluginUtilities.validateStringIsYamlOrJson(value);
+			return FormValidation.ok();
 		}
 		
 		private FormValidation checkMappingParams(final String mapping, final String mappingFile) {
@@ -192,6 +205,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 				.append("mapping", mapping)
 				.append("mappingFile", mappingFile)
 				.append("outputFile", outputFile)
+				.append("echoOutputs", echoOutputs)
 				.append("debugOutput", debugOutput)
 				.toString();
 	}

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -35,6 +36,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 	private String inputsLocation;
 	private	String outputsLocation;
 	private boolean ignoreFailureOnTeardown;
+	private boolean echoOutputs;
 	private boolean debugOutput;
 
 	@DataBoundConstructor
@@ -114,6 +116,15 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		this.ignoreFailureOnTeardown = ignoreFailureOnTeardown;
 	}
 	
+	public boolean isEchoOutputs() {
+		return echoOutputs;
+	}
+	
+	@DataBoundSetter
+	public void setEchoOutputs(boolean echoOutputs) {
+		this.echoOutputs = echoOutputs;
+	}
+	
 	public boolean isDebugOutput() {
 		return debugOutput;
 	}
@@ -154,7 +165,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		
 		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
 				listener, workspace, client, blueprint.getId(),
-				deploymentId, inputs, inputsLocation, null, null, outputsLocation, debugOutput);
+				deploymentId, inputs, inputsLocation, null, null, outputsLocation, echoOutputs, debugOutput);
 		disposer.setDeployment(envData.getDeployment());
 		disposer.setIgnoreFailure(ignoreFailureOnTeardown);
 	}
@@ -241,5 +252,22 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 		public String getDisplayName() {
 			return "Cloudify Environment";
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this)
+				.appendSuper(super.toString())
+				.append("blueprintId", blueprintId)
+				.append("blueprintMainFile", blueprintMainFile)
+				.append("blueprintRootDirectory", blueprintRootDirectory)
+				.append("deploymentId", deploymentId)
+				.append("inputs", inputs)
+				.append("inputsLocation", inputsLocation)
+				.append("outputsLocation", outputsLocation)
+				.append("ignoreFailureOnTeardown", ignoreFailureOnTeardown)
+				.append("echoOutputs", echoOutputs)
+				.append("debugOutput", debugOutput)
+				.toString();
 	}
 }

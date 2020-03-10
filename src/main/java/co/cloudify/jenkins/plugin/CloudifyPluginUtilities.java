@@ -162,6 +162,7 @@ public class CloudifyPluginUtilities {
 			String mapping,
 			String mappingLocation,
 			String outputsLocation,
+			boolean echoOutputs,
 			boolean debugOutput
 			) throws IOException, InterruptedException {
 		PrintStream logger = listener.getLogger();
@@ -185,10 +186,16 @@ public class CloudifyPluginUtilities {
 			
 			CloudifyEnvironmentData data = new CloudifyEnvironmentData(deployment, outputs, capabilities);
 
+			JSONObject outputContents = new JSONObject();
+			outputContents.put("outputs", outputs);
+			outputContents.put("capabilities", capabilities);
+
+			if (echoOutputs) {
+				logger.println(
+						String.format(
+								"Outputs and capabilities: %s", outputContents.toString(4)));
+			}
 			if (StringUtils.isNotBlank(outputsLocation)) {
-				JSONObject outputContents = new JSONObject();
-				outputContents.put("outputs", outputs);
-				outputContents.put("capabilities", capabilities);
 				FilePath outputFilePath = workspace.child(outputsLocation);
 				logger.println(String.format(
 						"Writing outputs and capabilities to %s", outputFilePath));

@@ -22,6 +22,9 @@
 	<f:entry title="${%Outputs Location}" field="outputsLocation">
 		<f:textbox/>
 	</f:entry>
+	<f:entry title="${%Print outputs and capabilities}" field="echoOutputs">
+		<f:checkbox/>
+	</f:entry>
 	<f:entry title="${%Ignore Failures on Teardown}" field="ignoreFailureOnTeardown">
 		<f:checkbox/>
 	</f:entry>
