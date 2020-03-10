@@ -3,6 +3,27 @@
 This modules provides tight integration between Jenkins and Cloudify, simplifying using
 Cloudify Manager through Jenkins jobs and pipelines.
 
+* [Prerequisites](#prerequisites)
+* [Terminology](#terminology)
+    * [Deployment Outputs File](#deployment-outputs-file)
+    * [Inputs Mapping File](#inputs-mapping-file)
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [Parameter Types](#parameter-types)
+    * [Cloudify Blueprint Selector](#cloudify-blueprint-selector)
+    * [Cloudify Deployment Selector](#cloudify-deployment-selector)
+    * [Cloudify Constrained Input Value Selector](#cloudify-constrained-input-value-selector)
+* [Available Build Steps](#available-build-steps)
+    * [Upload Cloudify Plugin](#upload-cloudify-plugin)
+    * [Upload Cloudify Blueprint](#upload-cloudify-blueprint)
+    * [Delete Cloudify Blueprint](#delete-cloudify-blueprint)
+    * [Build Cloudify Environment](#build-cloudify-environment)
+    * [Delete Cloudify Environment](#delete-cloudify-environment)
+    * [Execute Cloudify Workflow](#execute-cloudify-workflow)
+    * [Convert Cloudify Environment Outputs/Capabilities to Inputs](#convert-cloudify-environment-outputs-capabilities-to-inputs)
+* [Cloudify's Build Wrapper](#cloudify-s-build-wrapper)
+* [Planned Improvements](#planned-improvements)
+
 ## Prerequisites
 
 There are no prerequisites for this plugin.
