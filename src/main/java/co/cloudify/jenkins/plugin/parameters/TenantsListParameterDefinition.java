@@ -53,7 +53,7 @@ public class TenantsListParameterDefinition extends ParameterDefinition {
         ListResponse<Tenant> tenants = cloudifyClient.getTenantsClient().list();
         return tenants
                 .stream()
-                .map(x -> x.getName())
+                .map(Tenant::getName)
                 .collect(Collectors.toList());
     }
 

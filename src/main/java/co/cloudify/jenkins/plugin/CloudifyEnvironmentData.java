@@ -3,8 +3,16 @@ package co.cloudify.jenkins.plugin;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import co.cloudify.rest.model.Deployment;
 
+/**
+ * Encapsulates data pertaining to a Cloudify environment created by various
+ * build steps.
+ * 
+ * @author Isaac Shabtay
+ */
 public class CloudifyEnvironmentData implements Serializable {
     /** Serialization UID. */
     private static final long serialVersionUID = 1L;
@@ -31,5 +39,14 @@ public class CloudifyEnvironmentData implements Serializable {
 
     public Map<String, Object> getCapabilities() {
         return capabilities;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("deployment", deployment)
+                .append("outputs", outputs)
+                .append("capabilities", capabilities)
+                .toString();
     }
 }

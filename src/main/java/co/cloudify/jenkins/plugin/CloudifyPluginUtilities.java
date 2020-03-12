@@ -34,6 +34,11 @@ import hudson.util.FormValidation;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
+/**
+ * Various utility methods used throughout the plugin.
+ * 
+ * @author Isaac Shabtay
+ */
 public class CloudifyPluginUtilities {
     /**
      * Write a JAXB-annotated object to a file as JSON. We isolate this
@@ -90,6 +95,13 @@ public class CloudifyPluginUtilities {
         }
     }
 
+    /**
+     * Read a YAML or a JSON from a string.
+     * 
+     * @param str some string
+     * 
+     * @return A {@link JSONObject} containing the parsed data.
+     */
     public static JSONObject readYamlOrJson(final String str) {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -153,6 +165,27 @@ public class CloudifyPluginUtilities {
         return inputsMap;
     }
 
+    /**
+     * Create a Cloudify environment.
+     * 
+     * @param listener        Jenkins task listener
+     * @param workspace       Jenkins workspace location
+     * @param client          Cloudify client object
+     * @param blueprintId     blueprint ID
+     * @param deploymentId    deployment ID
+     * @param inputs          deployment inputs
+     * @param inputsLocation  location of file containing deployment inputs
+     * @param mapping         YAML/JSON string containing input mappings
+     * @param mappingLocation location of input mappings file
+     * @param outputsLocation location of outputs file
+     * @param echoOutputs     whether to echo outputs to the build log
+     * @param debugOutput     whether to emit debug-level logging
+     * 
+     * @return A {@link CloudifyEnvironmentData} instance containing information about the new environment.
+     * 
+     * @throws IOException          Percolated from called code.
+     * @throws InterruptedException Percolated from called code.
+     */
     public static CloudifyEnvironmentData createEnvironment(
             TaskListener listener,
             FilePath workspace,
@@ -175,7 +208,8 @@ public class CloudifyPluginUtilities {
                 client, logger, debugOutput ? EventLevel.debug : EventLevel.info);
 
         try {
-            logger.println(String.format("Creating deployment '%s' from blueprint '%s' using the following inputs: %s",
+            logger.println(String.format(
+                    "Creating deployment '%s' from blueprint '%s' using the following inputs: %s",
                     deploymentId, blueprintId, JSONObject.fromObject(inputsMap).toString(4)));
             Deployment deployment = DeploymentsHelper.createDeploymentAndWait(client, deploymentId, blueprintId,
                     inputsMap, follower);
@@ -213,6 +247,18 @@ public class CloudifyPluginUtilities {
         }
     }
 
+    /**
+     * Delete an environment.
+     * 
+     * @param listener      Jenkins task listener
+     * @param client        Cloudify client object
+     * @param deploymentId  deployment ID
+     * @param ignoreFailure whether to ignore failures during deletion
+     * @param debugOutput   emit debug statements
+     * 
+     * @throws IOException          Percolated from called code
+     * @throws InterruptedException Percolated from called code
+     */
     public static void deleteEnvironment(
             final TaskListener listener,
             final CloudifyClient client,
@@ -222,7 +268,6 @@ public class CloudifyPluginUtilities {
         PrintStream logger = listener.getLogger();
         ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(
                 client, logger, debugOutput ? EventLevel.debug : EventLevel.info);
-
         try {
             logger.println(String.format("Uninstalling Cloudify environment; deployment ID: %s", deploymentId));
             Execution execution = ExecutionsHelper.uninstall(client, deploymentId, ignoreFailure, follower);
@@ -230,11 +275,20 @@ public class CloudifyPluginUtilities {
             logger.println(String.format("Deleting deployment: %s", deploymentId));
             DeploymentsHelper.deleteDeploymentAndWait(client, deploymentId);
         } catch (Exception ex) {
+            // Print the stack trace, as AbortException doesn't support
+            // root causes and we don't want to lose the root cause.
             ex.printStackTrace(logger);
             throw new AbortException("Failed tearing down environment");
         }
     }
 
+    /**
+     * Validates whether a string is a valid YAML or JSON.
+     * 
+     * @param value value to check
+     * 
+     * @return A {@link FormValidation} instance representing the result.
+     */
     public static FormValidation validateStringIsYamlOrJson(final String value) {
         if (StringUtils.isNotBlank(value)) {
             try {

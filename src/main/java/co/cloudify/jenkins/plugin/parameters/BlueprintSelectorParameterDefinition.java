@@ -59,7 +59,7 @@ public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
         ListResponse<Blueprint> blueprints = cloudifyClient.getBlueprintsClient().list(effectiveFilter);
         return blueprints
                 .stream()
-                .map(x -> x.getId())
+                .map(Blueprint::getId)
                 .collect(Collectors.toList());
     }
 

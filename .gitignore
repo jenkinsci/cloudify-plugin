@@ -6,3 +6,4 @@ target/
 
 # Jenkins work directory
 work/
+.pydevproject

@@ -22,11 +22,18 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 import jenkins.tasks.SimpleBuildWrapper;
 
+/**
+ * A {@link BuildWrapper} that creates a Cloudify environment during setup time,
+ * and deletes at during disposal time.
+ * 
+ * @author Isaac Shabtay
+ */
 public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     private String blueprintId;
     private String blueprintRootDirectory;
@@ -173,8 +180,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
                 listener, workspace, client, blueprint.getId(),
                 deploymentId, inputs, inputsLocation, null, null, outputsLocation, echoOutputs, debugOutput);
-        disposer.setDeployment(envData.getDeployment());
-        disposer.setIgnoreFailure(ignoreFailureOnTeardown);
+        disposer.setDeployment(envData.getDeployment(), ignoreFailureOnTeardown);
     }
 
     public static class CloudifyDisposer extends Disposer {
@@ -195,11 +201,8 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
             this.blueprint = blueprint;
         }
 
-        public void setDeployment(Deployment deployment) {
+        public void setDeployment(Deployment deployment, Boolean ignoreFailure) {
             this.deployment = deployment;
-        }
-
-        public void setIgnoreFailure(Boolean ignoreFailure) {
             this.ignoreFailure = ignoreFailure;
         }
 

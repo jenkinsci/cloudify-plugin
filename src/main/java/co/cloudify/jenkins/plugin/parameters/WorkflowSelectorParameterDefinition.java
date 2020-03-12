@@ -1,12 +1,10 @@
 package co.cloudify.jenkins.plugin.parameters;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -17,21 +15,27 @@ import org.kohsuke.stapler.export.Exported;
 import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.model.Deployment;
-import co.cloudify.rest.model.ListResponse;
+import co.cloudify.rest.model.Workflow;
 import hudson.Extension;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.StringParameterValue;
 import net.sf.json.JSONObject;
 
-public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
+/**
+ * A parameter definition that renders a list of all available
+ * workflows for a given deployment.
+ * 
+ * @author Isaac Shabtay
+ */
+public class WorkflowSelectorParameterDefinition extends ParameterDefinition {
     private static final long serialVersionUID = 1L;
 
-    private String blueprintId;
     private String deploymentId;
+    private String selectedValue;
 
     @DataBoundConstructor
-    public DeploymentSelectorParameterDefinition(String name, String description) {
+    public WorkflowSelectorParameterDefinition(String name, String description) {
         super(name, description);
     }
 
@@ -44,26 +48,23 @@ public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
         this.deploymentId = deploymentId;
     }
 
-    public String getBlueprintId() {
-        return blueprintId;
+    public String getSelectedValue() {
+        return selectedValue;
     }
 
     @DataBoundSetter
-    public void setBlueprintId(String blueprintId) {
-        this.blueprintId = blueprintId;
+    public void setSelectedValue(String selectedValue) {
+        this.selectedValue = selectedValue;
     }
 
     @Exported
     public List<String> getChoices() {
-        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
-        ListResponse<Deployment> deployments = cloudifyClient.getDeploymentsClient().list();
-        Predicate<Deployment> predicate = StringUtils.isNotBlank(blueprintId)
-                ? x -> x.getBlueprintId().equals(blueprintId)
-                : x -> true;
-        return deployments
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+        Deployment deployment = client.getDeploymentsClient().get(deploymentId);
+        List<Workflow> workflows = deployment.getWorkflows();
+        return workflows
                 .stream()
-                .filter(predicate)
-                .map(Deployment::getId)
+                .map(Workflow::getName)
                 .collect(Collectors.toList());
     }
 
@@ -75,17 +76,17 @@ public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         String name = jo.getString("name");
-        String deploymentId = jo.getString("deploymentId");
-        return new StringParameterValue(name, deploymentId);
+        String value = jo.getString("selectedValue");
+        return new StringParameterValue(name, value);
     }
 
     @Extension
-    @Symbol({ "cloudify", "cloudifyDeploymentParam" })
-    public static class DeploymentSelectorParameterDescriptor extends ParameterDescriptor {
+    @Symbol("cloudifyWorkflowSelector")
+    public static class WorkflowSelectorParameterDescriptor extends ParameterDescriptor {
         @Override
         @Nonnull
         public String getDisplayName() {
-            return "Cloudify Deployment Selector";
+            return "Cloudify Workflow Selector";
         }
     }
 
@@ -93,8 +94,8 @@ public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
-                .append("blueprintId", blueprintId)
                 .append("deploymentId", deploymentId)
+                .append("selectedValue", selectedValue)
                 .toString();
     }
 }
