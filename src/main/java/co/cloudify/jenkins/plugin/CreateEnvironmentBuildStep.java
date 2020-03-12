@@ -7,6 +7,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+
 import co.cloudify.jenkins.plugin.actions.EnvironmentBuildAction;
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.EnvVars;

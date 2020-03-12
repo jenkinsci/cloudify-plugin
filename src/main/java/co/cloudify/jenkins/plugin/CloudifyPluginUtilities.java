@@ -36,10 +36,9 @@ import net.sf.json.JSONObject;
 
 public class CloudifyPluginUtilities {
     /**
-     * Write a JAXB-annotated object to a file as JSON.
-     * We isolate this functionality to one class only, as it uses facilities
-     * that are not a part of the JDK and are likely to be included as standard
-     * in the future.
+     * Write a JAXB-annotated object to a file as JSON. We isolate this
+     * functionality to one class only, as it uses facilities that are not a part of
+     * the JDK and are likely to be included as standard in the future.
      * 
      * @param object     object to serialize
      * @param outputFile file to write to

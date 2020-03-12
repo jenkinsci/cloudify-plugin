@@ -26,7 +26,7 @@ Cloudify Manager through Jenkins jobs and pipelines.
 
 ## Prerequisites
 
-There are no prerequisites for this plugin.
+Jenkins version: 2.204.1+
 
 ## Terminology
 

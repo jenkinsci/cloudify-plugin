@@ -25,8 +25,8 @@ import hudson.util.VariableResolver;
 import net.sf.json.JSONObject;
 
 /**
- * A build step for converting outputs and capabilities of one deployment,
- * to inputs of another.
+ * A build step for converting outputs and capabilities of one deployment, to
+ * inputs of another.
  * 
  * @author Isaac Shabtay
  */

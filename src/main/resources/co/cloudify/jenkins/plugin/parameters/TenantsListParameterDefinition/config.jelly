@@ -4,9 +4,6 @@
     <f:entry title="${%Name}" field="name">
         <f:textbox />
     </f:entry>
-    <f:entry title="${%Blueprint ID}" field="blueprintId">
-        <f:textbox />
-    </f:entry>
     <f:entry title="${%Description}" field="description">
         <f:textarea />
     </f:entry>
