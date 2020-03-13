@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.File;
 import java.io.PrintStream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +83,7 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
         Plugin plugin = cloudifyClient.getPluginsClient().upload(wagonLocation, yamlLocation);
 
         if (StringUtils.isNotBlank(outputLocation)) {
-            File outputFile = new File(workspace.child(outputLocation).getRemote());
+            FilePath outputFile = workspace.child(outputLocation);
             jenkinsLog.println(String.format("Saving plugin information to %s", outputFile));
             CloudifyPluginUtilities.writeBoundObject(plugin, outputFile);
         }

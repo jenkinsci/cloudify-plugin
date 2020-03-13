@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
@@ -10,6 +9,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import co.cloudify.jenkins.plugin.callables.BlueprintUploadDirFileCallable;
 import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.model.Blueprint;
@@ -167,12 +167,13 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         } else {
             FilePath rootFilePath = workspace.child(blueprintRootDirectory);
             logger.println(String.format(
-                    "Uploading blueprint from %s (main filename: %s)",
-                    rootFilePath, blueprintMainFile));
-            blueprint = blueprintsClient.upload(
+                    "Uploading blueprint '%s' from %s (main filename: %s)",
                     blueprintId,
-                    new File(rootFilePath.getRemote()),
-                    blueprintMainFile);
+                    rootFilePath, blueprintMainFile));
+            
+            blueprint = rootFilePath.act(
+                    new BlueprintUploadDirFileCallable(
+                            blueprintsClient, blueprintId, blueprintMainFile));
             // This blueprint will need to be disposed of.
             disposer.setBlueprint(blueprint);
         }

@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Arrays;
@@ -12,6 +11,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import co.cloudify.jenkins.plugin.callables.BlueprintUploadArchiveFileCallable;
+import co.cloudify.jenkins.plugin.callables.BlueprintUploadDirFileCallable;
+import co.cloudify.jenkins.plugin.callables.BlueprintUploadFileCallable;
 import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.EnvVars;
@@ -105,14 +107,18 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
         if (StringUtils.isNotBlank(archiveUrl)) {
             jenkinsLog.println(String.format("Uploading blueprint from %s", archiveUrl));
             blueprintsClient.upload(blueprintId, new URL(archiveUrl), mainFileName);
-        } else if (StringUtils.isNotBlank(archivePath)) {
-            File absoluteArchivePath = new File(workspace.child(archivePath).getRemote());
-            jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteArchivePath));
-            blueprintsClient.uploadArchive(blueprintId, absoluteArchivePath, mainFileName);
         } else {
-            File absoluteRootDir = new File(workspace.child(rootDirectory).getRemote());
-            jenkinsLog.println(String.format("Uploading blueprint from %s", absoluteRootDir));
-            blueprintsClient.upload(blueprintId, absoluteRootDir, mainFileName);
+            FilePath opFile;
+            BlueprintUploadFileCallable callable;
+            if (StringUtils.isNotBlank(archivePath)) {
+                opFile = workspace.child(archivePath);
+                callable = new BlueprintUploadArchiveFileCallable(blueprintsClient, blueprintId, mainFileName);
+            } else {
+                opFile = workspace.child(rootDirectory);
+                callable = new BlueprintUploadDirFileCallable(blueprintsClient, blueprintId, mainFileName);
+            }
+            jenkinsLog.println(String.format("Uploading blueprint from %s", opFile));
+            opFile.act(callable);
         }
         jenkinsLog.println("Blueprint uploaded successfully");
     }

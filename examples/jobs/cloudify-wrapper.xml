@@ -1,13 +1,14 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <project>
-  <description></description>
+  <actions/>
+  <description>Demonstrates the usage of the Cloudify Build Wrapper.</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@4.2.2">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>https://github.com/isaac-s/jenkins-sample-blueprint.git</url>
+        <url>https://github.com/cloudify-community/blueprint-examples.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -34,8 +35,8 @@
   <buildWrappers>
     <co.cloudify.jenkins.plugin.CloudifyBuildWrapper plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <blueprintId>blueprint-${BUILD_ID}</blueprintId>
-      <blueprintRootDirectory>repo</blueprintRootDirectory>
-      <blueprintMainFile>blueprint.yaml</blueprintMainFile>
+      <blueprintRootDirectory>repo/getting-started/infra</blueprintRootDirectory>
+      <blueprintMainFile>aws.yaml</blueprintMainFile>
       <deploymentId>deployment-${BUILD_ID}</deploymentId>
       <inputs></inputs>
       <inputsLocation></inputsLocation>

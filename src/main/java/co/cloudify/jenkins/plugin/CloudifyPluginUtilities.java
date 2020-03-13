@@ -1,8 +1,8 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -50,11 +50,13 @@ public class CloudifyPluginUtilities {
      * 
      * @throws IOException Some I/O error has occured.
      */
-    public static void writeBoundObject(final Object object, final File outputFile) throws IOException {
+    public static void writeBoundObject(final Object object, final FilePath outputFile) throws IOException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         mapper.registerModule(new JaxbAnnotationModule());
-        mapper.writeValue(outputFile, object);
+        try (OutputStream os = outputFile.write()) {
+            mapper.writeValue(os, object);
+        }
     }
 
     /**

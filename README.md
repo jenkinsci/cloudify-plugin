@@ -200,7 +200,11 @@ Use this build-step to transform a Deployment Outputs File to a standard Deploym
 
 ## Cloudify's Build Wrapper
 
-The Cloudify Plugin for Jenkins also provides a Jenkins *Build Wrapper*.
+The Cloudify Plugin for Jenkins also provides a Jenkins *Build Wrapper*. The wrapper provides a convenience
+method for creating a Cloudify environment before the build, and destroying it afterwards.
+
+The wrapper can be activated by checking the "Cloudify Environment" box under "Build Environment" during
+job definition. 
 
 ## Planned Improvements
 
