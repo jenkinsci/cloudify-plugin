@@ -58,7 +58,6 @@ public class CloudifyPluginUtilities {
             mapper.writeValue(os, object);
         }
     }
-
     /**
      * Writes a JSON object to a {@link FilePath}.
      * 

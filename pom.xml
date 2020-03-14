@@ -1,79 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.jenkins-ci.plugins</groupId>
-		<artifactId>plugin</artifactId>
-		<version>3.56</version>
-	</parent>
-	<groupId>co.cloudify.plugins</groupId>
-	<artifactId>cloudify-jenkins-plugin</artifactId>
-	<version>1.0-SNAPSHOT</version>
-	<packaging>hpi</packaging>
-	<properties>
-		<jenkins.version>2.204.1</jenkins.version>
-		<java.level>8</java.level>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>3.56</version>
+    </parent>
+    <groupId>co.cloudify.plugins</groupId>
+    <artifactId>cloudify-jenkins-plugin</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+    <properties>
+        <jenkins.version>2.60.2</jenkins.version>
+        <java.level>8</java.level>
 		<!-- Needs to be called this way... it's used by the parent project -->
-		<slf4jVersion>1.7.26</slf4jVersion>
-		<jackson.version>2.9.9</jackson.version>
-		<jersey.version>2.30</jersey.version>
-		<credentials.version>2.3.3</credentials.version>
-	</properties>
-	<name>Cloudify Plugin for Jenkins</name>
-	<licenses>
-		<license>
-			<name>MIT License</name>
-			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
-		</license>
-	</licenses>
-	<developers>
-		<developer>
-			<id>isaac-s</id>
-			<name>Isaac Shabtay</name>
-			<email>isaac-s@users.noreply.github.com</email>
-		</developer>
-	</developers>
-	<scm>
-		<connection>https://github.com/Cloudify-PS/cloudify-jenkins-plugin.git</connection>
-		<developerConnection>https://github.com/Cloudify-PS/cloudify-jenkins-plugin.git</developerConnection>
-		<url>https://github.com/Cloudify-PS/cloudify-jenkins-plugin</url>
-	</scm>
-	<repositories>
-		<repository>
-			<id>repo.jenkins-ci.org</id>
-			<url>https://repo.jenkins-ci.org/public/</url>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>repo.jenkins-ci.org</id>
-			<url>https://repo.jenkins-ci.org/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
-	<dependencies>
-		<dependency>
-			<groupId>co.cloudify</groupId>
-			<artifactId>rest-client</artifactId>
-			<version>5.0.5</version>
-		</dependency>
+        <slf4jVersion>1.7.26</slf4jVersion>
+        <jersey.version>2.28</jersey.version>
+        <git.version>3.9.4</git.version>
+        <credentials.version>2.3.3</credentials.version>
+    </properties>
+    <name>Cloudify Plugin for Jenkins</name>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>isaac-s</id>
+            <name>Isaac Shabtay</name>
+            <email>isaac-s@users.noreply.github.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <connection>https://github.com/Cloudify-PS/cloudify-jenkins-plugin.git</connection>
+        <developerConnection>https://github.com/Cloudify-PS/cloudify-jenkins-plugin.git</developerConnection>
+        <url>https://github.com/Cloudify-PS/cloudify-jenkins-plugin</url>
+    </scm>
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <dependencies>
+        <dependency>
+            <groupId>co.cloudify</groupId>
+            <artifactId>rest-client</artifactId>
+            <version>5.0.5</version>
+        </dependency>
+		<!--
+		So far, I couldn't figure out how to include any version of Jackson
+		as an HPI dependency for Jenkins version 2.60.2. Until this is figured out,
+		include these libs like this.
+		-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <version>2.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.10.3</version>
+        </dependency>
+		<!--
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>jackson2-api</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
+		-->
+		<!-- Needed for YAML serialization. -->
+		<!--
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.dataformat.yaml.version}</version>
+		</dependency>
+		-->
+		<!--
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>credentials</artifactId>
 			<version>${credentials.version}</version>
 		</dependency>
-		<!-- Needed for YAML serialization. -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
+		-->
 		<!-- Runtime dependencies. We ship with the latest version of Jersey that 
 			is supported by Jenkins' POM. -->
 		<dependency>
@@ -92,6 +122,7 @@
 			<groupId>org.glassfish.jersey.inject</groupId>
 			<artifactId>jersey-hk2</artifactId>
 			<version>${jersey.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
@@ -105,90 +136,102 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	</dependencies>
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.gmaven</groupId>
-										<artifactId>gmaven-plugin</artifactId>
-										<versionRange>[0.0,)</versionRange>
-										<goals>
-											<goal>testCompile</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute />
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.gmaven</groupId>
-										<artifactId>gmaven-plugin</artifactId>
-										<versionRange>[0.0,)</versionRange>
-										<goals>
-											<goal>generateTestStubs</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute />
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-antrun-plugin</artifactId>
-										<versionRange>[0.0,)</versionRange>
-										<goals>
-											<goal>run</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute />
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-enforcer-plugin</artifactId>
-										<versionRange>[0.0,)</versionRange>
-										<goals>
-											<goal>display-info</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute />
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
-	<profiles>
-		<profile>
-			<id>dev</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<dependencies>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.gmaven</groupId>
+                                        <artifactId>gmaven-plugin</artifactId>
+                                        <versionRange>[0.0,)</versionRange>
+                                        <goals>
+                                            <goal>testCompile</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.gmaven</groupId>
+                                        <artifactId>gmaven-plugin</artifactId>
+                                        <versionRange>[0.0,)</versionRange>
+                                        <goals>
+                                            <goal>generateTestStubs</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-antrun-plugin</artifactId>
+                                        <versionRange>[0.0,)</versionRange>
+                                        <goals>
+                                            <goal>run</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-enforcer-plugin</artifactId>
+                                        <versionRange>[0.0,)</versionRange>
+                                        <goals>
+                                            <goal>display-info</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute />
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
 				<!-- In development mode, include some convenience plugins. These aren't 
 					mandatory for release. -->
-				<dependency>
-					<groupId>org.jenkins-ci.plugins</groupId>
-					<artifactId>git</artifactId>
-					<version>4.2.2</version>
-				</dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>git</artifactId>
+                    <version>${git.version}</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.jenkins-ci.plugins</groupId>
+                            <artifactId>junit</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>1.3</version>
+                </dependency>
+				<!--
 				<dependency>
 					<groupId>org.jenkins-ci.plugins.workflow</groupId>
 					<artifactId>workflow-aggregator</artifactId>
@@ -199,9 +242,10 @@
 					<artifactId>matrix-project</artifactId>
 					<version>1.14</version>
 				</dependency>
+				-->
 				<!-- <dependency> <groupId>io.jenkins.blueocean</groupId> <artifactId>blueocean</artifactId> 
 					<version>1.22.0</version> </dependency> -->
-			</dependencies>
-		</profile>
-	</profiles>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

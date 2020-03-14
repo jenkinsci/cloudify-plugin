@@ -4,6 +4,7 @@ This modules provides tight integration between Jenkins and Cloudify, simplifyin
 Cloudify Manager through Jenkins jobs and pipelines.
 
 * [Prerequisites](#prerequisites)
+* [Examples](#examples)
 * [Terminology](#terminology)
     * [Deployment Outputs File](#deployment-outputs-file)
     * [Inputs Mapping File](#inputs-mapping-file)
@@ -27,6 +28,9 @@ Cloudify Manager through Jenkins jobs and pipelines.
 ## Prerequisites
 
 Jenkins version: 2.204.1+
+
+## Examples
+
 
 ## Terminology
 
