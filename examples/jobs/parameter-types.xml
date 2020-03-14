@@ -1,11 +1,6 @@
-<?xml version='1.1' encoding='UTF-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <project>
-  <actions/>
-  <description>Very simple job to demonstrate how the Cloudify-provided parameter types work:&#xd;
-&#xd;
-* Blueprint Selector&#xd;
-* Deployment Selector&#xd;
-* Constrained Input Value Selector</description>
+  <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.model.ParametersDefinitionProperty>
@@ -15,22 +10,21 @@
           <description></description>
           <filter></filter>
         </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
+        <co.cloudify.jenkins.plugin.parameters.BlueprintInputConstraintSelector plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+          <name>input_value</name>
+          <description></description>
+          <blueprintId>app-nodejs</blueprintId>
+          <inputName>infra_name</inputName>
+        </co.cloudify.jenkins.plugin.parameters.BlueprintInputConstraintSelector>
         <co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
           <name>deployment_id</name>
           <description></description>
           <blueprintId></blueprintId>
         </co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition>
-        <co.cloudify.jenkins.plugin.parameters.BlueprintInputConstraintSelector plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
-          <name>selected_value</name>
+        <co.cloudify.jenkins.plugin.parameters.TenantsListParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+          <name>tenant_id</name>
           <description></description>
-          <blueprintId>app-nodejs</blueprintId>
-          <inputName>infra_name</inputName>
-        </co.cloudify.jenkins.plugin.parameters.BlueprintInputConstraintSelector>
-        <co.cloudify.jenkins.plugin.parameters.WorkflowSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
-          <name>workflow_id</name>
-          <description></description>
-          <deploymentId>dep1</deploymentId>
-        </co.cloudify.jenkins.plugin.parameters.WorkflowSelectorParameterDefinition>
+        </co.cloudify.jenkins.plugin.parameters.TenantsListParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -43,10 +37,10 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>echo &quot;Selected blueprint ID: ${blueprint_id}&quot;
-echo &quot;Selected deployment ID: ${deployment_id}&quot;
-echo &quot;Selected constrained value: ${selected_value}&quot;
-echo &quot;Selected workflow ID: ${workflow_id}&quot;
+      <command>echo &quot;Blueprint ID: ${blueprint_id}&quot;
+echo &quot;Input value: ${input_value}&quot;
+echo &quot;Deployment ID: ${deployment_id}&quot;
+echo &quot;Tenant ID: ${tenant_id}&quot;
 </command>
     </hudson.tasks.Shell>
   </builders>

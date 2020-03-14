@@ -31,6 +31,20 @@ Jenkins version: 2.204.1+
 
 ## Examples
 
+This repository contains a few examples of job definitions making use of features included in this plugin.
+You can find them in [examples/jobs](examples/jobs).
+
+To import these definitions into Jenkins, use the Jenkins CLI. For example:
+
+```bash
+java -jar jenkins-cli.jar -s <jenkins_url> create-job <job_name> < path_to_job_xml_file 
+```
+
+For example:
+
+```bash
+java -jar jenkins-cli.jar -s <jenkins_url> create-job <job_name> < examples/jobs/cloudify-wrapper.xml 
+```
 
 ## Terminology
 
