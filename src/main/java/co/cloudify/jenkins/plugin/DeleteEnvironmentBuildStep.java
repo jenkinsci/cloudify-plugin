@@ -11,7 +11,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -67,7 +66,7 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
             CloudifyClient cloudifyClient) throws Exception {
         EnvVars env = run.getEnvironment(listener);
         VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-        String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
+        String deploymentId = CloudifyPluginUtilities.parseInput(this.deploymentId, resolver);
         CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure, debugOutput);
     }
 

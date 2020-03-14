@@ -14,7 +14,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -83,17 +82,17 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
         EnvVars env = run.getEnvironment(listener);
         VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
 
-        String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
-        String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
-        String mapping = Util.replaceMacro(this.mapping, resolver);
-        String mappingLocation = Util.replaceMacro(this.mappingLocation, resolver);
+        String inputsLocation = CloudifyPluginUtilities.parseInput(this.inputsLocation, resolver);
+        String outputsLocation = CloudifyPluginUtilities.parseInput(this.outputsLocation, resolver);
+        String mapping = CloudifyPluginUtilities.parseInput(this.mapping, resolver);
+        String mappingLocation = CloudifyPluginUtilities.parseInput(this.mappingLocation, resolver);
 
         PrintStream logger = listener.getLogger();
         FilePath inputsFile = workspace.child(inputsLocation);
         FilePath outputsFile = workspace.child(outputsLocation);
 
         JSONObject mappingJson;
-        if (StringUtils.isNotBlank(mapping)) {
+        if (mapping != null) {
             mappingJson = JSONObject.fromObject(mapping);
         } else {
             logger.println(String.format("Reading inputs mapping from %s", mappingLocation));

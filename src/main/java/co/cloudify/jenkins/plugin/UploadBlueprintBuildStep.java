@@ -20,7 +20,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -95,22 +94,22 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
             CloudifyClient cloudifyClient) throws Exception {
         EnvVars env = run.getEnvironment(listener);
         VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-        String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
-        String archiveUrl = Util.replaceMacro(this.archiveUrl, resolver);
-        String archivePath = Util.replaceMacro(this.archivePath, resolver);
-        String rootDirectory = Util.replaceMacro(this.rootDirectory, resolver);
-        String mainFileName = Util.replaceMacro(this.mainFileName, resolver);
+        String blueprintId = CloudifyPluginUtilities.parseInput(this.blueprintId, resolver);
+        String archiveUrl = CloudifyPluginUtilities.parseInput(this.archiveUrl, resolver);
+        String archivePath = CloudifyPluginUtilities.parseInput(this.archivePath, resolver);
+        String rootDirectory = CloudifyPluginUtilities.parseInput(this.rootDirectory, resolver);
+        String mainFileName = CloudifyPluginUtilities.parseInput(this.mainFileName, resolver);
 
         PrintStream jenkinsLog = listener.getLogger();
         BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();
 
-        if (StringUtils.isNotBlank(archiveUrl)) {
+        if (archiveUrl != null) {
             jenkinsLog.println(String.format("Uploading blueprint from %s", archiveUrl));
             blueprintsClient.upload(blueprintId, new URL(archiveUrl), mainFileName);
         } else {
             FilePath opFile;
             BlueprintUploadFileCallable callable;
-            if (StringUtils.isNotBlank(archivePath)) {
+            if (archivePath != null) {
                 opFile = workspace.child(archivePath);
                 callable = new BlueprintUploadArchiveFileCallable(blueprintsClient, blueprintId, mainFileName);
             } else {

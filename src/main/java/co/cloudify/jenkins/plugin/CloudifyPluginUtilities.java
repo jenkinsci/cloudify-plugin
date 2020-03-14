@@ -29,8 +29,10 @@ import co.cloudify.rest.model.EventLevel;
 import co.cloudify.rest.model.Execution;
 import hudson.AbortException;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
+import hudson.util.VariableResolver;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
@@ -40,6 +42,10 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class CloudifyPluginUtilities {
+    public static String parseInput (final String s, final VariableResolver<String> resolver) {
+        return StringUtils.trimToNull(Util.replaceMacro(s, resolver));
+    }
+    
     /**
      * Write a JAXB-annotated object to a file as JSON. We isolate this
      * functionality to one class only, as it uses facilities that are not a part of

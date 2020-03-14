@@ -18,7 +18,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -145,13 +144,13 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
             EnvVars initialEnvironment) throws IOException, InterruptedException {
         VariableResolver<String> resolver = new VariableResolver.ByMap<String>(initialEnvironment);
-        String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
-        String blueprintRootDirectory = Util.replaceMacro(this.blueprintRootDirectory, resolver);
-        String blueprintMainFile = Util.replaceMacro(this.blueprintMainFile, resolver);
-        String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
-        String inputs = Util.replaceMacro(this.inputs, resolver);
-        String inputsLocation = Util.replaceMacro(this.inputsLocation, resolver);
-        String outputsLocation = Util.replaceMacro(this.outputsLocation, resolver);
+        String blueprintId = CloudifyPluginUtilities.parseInput(this.blueprintId, resolver);
+        String blueprintRootDirectory = CloudifyPluginUtilities.parseInput(this.blueprintRootDirectory, resolver);
+        String blueprintMainFile = CloudifyPluginUtilities.parseInput(this.blueprintMainFile, resolver);
+        String deploymentId = CloudifyPluginUtilities.parseInput(this.deploymentId, resolver);
+        String inputs = CloudifyPluginUtilities.parseInput(this.inputs, resolver);
+        String inputsLocation = CloudifyPluginUtilities.parseInput(this.inputsLocation, resolver);
+        String outputsLocation = CloudifyPluginUtilities.parseInput(this.outputsLocation, resolver);
 
         CloudifyDisposer disposer = new CloudifyDisposer(debugOutput);
         context.setDisposer(disposer);
@@ -161,7 +160,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         PrintStream logger = listener.getLogger();
 
         Blueprint blueprint;
-        if (StringUtils.isBlank(blueprintRootDirectory)) {
+        if (blueprintRootDirectory == null) {
             logger.println(String.format("Retrieving blueprint: %s", blueprintId));
             blueprint = blueprintsClient.get(blueprintId);
         } else {

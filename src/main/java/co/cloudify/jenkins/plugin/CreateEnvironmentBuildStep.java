@@ -13,7 +13,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -129,13 +128,13 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
             CloudifyClient cloudifyClient) throws Exception {
         EnvVars env = run.getEnvironment(listener);
         VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-        String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
-        String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
-        String inputs = Util.replaceMacro(this.inputs, resolver);
-        String inputsFile = Util.replaceMacro(this.inputsFile, resolver);
-        String mapping = Util.replaceMacro(this.mapping, resolver);
-        String mappingFile = Util.replaceMacro(this.mappingFile, resolver);
-        String outputFile = Util.replaceMacro(this.outputFile, resolver);
+        String blueprintId = CloudifyPluginUtilities.parseInput(this.blueprintId, resolver);
+        String deploymentId = CloudifyPluginUtilities.parseInput(this.deploymentId, resolver);
+        String inputs = CloudifyPluginUtilities.parseInput(this.inputs, resolver);
+        String inputsFile = CloudifyPluginUtilities.parseInput(this.inputsFile, resolver);
+        String mapping = CloudifyPluginUtilities.parseInput(this.mapping, resolver);
+        String mappingFile = CloudifyPluginUtilities.parseInput(this.mappingFile, resolver);
+        String outputFile = CloudifyPluginUtilities.parseInput(this.outputFile, resolver);
 
         EnvironmentBuildAction action = new EnvironmentBuildAction();
         action.setBlueprintId(blueprintId);

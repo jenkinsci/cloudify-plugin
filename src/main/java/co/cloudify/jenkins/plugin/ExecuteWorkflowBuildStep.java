@@ -2,7 +2,6 @@ package co.cloudify.jenkins.plugin;
 
 import java.io.PrintStream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -20,7 +19,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -107,16 +105,15 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
             CloudifyClient cloudifyClient) throws Exception {
         EnvVars env = run.getEnvironment(listener);
         VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-        String deploymentId = Util.replaceMacro(this.deploymentId, resolver);
-        String workflowId = Util.replaceMacro(this.workflowId, resolver);
-        String executionParameters = Util.replaceMacro(this.executionParameters, resolver);
+        String deploymentId = CloudifyPluginUtilities.parseInput(this.deploymentId, resolver);
+        String workflowId = CloudifyPluginUtilities.parseInput(this.workflowId, resolver);
+        String executionParameters = CloudifyPluginUtilities.parseInput(this.executionParameters, resolver);
 
         PrintStream jenkinsLog = listener.getLogger();
 
-        String strippedParameters = StringUtils.trimToNull(executionParameters);
         JSONObject executionParametersAsMap = null;
-        if (strippedParameters != null) {
-            executionParametersAsMap = CloudifyPluginUtilities.readYamlOrJson(strippedParameters);
+        if (executionParameters != null) {
+            executionParametersAsMap = CloudifyPluginUtilities.readYamlOrJson(executionParameters);
         }
 
         Execution execution = cloudifyClient.getExecutionsClient().start(deploymentId, workflowId,

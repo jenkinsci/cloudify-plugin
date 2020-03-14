@@ -13,7 +13,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -49,7 +48,7 @@ public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
             CloudifyClient cloudifyClient) throws Exception {
         EnvVars env = run.getEnvironment(listener);
         VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-        String blueprintId = Util.replaceMacro(this.blueprintId, resolver);
+        String blueprintId = CloudifyPluginUtilities.parseInput(this.blueprintId, resolver);
 
         PrintStream jenkinsLog = listener.getLogger();
         jenkinsLog.println(String.format("Deleting blueprint: %s", blueprintId));
