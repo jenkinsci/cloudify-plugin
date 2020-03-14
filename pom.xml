@@ -17,6 +17,7 @@
 		<!-- Needs to be called this way... it's used by the parent project -->
         <slf4jVersion>1.7.26</slf4jVersion>
         <jersey.version>2.28</jersey.version>
+        <jackson.version>2.10.3</jackson.version>
         <git.version>3.9.4</git.version>
         <credentials.version>2.3.3</credentials.version>
     </properties>
@@ -65,22 +66,22 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.10.3</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.10.3</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>2.10.3</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.10.3</version>
+            <version>${jackson.version}</version>
         </dependency>
 		<!--
 		<dependency>
