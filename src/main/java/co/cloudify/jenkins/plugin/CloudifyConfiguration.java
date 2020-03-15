@@ -116,7 +116,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
             @QueryParameter final boolean secured) throws IOException, ServletException {
         try {
             CloudifyClient client = CloudifyClient.create(host, username, password.getPlainText(), secured, tenant);
-            client.getManagerClient().getStatus();
+            client.getManagerClient().getVersion();
             return FormValidation.ok("Connection successful");
         } catch (WebApplicationException ex) {
             return FormValidation.error(ex, "Connection error");
