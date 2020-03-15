@@ -2,6 +2,7 @@ package co.cloudify.jenkins.plugin.actions;
 
 import java.util.Map;
 
+import co.cloudify.jenkins.plugin.CloudifyEnvironmentData;
 import hudson.model.Run;
 import jenkins.model.RunAction2;
 
@@ -56,6 +57,12 @@ public class EnvironmentBuildAction implements RunAction2 {
 
     public void setCapabilities(Map<String, Object> capabilities) {
         this.capabilities = capabilities;
+    }
+
+    public void applyEnvironmentData(final CloudifyEnvironmentData envData) {
+        setInputs(envData.getDeployment().getInputs());
+        setOutputs(envData.getOutputs());
+        setCapabilities(envData.getCapabilities());
     }
 
     @Override

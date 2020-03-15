@@ -144,10 +144,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
         CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
                 listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile,
                 mapping, mappingFile, outputFile, echoOutputs, debugOutput);
-
-        action.setInputs(envData.getDeployment().getInputs());
-        action.setOutputs(envData.getOutputs());
-        action.setCapabilities(envData.getCapabilities());
+        action.applyEnvironmentData(envData);
     }
 
     @Symbol("createCloudifyEnv")

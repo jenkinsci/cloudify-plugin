@@ -1,6 +1,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
-    <l:layout title="Greeting">
+    <l:layout title="Cloudify">
+        <l:header>
+            <style>
+table.cfy, table.cfy th, table.cfy td {
+    border: thin solid black;
+    border-collapse: collapse;
+    padding: 5px;
+}
+            </style>
+        </l:header>
         <l:side-panel>
             <st:include page="sidepanel.jelly" it="${it.run}" optional="true" />
         </l:side-panel>
@@ -15,7 +24,7 @@
                 ${it.deploymentId}
             </p>
             <h2>Inputs</h2>
-            <table>
+            <table class="cfy">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -32,7 +41,7 @@
                 </tbody>
             </table>
             <h2>Outputs</h2>
-            <table>
+            <table class="cfy">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -49,7 +58,7 @@
                 </tbody>
             </table>
             <h2>Capabilities</h2>
-            <table>
+            <table class="cfy">
                 <thead>
                     <tr>
                         <th>Name</th>

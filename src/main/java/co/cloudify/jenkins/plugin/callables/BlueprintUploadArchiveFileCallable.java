@@ -14,8 +14,7 @@ public class BlueprintUploadArchiveFileCallable extends BlueprintUploadFileCalla
     public BlueprintUploadArchiveFileCallable(
             final BlueprintsClient blueprintsClient,
             final String blueprintId,
-            final String blueprintMainFile
-            ) {
+            final String blueprintMainFile) {
         super(blueprintsClient, blueprintId, blueprintMainFile);
     }
 

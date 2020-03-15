@@ -16,8 +16,7 @@ public abstract class BlueprintUploadFileCallable implements FileCallable<Bluepr
     public BlueprintUploadFileCallable(
             final BlueprintsClient blueprintsClient,
             final String blueprintId,
-            final String blueprintMainFile
-            ) {
+            final String blueprintMainFile) {
         this.blueprintsClient = blueprintsClient;
         this.blueprintId = blueprintId;
         this.blueprintMainFile = blueprintMainFile;

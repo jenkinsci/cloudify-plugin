@@ -42,10 +42,10 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class CloudifyPluginUtilities {
-    public static String parseInput (final String s, final VariableResolver<String> resolver) {
+    public static String parseInput(final String s, final VariableResolver<String> resolver) {
         return StringUtils.trimToNull(Util.replaceMacro(s, resolver));
     }
-    
+
     /**
      * Write a JAXB-annotated object to a file as JSON. We isolate this
      * functionality to one class only, as it uses facilities that are not a part of
@@ -56,7 +56,8 @@ public class CloudifyPluginUtilities {
      * 
      * @throws IOException Some I/O error has occured.
      */
-    public static void writeBoundObject(final Object object, final FilePath outputFile) throws IOException, InterruptedException {
+    public static void writeBoundObject(final Object object, final FilePath outputFile)
+            throws IOException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         mapper.registerModule(new JaxbAnnotationModule());
@@ -64,6 +65,7 @@ public class CloudifyPluginUtilities {
             mapper.writeValue(os, object);
         }
     }
+
     /**
      * Writes a JSON object to a {@link FilePath}.
      * 

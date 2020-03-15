@@ -9,6 +9,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import co.cloudify.jenkins.plugin.actions.EnvironmentBuildAction;
 import co.cloudify.jenkins.plugin.callables.BlueprintUploadDirFileCallable;
 import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
@@ -152,6 +153,11 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         String inputsLocation = CloudifyPluginUtilities.parseInput(this.inputsLocation, resolver);
         String outputsLocation = CloudifyPluginUtilities.parseInput(this.outputsLocation, resolver);
 
+        EnvironmentBuildAction action = new EnvironmentBuildAction();
+        action.setBlueprintId(blueprintId);
+        action.setDeploymentId(deploymentId);
+        build.addOrReplaceAction(action);
+
         CloudifyDisposer disposer = new CloudifyDisposer(debugOutput);
         context.setDisposer(disposer);
 
@@ -169,7 +175,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
                     "Uploading blueprint '%s' from %s (main filename: %s)",
                     blueprintId,
                     rootFilePath, blueprintMainFile));
-            
+
             blueprint = rootFilePath.act(
                     new BlueprintUploadDirFileCallable(
                             blueprintsClient, blueprintId, blueprintMainFile));
@@ -180,7 +186,9 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
                 listener, workspace, client, blueprint.getId(),
                 deploymentId, inputs, inputsLocation, null, null, outputsLocation, echoOutputs, debugOutput);
+
         disposer.setDeployment(envData.getDeployment(), ignoreFailureOnTeardown);
+        action.applyEnvironmentData(envData);
     }
 
     public static class CloudifyDisposer extends Disposer {
