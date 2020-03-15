@@ -2,6 +2,8 @@ package co.cloudify.jenkins.plugin.actions;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import co.cloudify.jenkins.plugin.CloudifyEnvironmentData;
 import hudson.model.Run;
 import jenkins.model.RunAction2;
@@ -93,5 +95,16 @@ public class EnvironmentBuildAction implements RunAction2 {
     @Override
     public String getUrlName() {
         return "cloudify";
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("blueprintId", blueprintId)
+                .append("deploymentId", deploymentId)
+                .append("inputs", inputs)
+                .append("outputs", outputs)
+                .append("capabilities", capabilities)
+                .toString();
     }
 }

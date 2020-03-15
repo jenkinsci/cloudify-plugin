@@ -1,5 +1,10 @@
 package co.cloudify.jenkins.plugin;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.ws.rs.WebApplicationException;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -101,6 +106,21 @@ public class CloudifyConfiguration extends GlobalConfiguration {
      */
     public static CloudifyConfiguration get() {
         return GlobalConfiguration.all().get(CloudifyConfiguration.class);
+    }
+
+    public FormValidation doTestConnection(
+            @QueryParameter final String host,
+            @QueryParameter final String username,
+            @QueryParameter final Secret password,
+            @QueryParameter final String tenant,
+            @QueryParameter final boolean secured) throws IOException, ServletException {
+        try {
+            CloudifyClient client = CloudifyClient.create(host, username, password.getPlainText(), secured, tenant);
+            client.getManagerClient().getStatus();
+            return FormValidation.ok("Connection successful");
+        } catch (WebApplicationException ex) {
+            return FormValidation.error(ex, "Connection error");
+        }
     }
 
     /**

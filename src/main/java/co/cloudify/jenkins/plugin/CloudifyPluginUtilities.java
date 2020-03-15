@@ -20,6 +20,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.client.DeploymentsClient;
+import co.cloudify.rest.helpers.DefaultExecutionFollowCallback;
 import co.cloudify.rest.helpers.DeploymentsHelper;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
@@ -44,6 +45,18 @@ import net.sf.json.JSONObject;
 public class CloudifyPluginUtilities {
     public static String parseInput(final String s, final VariableResolver<String> resolver) {
         return StringUtils.trimToNull(Util.replaceMacro(s, resolver));
+    }
+
+    public static ExecutionFollowCallback getExecutionFollowCallback(
+            final boolean printLogs,
+            final boolean debugOutput,
+            final CloudifyClient cloudifyClient,
+            final PrintStream jenkinsLog) {
+        ExecutionFollowCallback callback = printLogs
+                ? new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog,
+                        debugOutput ? EventLevel.debug : EventLevel.info)
+                : DefaultExecutionFollowCallback.getInstance();
+        return callback;
     }
 
     /**
@@ -213,8 +226,8 @@ public class CloudifyPluginUtilities {
         Map<String, Object> inputsMap = CloudifyPluginUtilities.createInputsMap(
                 workspace, listener, inputs, inputsLocation,
                 mapping, mappingLocation);
-        ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(
-                client, logger, debugOutput ? EventLevel.debug : EventLevel.info);
+        ExecutionFollowCallback follower = CloudifyPluginUtilities.getExecutionFollowCallback(true,
+                debugOutput, client, logger);
 
         try {
             logger.println(String.format(
@@ -240,7 +253,7 @@ public class CloudifyPluginUtilities {
                         String.format(
                                 "Outputs and capabilities: %s", outputContents.toString(4)));
             }
-            if (StringUtils.isNotBlank(outputsLocation)) {
+            if (outputsLocation != null) {
                 FilePath outputFilePath = workspace.child(outputsLocation);
                 logger.println(String.format(
                         "Writing outputs and capabilities to %s", outputFilePath));
@@ -275,8 +288,8 @@ public class CloudifyPluginUtilities {
             final Boolean ignoreFailure,
             final boolean debugOutput) throws IOException, InterruptedException {
         PrintStream logger = listener.getLogger();
-        ExecutionFollowCallback follower = new PrintStreamLogEmitterExecutionFollower(
-                client, logger, debugOutput ? EventLevel.debug : EventLevel.info);
+        ExecutionFollowCallback follower = CloudifyPluginUtilities.getExecutionFollowCallback(true,
+                debugOutput, client, logger);
         try {
             logger.println(String.format("Uninstalling Cloudify environment; deployment ID: %s", deploymentId));
             Execution execution = ExecutionsHelper.uninstall(client, deploymentId, ignoreFailure, follower);

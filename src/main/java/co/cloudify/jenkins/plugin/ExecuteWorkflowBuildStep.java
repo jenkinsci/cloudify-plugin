@@ -9,11 +9,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
-import co.cloudify.rest.helpers.DefaultExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
-import co.cloudify.rest.helpers.PrintStreamLogEmitterExecutionFollower;
-import co.cloudify.rest.model.EventLevel;
 import co.cloudify.rest.model.Execution;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -37,8 +34,8 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
     private String deploymentId;
     private String workflowId;
     private String executionParameters;
-    private boolean waitForCompletion;
-    private boolean printLogs;
+    private boolean waitForCompletion = true;
+    private boolean printLogs = true;
     private boolean debugOutput;
 
     @DataBoundConstructor
@@ -122,10 +119,8 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 
         if (waitForCompletion || printLogs) {
             jenkinsLog.println("Waiting for execution to end...");
-            ExecutionFollowCallback callback = printLogs
-                    ? new PrintStreamLogEmitterExecutionFollower(cloudifyClient, jenkinsLog,
-                            debugOutput ? EventLevel.debug : EventLevel.info)
-                    : DefaultExecutionFollowCallback.getInstance();
+            ExecutionFollowCallback callback = CloudifyPluginUtilities.getExecutionFollowCallback(printLogs,
+                    debugOutput, cloudifyClient, jenkinsLog);
             execution = ExecutionsHelper.followExecution(cloudifyClient, execution, callback);
             ExecutionsHelper.validate(execution, "Execution did not end successfully");
             jenkinsLog.println("Execution ended successfully");

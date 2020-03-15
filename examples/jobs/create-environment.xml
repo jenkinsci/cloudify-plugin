@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>This job demonstrates the usage of the &quot;Create Cloudify Environment&quot; build step, in combination with the &quot;Cloudify Blueprint Selector&quot; parameter type.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+          <name>blueprint_id</name>
+          <description>Blueprint to create an environment from.</description>
+          <filter></filter>
+        </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>deployment_id</name>
+          <description>ID of deployment to create.</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.FileParameterDefinition>
+          <name>inputs.json</name>
+          <description>YAML/JSON file containing inputs for the new deployment. These inputs will be merged with the ones provided through a string (see below).</description>
+        </hudson.model.FileParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>inputs</name>
+          <description>YAML/JSON containing inputs for the new deployment. These inputs will be merged with the ones provided through a file (see above).</description>
+          <defaultValue></defaultValue>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>outputs_file</name>
+          <description>File to create, containing the new environment&apos;s outputs and capabilities.</description>
+          <defaultValue>outputs.json</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <co.cloudify.jenkins.plugin.CreateEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <blueprintId>${blueprint_id}</blueprintId>
+      <deploymentId>${deployment_id}</deploymentId>
+      <inputs>${inputs}</inputs>
+      <inputsFile>inputs.json</inputsFile>
+      <mapping></mapping>
+      <mappingFile></mappingFile>
+      <outputFile>${outputs_file}</outputFile>
+      <echoOutputs>true</echoOutputs>
+      <debugOutput>false</debugOutput>
+    </co.cloudify.jenkins.plugin.CreateEnvironmentBuildStep>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

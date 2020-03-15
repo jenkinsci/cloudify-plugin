@@ -4,12 +4,20 @@
     <j:set var="escapeEntryTitleAndDescription" value="false" />
     <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
         <div name="parameter">
+            <j:set var="choices" value="${it.choices}"/>
+            <j:choose>
+                <j:when test="${choices == null}">
+                    <span style="color: red">Failed obtaining list of possible values</span>
+                </j:when>
+                <j:otherwise>
+                    <select name="selectedValue">
+                        <j:forEach var="value" items="${choices}">
+                            <f:option selected="${it.defaultParameterValue.value==value}">${value}</f:option>
+                        </j:forEach>
+                    </select>
+                </j:otherwise>
+            </j:choose>
             <input type="hidden" name="name" value="${it.name}" />
-            <select name="selectedValue">
-                <j:forEach var="value" items="${it.choices}">
-                    <f:option selected="${it.defaultParameterValue.value==value}">${value}</f:option>
-                </j:forEach>
-            </select>
         </div>
     </f:entry>
 </j:jelly>

@@ -12,6 +12,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.rest.client.CloudifyClient;
@@ -27,6 +29,8 @@ import net.sf.json.JSONObject;
 
 public class BlueprintInputConstraintSelector extends ParameterDefinition {
     private static final long serialVersionUID = 1L;
+
+    private static final Logger logger = LoggerFactory.getLogger(BlueprintInputConstraintSelector.class);
 
     private String blueprintId;
     private String inputName;
@@ -66,31 +70,36 @@ public class BlueprintInputConstraintSelector extends ParameterDefinition {
 
     @Exported
     public List<String> getChoices() {
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
-        Blueprint blueprint = client.getBlueprintsClient().get(blueprintId);
-        Map<String, BlueprintInput> inputs = blueprint.getPlan().getInputs();
-        BlueprintInput bpInput = inputs.get(inputName);
-        if (bpInput == null) {
-            throw new IllegalArgumentException(
-                    String.format("Blueprint '%s' has no input named '%s'", blueprintId, inputName));
+        try {
+            CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+            Blueprint blueprint = client.getBlueprintsClient().get(blueprintId);
+            Map<String, BlueprintInput> inputs = blueprint.getPlan().getInputs();
+            BlueprintInput bpInput = inputs.get(inputName);
+            if (bpInput == null) {
+                throw new IllegalArgumentException(
+                        String.format("Blueprint '%s' has no input named '%s'", blueprintId, inputName));
+            }
+            List<InputConstraint> constraints = bpInput.getConstraints();
+            List<InputConstraint> relevant = constraints
+                    .stream()
+                    .filter(x -> x.getType() == ConstraintType.valid_values)
+                    .collect(Collectors.toList());
+            if (relevant.size() != 1) {
+                throw new IllegalArgumentException(
+                        String.format(
+                                "Input '%' of blueprint '%s' contains %d constraints of type '%s'; expected exactly one",
+                                inputName, blueprintId, relevant.size(), ConstraintType.valid_values));
+            }
+            @SuppressWarnings("unchecked")
+            List<Object> options = (List<Object>) relevant.get(0).getValue();
+            return options
+                    .stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            logger.error("Failed retrieving constraints", ex);
+            return null;
         }
-        List<InputConstraint> constraints = bpInput.getConstraints();
-        List<InputConstraint> relevant = constraints
-                .stream()
-                .filter(x -> x.getType() == ConstraintType.valid_values)
-                .collect(Collectors.toList());
-        if (relevant.size() != 1) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Input '%' of blueprint '%s' contains %d constraints of type '%s'; expected exactly one",
-                            inputName, blueprintId, relevant.size(), ConstraintType.valid_values));
-        }
-        @SuppressWarnings("unchecked")
-        List<Object> options = (List<Object>) relevant.get(0).getValue();
-        return options
-                .stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
     }
 
     @Override

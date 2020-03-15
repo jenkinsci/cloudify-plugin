@@ -1,6 +1,8 @@
 {
 	"definitions": [
 		"parameter-types",
-		"cloudify-wrapper"
+		"cloudify-wrapper",
+		"create-environment",
+		"delete-environment"
 	]
 }
