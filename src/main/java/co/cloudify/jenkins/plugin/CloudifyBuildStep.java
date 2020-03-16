@@ -25,16 +25,6 @@ import jenkins.tasks.SimpleBuildStep;
  * @author Isaac Shabtay
  */
 public abstract class CloudifyBuildStep extends Builder implements SimpleBuildStep {
-    @Override
-    public Action getProjectAction(AbstractProject<?, ?> project) {
-        return super.getProjectAction(project);
-    }
-
-    @Override
-    public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
-        return super.getProjectActions(project);
-    }
-
     /**
      * This should be the main, "real" implementation of
      * {@link #perform(AbstractBuild, Launcher, BuildListener)}. Implementations

@@ -43,8 +43,18 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class CloudifyPluginUtilities {
+    /**
+     * Process a UI input string, by replacing macros in it and trimming it.
+     * A resultant empty string will be returned as <code>null</code>.
+     * 
+     * @param s        some string
+     * @param resolver build's variable resolver
+     * 
+     * @return Cleaned-up string, or <code>null</code> if the result was nothing.
+     */
     public static String parseInput(final String s, final VariableResolver<String> resolver) {
-        return StringUtils.trimToNull(Util.replaceMacro(s, resolver));
+        return StringUtils.trimToNull(
+                s != null ? Util.replaceMacro(s, resolver) : null);
     }
 
     public static ExecutionFollowCallback getExecutionFollowCallback(
@@ -153,6 +163,13 @@ public class CloudifyPluginUtilities {
         }
     }
 
+    /**
+     * Transform a standard outputs/capabilities file by using a mapping.
+     * 
+     * @param outputsContents outputs/capabilities
+     * @param mapping         mapping structure
+     * @param result          {@link Map} to populate with results
+     */
     public static void transformOutputsFile(final JSONObject outputsContents, final JSONObject mapping,
             final Map<String, Object> result) {
         JSONObject outputs = outputsContents.getJSONObject("outputs");
@@ -163,6 +180,22 @@ public class CloudifyPluginUtilities {
         transform(capsMap, result, capabilities);
     }
 
+    /**
+     * Given inputs in the form of a string, and in a form of a file, return a {@link Map}
+     * of combined inputs.
+     * 
+     * @param workspace   Jenkins' build workspace
+     * @param listener    Jenkins' task listener
+     * @param inputsText  inputs as a string, in YAML/JSON format (may be <code>null</code>)
+     * @param inputsFile  inputs as a YAML/JSON file (may be <code>null</code>)
+     * @param mapping     inputs mapping, as a YAML/JSON string (may be <code>null</code>)
+     * @param mappingFile inputs mapping, as a YAML/JSON file (may be <code>null</code>)
+     * 
+     * @return A {@link Map} representing combined inputs.
+     * 
+     * @throws IOException          Thrown by underlying code.
+     * @throws InterruptedException Thrown by underlying code.
+     */
     public static Map<String, Object> createInputsMap(
             final FilePath workspace, final TaskListener listener, final String inputsText, final String inputsFile,
             final String mapping, final String mappingFile) throws IOException, InterruptedException {
