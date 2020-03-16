@@ -93,7 +93,7 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 
         JSONObject mappingJson;
         if (mapping != null) {
-            mappingJson = JSONObject.fromObject(mapping);
+            mappingJson = CloudifyPluginUtilities.readYamlOrJson(mapping);
         } else {
             logger.println(String.format("Reading inputs mapping from %s", mappingLocation));
             mappingJson = CloudifyPluginUtilities.readYamlOrJson(workspace.child(mappingLocation));
