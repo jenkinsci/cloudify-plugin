@@ -1,6 +1,7 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.PrintStream;
+import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
@@ -23,7 +24,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
-import net.sf.json.JSONObject;
 
 /**
  * A build step for executing a Cloudify workflow.
@@ -108,7 +108,7 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 
         PrintStream jenkinsLog = listener.getLogger();
 
-        JSONObject executionParametersAsMap = null;
+        Map<String, Object> executionParametersAsMap = null;
         if (executionParameters != null) {
             executionParametersAsMap = CloudifyPluginUtilities.readYamlOrJson(executionParameters);
         }

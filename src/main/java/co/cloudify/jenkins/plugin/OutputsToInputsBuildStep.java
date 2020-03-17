@@ -1,6 +1,8 @@
 package co.cloudify.jenkins.plugin;
 
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -9,6 +11,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import co.cloudify.jenkins.plugin.callables.JsonFileWriterFileCallable;
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -21,7 +24,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
-import net.sf.json.JSONObject;
 
 /**
  * A build step for converting outputs and capabilities of one deployment, to
@@ -91,17 +93,16 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
         FilePath inputsFile = workspace.child(inputsLocation);
         FilePath outputsFile = workspace.child(outputsLocation);
 
-        JSONObject mappingJson;
+        Map<String, Object> mappingAsMap;
         if (mapping != null) {
-            mappingJson = CloudifyPluginUtilities.readYamlOrJson(mapping);
+            mappingAsMap = CloudifyPluginUtilities.readYamlOrJson(mapping);
         } else {
             logger.println(String.format("Reading inputs mapping from %s", mappingLocation));
-            mappingJson = CloudifyPluginUtilities.readYamlOrJson(workspace.child(mappingLocation));
+            mappingAsMap = CloudifyPluginUtilities.readYamlOrJson(workspace.child(mappingLocation));
         }
-        JSONObject outputsJson = CloudifyPluginUtilities.readYamlOrJson(outputsFile);
-        JSONObject inputs = new JSONObject();
-        CloudifyPluginUtilities.transformOutputsFile(outputsJson, mappingJson, inputs);
-        CloudifyPluginUtilities.writeJson(inputs, inputsFile);
+        Map<String, Object> results = new HashMap<String, Object>();
+        CloudifyPluginUtilities.transformOutputsFile(outputsFile, mappingAsMap, results);
+        inputsFile.act(new JsonFileWriterFileCallable(CloudifyPluginUtilities.jsonFromMap(results)));
     }
 
     @Symbol("cfyOutputsToInputs")

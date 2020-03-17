@@ -6,9 +6,14 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonWriter;
+import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +62,16 @@ public class CloudifyPluginUtilities {
                 s != null ? Util.replaceMacro(s, resolver) : null);
     }
 
+    /**
+     * Get an {@link ExecutionFollowCallback} instance based on user parameters.
+     * 
+     * @param printLogs      should event/logs be printed?
+     * @param debugOutput    should debug-level logs be printed
+     * @param cloudifyClient REST client
+     * @param jenkinsLog     Jenkins' log stream
+     * 
+     * @return A suitable {@link ExecutionFollowCallback} to use.
+     */
     public static ExecutionFollowCallback getExecutionFollowCallback(
             final boolean printLogs,
             final boolean debugOutput,
@@ -97,10 +112,11 @@ public class CloudifyPluginUtilities {
      * 
      * @throws IOException Some problem occured during serialization.
      */
-    public static void writeJson(final JSONObject object, final FilePath path)
+    public static void writeJson(final JsonObject object, final FilePath path)
             throws IOException, InterruptedException {
-        try (OutputStreamWriter os = new OutputStreamWriter(path.write())) {
-            os.write(object.toString(4));
+        try (OutputStreamWriter os = new OutputStreamWriter(path.write());
+                JsonWriter jw = Json.createWriter(os)) {
+            jw.writeObject(object);
         }
     }
 
@@ -114,7 +130,7 @@ public class CloudifyPluginUtilities {
      * @throws IOException          May be thrown by underlying framework.
      * @throws InterruptedException May be thrown by underlying framework.
      */
-    public static JSONObject readYamlOrJson(final FilePath path) throws IOException, InterruptedException {
+    public static Map<String, Object> readYamlOrJson(final FilePath path) throws IOException, InterruptedException {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             try (InputStream is = path.read()) {
@@ -134,7 +150,7 @@ public class CloudifyPluginUtilities {
      * 
      * @return A {@link JSONObject} containing the parsed data.
      */
-    public static JSONObject readYamlOrJson(final String str) {
+    public static Map<String, Object> readYamlOrJson(final String str) {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(str, JSONObject.class);
@@ -143,9 +159,9 @@ public class CloudifyPluginUtilities {
         }
     }
 
-    public static JSONObject createMapping(final FilePath workspace, final String mappingString,
+    public static Map<String, Object> createMapping(final FilePath workspace, final String mappingString,
             final String mappingLocation) throws IOException, InterruptedException {
-        JSONObject mapping = null;
+        Map<String, Object> mapping = null;
         if (StringUtils.isNotBlank(mappingLocation)) {
             FilePath mappingFile = workspace.child(mappingLocation);
             mapping = readYamlOrJson(mappingFile);
@@ -155,8 +171,8 @@ public class CloudifyPluginUtilities {
         return mapping;
     }
 
-    private static void transform(JSONObject mapping, Map<String, Object> result, JSONObject source) {
-        for (Map.Entry<String, String> entry : (Set<Map.Entry<String, String>>) mapping.entrySet()) {
+    private static void transform(Map<String, String> mapping, Map<String, Object> result, Map<String, Object> source) {
+        for (Map.Entry<String, String> entry : mapping.entrySet()) {
             String from = entry.getKey();
             String to = entry.getValue();
             result.put(to, source.get(from));
@@ -170,14 +186,17 @@ public class CloudifyPluginUtilities {
      * @param mapping         mapping structure
      * @param result          {@link Map} to populate with results
      */
-    public static void transformOutputsFile(final JSONObject outputsContents, final JSONObject mapping,
-            final Map<String, Object> result) {
-        JSONObject outputs = outputsContents.getJSONObject("outputs");
-        JSONObject capabilities = outputsContents.getJSONObject("capabilities");
-        JSONObject outputMap = mapping.getJSONObject("outputs");
-        JSONObject capsMap = mapping.getJSONObject("capabilities");
-        transform(outputMap, result, outputs);
-        transform(capsMap, result, capabilities);
+    public static void transformOutputsFile(final FilePath outputsFile, final Map<String, Object> mapping,
+            final Map<String, Object> results) throws IOException, InterruptedException {
+        Map<String, Object> outputsContents = readYamlOrJson(outputsFile);
+        Map<String, Object> outputs = (Map<String, Object>) outputsContents.getOrDefault("outputs",
+                Collections.EMPTY_MAP);
+        Map<String, Object> capabilities = (Map<String, Object>) outputsContents.getOrDefault("capabilities",
+                Collections.EMPTY_MAP);
+        Map<String, String> outputMap = (Map<String, String>) mapping.getOrDefault("outputs", Collections.EMPTY_MAP);
+        Map<String, String> capsMap = (Map<String, String>) mapping.getOrDefault("capabilities", Collections.EMPTY_MAP);
+        transform(outputMap, results, outputs);
+        transform(capsMap, results, capabilities);
     }
 
     /**
@@ -201,17 +220,16 @@ public class CloudifyPluginUtilities {
             final String mapping, final String mappingFile) throws IOException, InterruptedException {
         PrintStream jenkinsLog = listener.getLogger();
         Map<String, Object> inputsMap = new HashMap<String, Object>();
-        if (StringUtils.isNotBlank(inputsText)) {
+        if (inputsText != null) {
             inputsMap.putAll(readYamlOrJson(inputsText));
         }
-        if (StringUtils.isNotBlank(inputsFile)) {
+        if (inputsFile != null) {
             FilePath expectedLocation = workspace.child(inputsFile);
             if (expectedLocation.exists()) {
                 jenkinsLog.println(String.format("Reading inputs from %s", expectedLocation));
-                JSONObject inputsFromFile = CloudifyPluginUtilities.readYamlOrJson(expectedLocation);
-                JSONObject mappingJson = createMapping(workspace, mapping, mappingFile);
+                Map<String, Object> mappingJson = createMapping(workspace, mapping, mappingFile);
                 if (mappingJson != null) {
-                    transformOutputsFile(inputsFromFile, mappingJson, inputsMap);
+                    transformOutputsFile(expectedLocation, mappingJson, inputsMap);
                 }
             } else {
                 jenkinsLog.println(String.format("Deployment inputs file not found, skipping: %s", inputsFile));
@@ -277,14 +295,16 @@ public class CloudifyPluginUtilities {
 
             CloudifyEnvironmentData data = new CloudifyEnvironmentData(deployment, outputs, capabilities);
 
-            JSONObject outputContents = new JSONObject();
-            outputContents.put("outputs", outputs);
-            outputContents.put("capabilities", capabilities);
+            JsonObject outputContents = Json.createObjectBuilder()
+                    .add("outputs", jsonFromMap(outputs))
+                    .add("capabilities", jsonFromMap(capabilities))
+                    .build();
 
             if (echoOutputs) {
-                logger.println(
-                        String.format(
-                                "Outputs and capabilities: %s", outputContents.toString(4)));
+                logger.print("Outputs and capabilities: ");
+                try (JsonGenerator generator = getPrintGenerator(logger)) {
+                    generator.write(outputContents);
+                }
             }
             if (outputsLocation != null) {
                 FilePath outputFilePath = workspace.child(outputsLocation);
@@ -353,5 +373,15 @@ public class CloudifyPluginUtilities {
             }
         }
         return FormValidation.ok();
+    }
+
+    public static JsonObject jsonFromMap(final Map<String, Object> map) {
+        return Json.createObjectBuilder(map).build();
+    }
+
+    public static JsonGenerator getPrintGenerator(final OutputStream stream) {
+        return Json
+                .createGeneratorFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true))
+                .createGenerator(stream);
     }
 }
