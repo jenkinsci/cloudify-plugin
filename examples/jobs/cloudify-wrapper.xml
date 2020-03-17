@@ -1,7 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Shows basic usage of the Cloudify Build Wrapper.</description>
+  <description>Shows basic usage of the Cloudify Build Wrapper.&#xd;
+&#xd;
+*NOTE*: this example requires that the &quot;jq&quot; utility is installed on the Jenkins machine that runs this job.</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.4">
@@ -43,7 +45,7 @@ echo &quot;Endpoint: ${endpoint}&quot;
     <co.cloudify.jenkins.plugin.CloudifyBuildWrapper plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <blueprintId>blueprint-${BUILD_ID}</blueprintId>
       <blueprintRootDirectory>repo/getting-started/infra</blueprintRootDirectory>
-      <blueprintMainFile>aws.yaml</blueprintMainFile>
+      <blueprintMainFile>openstack.yaml</blueprintMainFile>
       <deploymentId>deployment-${BUILD_ID}</deploymentId>
       <inputs></inputs>
       <inputsLocation></inputsLocation>
