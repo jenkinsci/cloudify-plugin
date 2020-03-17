@@ -1,11 +1,10 @@
 package co.cloudify.jenkins.plugin.callables;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.json.JsonObject;
-import javax.json.stream.JsonGenerator;
 
 import org.jenkinsci.remoting.RoleChecker;
 
@@ -30,9 +29,8 @@ public class JsonFileWriterFileCallable implements FileCallable<Void> {
 
     @Override
     public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        try (FileOutputStream os = new FileOutputStream(f);
-                JsonGenerator generator = CloudifyPluginUtilities.getPrintGenerator(os)) {
-            generator.write(json);
+        try (FileWriter fw = new FileWriter(f)) {
+            fw.write(CloudifyPluginUtilities.toString(json));
         }
         return null;
     }

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -301,10 +302,8 @@ public class CloudifyPluginUtilities {
                     .build();
 
             if (echoOutputs) {
-                logger.print("Outputs and capabilities: ");
-                try (JsonGenerator generator = getPrintGenerator(logger)) {
-                    generator.write(outputContents);
-                }
+                logger.println(String.format("Outputs and capabilities: %s",
+                        toString(outputContents)));
             }
             if (outputsLocation != null) {
                 FilePath outputFilePath = workspace.child(outputsLocation);
@@ -379,9 +378,24 @@ public class CloudifyPluginUtilities {
         return Json.createObjectBuilder(map).build();
     }
 
-    public static JsonGenerator getPrintGenerator(final OutputStream stream) {
-        return Json
+    /**
+     * Convert a JSON to a string.
+     * Theoretically, I'd have liked to use {@link JsonGenerator} on Jenkins'
+     * logger, however {@link JsonGenerator} closes the stream when it's
+     * {@link JsonGenerator#close()} method is called. That causes Jenkins'
+     * log to stop working.
+     * 
+     * @param json JSON object to convert to a string.
+     * 
+     * @return String representation of the JSON object.
+     */
+    public static String toString(final JsonObject json) {
+        StringWriter sw = new StringWriter();
+        try (JsonGenerator gen = Json
                 .createGeneratorFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true))
-                .createGenerator(stream);
+                .createGenerator(sw)) {
+            gen.write(json);
+        }
+        return sw.toString();
     }
 }

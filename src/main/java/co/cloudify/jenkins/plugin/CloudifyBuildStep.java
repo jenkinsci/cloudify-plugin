@@ -2,15 +2,12 @@ package co.cloudify.jenkins.plugin;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Result;
