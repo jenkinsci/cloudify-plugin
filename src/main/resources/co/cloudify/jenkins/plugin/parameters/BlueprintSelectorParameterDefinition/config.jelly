@@ -10,4 +10,10 @@
     <f:entry title="${%Name Filter}" field="filter">
         <f:textbox />
     </f:entry>
+    <f:entry title="${%Sort by}" field="sortKey">
+        <f:select />
+    </f:entry>
+    <f:entry title="${%Descending order}" field="descending">
+        <f:checkbox />
+    </f:entry>
 </j:jelly>

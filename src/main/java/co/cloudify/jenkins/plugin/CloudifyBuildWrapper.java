@@ -19,7 +19,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -141,20 +140,20 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         this.debugOutput = debugOutput;
     }
 
+    protected String expand(final EnvVars environment, final String value) {
+        return StringUtils.trimToNull(environment.expand(value));
+    }
+
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
             EnvVars initialEnvironment) throws IOException, InterruptedException {
-        if (build instanceof AbstractBuild) {
-            initialEnvironment.overrideAll(((AbstractBuild) build).getBuildVariables());
-        }
-
-        String blueprintId = initialEnvironment.expand(this.blueprintId);
-        String blueprintRootDirectory = initialEnvironment.expand(this.blueprintRootDirectory);
-        String blueprintMainFile = initialEnvironment.expand(this.blueprintMainFile);
-        String deploymentId = initialEnvironment.expand(this.deploymentId);
-        String inputs = initialEnvironment.expand(this.inputs);
-        String inputsLocation = initialEnvironment.expand(this.inputsLocation);
-        String outputsLocation = initialEnvironment.expand(this.outputsLocation);
+        String blueprintId = expand(initialEnvironment, this.blueprintId);
+        String blueprintRootDirectory = expand(initialEnvironment, this.blueprintRootDirectory);
+        String blueprintMainFile = expand(initialEnvironment, this.blueprintMainFile);
+        String deploymentId = expand(initialEnvironment, this.deploymentId);
+        String inputs = expand(initialEnvironment, this.inputs);
+        String inputsLocation = expand(initialEnvironment, this.inputsLocation);
+        String outputsLocation = expand(initialEnvironment, this.outputsLocation);
 
         EnvironmentBuildAction action = new EnvironmentBuildAction();
         action.setBlueprintId(blueprintId);
