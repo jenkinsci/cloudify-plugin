@@ -75,7 +75,7 @@ public class TenantsListParameterDefinition extends ParameterDefinition {
         @Override
         @Nonnull
         public String getDisplayName() {
-            return "Cloudify Tenant Selector";
+            return Messages.TenantsListParameterDefinition_DescriptorImpl_displayName();
         }
     }
 

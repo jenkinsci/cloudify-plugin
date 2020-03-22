@@ -120,7 +120,7 @@ public class BlueprintInputConstraintSelector extends ParameterDefinition {
         @Override
         @Nonnull
         public String getDisplayName() {
-            return "Cloudify Constrained Input Value Selector";
+            return Messages.BlueprintInputConstraintSelector_DescriptorImpl_displayName();
         }
     }
 

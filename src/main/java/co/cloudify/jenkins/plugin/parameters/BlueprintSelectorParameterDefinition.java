@@ -81,7 +81,7 @@ public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
         @Override
         @Nonnull
         public String getDisplayName() {
-            return "Cloudify Blueprint Selector";
+            return Messages.BlueprintSelectorParameterDefinition_DescriptorImpl_displayName();
         }
     }
 

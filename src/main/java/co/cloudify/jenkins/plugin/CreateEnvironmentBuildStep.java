@@ -9,7 +9,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.jenkins.plugin.actions.EnvironmentBuildAction;
 import co.cloudify.rest.client.CloudifyClient;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -19,7 +18,6 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-import hudson.util.VariableResolver;
 
 /**
  * A Build Step for creating an environment.
@@ -126,15 +124,13 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
     @Override
     protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
             CloudifyClient cloudifyClient) throws Exception {
-        EnvVars env = run.getEnvironment(listener);
-        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-        String blueprintId = CloudifyPluginUtilities.parseInput(this.blueprintId, resolver);
-        String deploymentId = CloudifyPluginUtilities.parseInput(this.deploymentId, resolver);
-        String inputs = CloudifyPluginUtilities.parseInput(this.inputs, resolver);
-        String inputsFile = CloudifyPluginUtilities.parseInput(this.inputsFile, resolver);
-        String mapping = CloudifyPluginUtilities.parseInput(this.mapping, resolver);
-        String mappingFile = CloudifyPluginUtilities.parseInput(this.mappingFile, resolver);
-        String outputFile = CloudifyPluginUtilities.parseInput(this.outputFile, resolver);
+        String blueprintId = expandString(this.blueprintId);
+        String deploymentId = expandString(this.deploymentId);
+        String inputs = expandString(this.inputs);
+        String inputsFile = expandString(this.inputsFile);
+        String mapping = expandString(this.mapping);
+        String mappingFile = expandString(this.mappingFile);
+        String outputFile = expandString(this.outputFile);
 
         EnvironmentBuildAction action = new EnvironmentBuildAction();
         action.setBlueprintId(blueprintId);

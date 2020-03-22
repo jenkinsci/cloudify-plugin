@@ -35,8 +35,11 @@ import co.cloudify.rest.model.Deployment;
 import co.cloudify.rest.model.EventLevel;
 import co.cloudify.rest.model.Execution;
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
@@ -49,6 +52,23 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class CloudifyPluginUtilities {
+    public static EnvVars getEnvironment(final AbstractBuild build, final TaskListener listener)
+            throws InterruptedException, IOException {
+        EnvVars environment = build.getEnvironment(listener);
+        // This results in empty variables to disappear from the environment,
+        // causing them to not be expanded at all ("${inputs}" will be returned as is).
+//        environment.overrideAll(build.getBuildVariables());
+        return environment;
+    }
+
+    public static EnvVars getEnvironment(final Run run, final TaskListener listener)
+            throws InterruptedException, IOException {
+        if (run instanceof AbstractBuild) {
+            return getEnvironment((AbstractBuild) run, listener);
+        }
+        return null;
+    }
+
     /**
      * Process a UI input string, by replacing macros in it and trimming it.
      * A resultant empty string will be returned as <code>null</code>.

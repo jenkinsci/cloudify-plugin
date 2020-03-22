@@ -3,8 +3,11 @@ package co.cloudify.jenkins.plugin;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
+
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -41,10 +44,30 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     protected abstract void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener,
             FilePath workspace, CloudifyClient cloudifyClient) throws Exception;
 
+    private transient EnvVars envVars;
+
+    /**
+     * Expand a string input, for variables.
+     * 
+     * @param value string to expand
+     * 
+     * @return Expanded value.
+     */
+    protected String expandString(final String value) {
+        if (envVars != null) {
+            return StringUtils.trimToNull(envVars.expand(value));
+        }
+        return value;
+    }
+
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener)
             throws InterruptedException, IOException {
         CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+        if (envVars != null) {
+            throw new IllegalStateException("envVars already populated");
+        }
+        envVars = CloudifyPluginUtilities.getEnvironment(run, listener);
         try {
             performImpl(run, launcher, listener, workspace, client);
         } catch (IOException | InterruptedException ex) {
@@ -64,6 +87,11 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
             throws InterruptedException, IOException {
         listener.started(Arrays.asList(new Cause.UserIdCause()));
         CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+
+        if (envVars != null) {
+            throw new IllegalStateException("envVars already populated");
+        }
+        envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
 
         try {
             performImpl(build, launcher, listener, build.getWorkspace(), client);

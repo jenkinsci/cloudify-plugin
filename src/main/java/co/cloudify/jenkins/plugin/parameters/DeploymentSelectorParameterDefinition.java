@@ -85,7 +85,7 @@ public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
         @Override
         @Nonnull
         public String getDisplayName() {
-            return "Cloudify Deployment Selector";
+            return Messages.DeploymentSelectorParameterDefinition_DescriptorImpl_displayName();
         }
     }
 

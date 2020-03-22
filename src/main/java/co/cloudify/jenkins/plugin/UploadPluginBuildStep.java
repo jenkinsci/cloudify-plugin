@@ -10,7 +10,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.model.Plugin;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -20,7 +19,6 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-import hudson.util.VariableResolver;
 
 /**
  * A build step for uploading a plugin.
@@ -67,11 +65,9 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
     @Override
     protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
             CloudifyClient cloudifyClient) throws Exception {
-        EnvVars env = run.getEnvironment(listener);
-        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(env);
-        String wagonLocation = CloudifyPluginUtilities.parseInput(this.wagonLocation, resolver);
-        String yamlLocation = CloudifyPluginUtilities.parseInput(this.yamlLocation, resolver);
-        String outputLocation = CloudifyPluginUtilities.parseInput(this.outputLocation, resolver);
+        String wagonLocation = expandString(this.wagonLocation);
+        String yamlLocation = expandString(this.yamlLocation);
+        String outputLocation = expandString(this.outputLocation);
 
         PrintStream jenkinsLog = listener.getLogger();
 

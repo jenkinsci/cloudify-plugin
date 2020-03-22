@@ -19,13 +19,13 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
-import hudson.util.VariableResolver;
 import jenkins.tasks.SimpleBuildWrapper;
 
 /**
@@ -144,14 +144,17 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
             EnvVars initialEnvironment) throws IOException, InterruptedException {
-        VariableResolver<String> resolver = new VariableResolver.ByMap<String>(initialEnvironment);
-        String blueprintId = CloudifyPluginUtilities.parseInput(this.blueprintId, resolver);
-        String blueprintRootDirectory = CloudifyPluginUtilities.parseInput(this.blueprintRootDirectory, resolver);
-        String blueprintMainFile = CloudifyPluginUtilities.parseInput(this.blueprintMainFile, resolver);
-        String deploymentId = CloudifyPluginUtilities.parseInput(this.deploymentId, resolver);
-        String inputs = CloudifyPluginUtilities.parseInput(this.inputs, resolver);
-        String inputsLocation = CloudifyPluginUtilities.parseInput(this.inputsLocation, resolver);
-        String outputsLocation = CloudifyPluginUtilities.parseInput(this.outputsLocation, resolver);
+        if (build instanceof AbstractBuild) {
+            initialEnvironment.overrideAll(((AbstractBuild) build).getBuildVariables());
+        }
+
+        String blueprintId = initialEnvironment.expand(this.blueprintId);
+        String blueprintRootDirectory = initialEnvironment.expand(this.blueprintRootDirectory);
+        String blueprintMainFile = initialEnvironment.expand(this.blueprintMainFile);
+        String deploymentId = initialEnvironment.expand(this.deploymentId);
+        String inputs = initialEnvironment.expand(this.inputs);
+        String inputsLocation = initialEnvironment.expand(this.inputsLocation);
+        String outputsLocation = initialEnvironment.expand(this.outputsLocation);
 
         EnvironmentBuildAction action = new EnvironmentBuildAction();
         action.setBlueprintId(blueprintId);

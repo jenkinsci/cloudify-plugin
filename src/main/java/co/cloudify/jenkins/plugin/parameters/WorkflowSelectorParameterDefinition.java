@@ -86,7 +86,7 @@ public class WorkflowSelectorParameterDefinition extends ParameterDefinition {
         @Override
         @Nonnull
         public String getDisplayName() {
-            return "Cloudify Workflow Selector";
+            return Messages.WorkflowSelectorParameterDefinition_DescriptorImpl_displayName();
         }
     }
 
