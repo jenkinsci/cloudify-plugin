@@ -42,9 +42,7 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
      *                   {@link #perform(AbstractBuild, Launcher, BuildListener)}
      */
     protected abstract void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener,
-            FilePath workspace, CloudifyClient cloudifyClient) throws Exception;
-
-    private transient EnvVars envVars;
+            FilePath workspace, EnvVars envVars, CloudifyClient cloudifyClient) throws Exception;
 
     /**
      * Expand a string input, for variables.
@@ -53,7 +51,7 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
      * 
      * @return Expanded value.
      */
-    protected String expandString(final String value) {
+    protected String expandString(final EnvVars envVars, final String value) {
         if (envVars != null) {
             return StringUtils.trimToNull(envVars.expand(value));
         }
@@ -64,12 +62,10 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener)
             throws InterruptedException, IOException {
         CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
-        if (envVars != null) {
-            throw new IllegalStateException("envVars already populated");
-        }
-        envVars = CloudifyPluginUtilities.getEnvironment(run, listener);
+        EnvVars envVars = CloudifyPluginUtilities.getEnvironment(run, listener);
+
         try {
-            performImpl(run, launcher, listener, workspace, client);
+            performImpl(run, launcher, listener, workspace, envVars, client);
         } catch (IOException | InterruptedException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -87,14 +83,10 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
             throws InterruptedException, IOException {
         listener.started(Arrays.asList(new Cause.UserIdCause()));
         CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
-
-        if (envVars != null) {
-            throw new IllegalStateException("envVars already populated");
-        }
-        envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
+        EnvVars envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
 
         try {
-            performImpl(build, launcher, listener, build.getWorkspace(), client);
+            performImpl(build, launcher, listener, build.getWorkspace(), envVars, client);
             listener.finished(Result.SUCCESS);
             return true;
         } catch (IOException | InterruptedException ex) {

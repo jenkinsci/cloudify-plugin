@@ -9,6 +9,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.jenkins.plugin.actions.EnvironmentBuildAction;
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -122,15 +123,17 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
     }
 
     @Override
-    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-            CloudifyClient cloudifyClient) throws Exception {
-        String blueprintId = expandString(this.blueprintId);
-        String deploymentId = expandString(this.deploymentId);
-        String inputs = expandString(this.inputs);
-        String inputsFile = expandString(this.inputsFile);
-        String mapping = expandString(this.mapping);
-        String mappingFile = expandString(this.mappingFile);
-        String outputFile = expandString(this.outputFile);
+    protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
+            final FilePath workspace,
+            final EnvVars envVars,
+            final CloudifyClient cloudifyClient) throws Exception {
+        String blueprintId = expandString(envVars, this.blueprintId);
+        String deploymentId = expandString(envVars, this.deploymentId);
+        String inputs = expandString(envVars, this.inputs);
+        String inputsFile = expandString(envVars, this.inputsFile);
+        String mapping = expandString(envVars, this.mapping);
+        String mappingFile = expandString(envVars, this.mappingFile);
+        String outputFile = expandString(envVars, this.outputFile);
 
         EnvironmentBuildAction action = new EnvironmentBuildAction();
         action.setBlueprintId(blueprintId);

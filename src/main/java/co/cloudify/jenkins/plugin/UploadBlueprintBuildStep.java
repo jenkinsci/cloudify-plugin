@@ -16,6 +16,7 @@ import co.cloudify.jenkins.plugin.callables.BlueprintUploadDirFileCallable;
 import co.cloudify.jenkins.plugin.callables.BlueprintUploadFileCallable;
 import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -89,13 +90,15 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
     }
 
     @Override
-    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-            CloudifyClient cloudifyClient) throws Exception {
-        String blueprintId = expandString(this.blueprintId);
-        String archiveUrl = expandString(this.archiveUrl);
-        String archivePath = expandString(this.archivePath);
-        String rootDirectory = expandString(this.rootDirectory);
-        String mainFileName = expandString(this.mainFileName);
+    protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
+            final FilePath workspace,
+            final EnvVars envVars,
+            final CloudifyClient cloudifyClient) throws Exception {
+        String blueprintId = expandString(envVars, this.blueprintId);
+        String archiveUrl = expandString(envVars, this.archiveUrl);
+        String archivePath = expandString(envVars, this.archivePath);
+        String rootDirectory = expandString(envVars, this.rootDirectory);
+        String mainFileName = expandString(envVars, this.mainFileName);
 
         PrintStream jenkinsLog = listener.getLogger();
         BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();

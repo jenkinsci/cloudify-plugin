@@ -12,6 +12,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.jenkins.plugin.callables.JsonFileWriterFileCallable;
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -76,12 +77,14 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
     }
 
     @Override
-    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-            CloudifyClient cloudifyClient) throws Exception {
-        String inputsLocation = expandString(this.inputsLocation);
-        String outputsLocation = expandString(this.outputsLocation);
-        String mapping = expandString(this.mapping);
-        String mappingLocation = expandString(this.mappingLocation);
+    protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
+            final FilePath workspace,
+            final EnvVars envVars,
+            final CloudifyClient cloudifyClient) throws Exception {
+        String inputsLocation = expandString(envVars, this.inputsLocation);
+        String outputsLocation = expandString(envVars, this.outputsLocation);
+        String mapping = expandString(envVars, this.mapping);
+        String mappingLocation = expandString(envVars, this.mappingLocation);
 
         FilePath inputsFile = workspace.child(inputsLocation);
         FilePath outputsFile = workspace.child(outputsLocation);

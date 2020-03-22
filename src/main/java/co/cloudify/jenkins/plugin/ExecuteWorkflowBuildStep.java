@@ -13,6 +13,7 @@ import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
 import co.cloudify.rest.model.Execution;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -96,11 +97,13 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
     }
 
     @Override
-    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-            CloudifyClient cloudifyClient) throws Exception {
-        String deploymentId = expandString(this.deploymentId);
-        String workflowId = expandString(this.workflowId);
-        String executionParameters = expandString(this.executionParameters);
+    protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
+            final FilePath workspace,
+            final EnvVars envVars,
+            final CloudifyClient cloudifyClient) throws Exception {
+        String deploymentId = expandString(envVars, this.deploymentId);
+        String workflowId = expandString(envVars, this.workflowId);
+        String executionParameters = expandString(envVars, this.executionParameters);
 
         PrintStream jenkinsLog = listener.getLogger();
 

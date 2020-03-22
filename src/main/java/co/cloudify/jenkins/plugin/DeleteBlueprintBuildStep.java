@@ -9,6 +9,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -42,9 +43,11 @@ public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
     }
 
     @Override
-    protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
-            CloudifyClient cloudifyClient) throws Exception {
-        String blueprintId = expandString(this.blueprintId);
+    protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
+            final FilePath workspace,
+            final EnvVars envVars,
+            final CloudifyClient cloudifyClient) throws Exception {
+        String blueprintId = expandString(envVars, this.blueprintId);
 
         PrintStream jenkinsLog = listener.getLogger();
         jenkinsLog.println(String.format("Deleting blueprint: %s", blueprintId));
