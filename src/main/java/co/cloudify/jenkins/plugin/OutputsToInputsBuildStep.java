@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin;
 
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -89,17 +88,11 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
         String mapping = CloudifyPluginUtilities.parseInput(this.mapping, resolver);
         String mappingLocation = CloudifyPluginUtilities.parseInput(this.mappingLocation, resolver);
 
-        PrintStream logger = listener.getLogger();
         FilePath inputsFile = workspace.child(inputsLocation);
         FilePath outputsFile = workspace.child(outputsLocation);
 
-        Map<String, Object> mappingAsMap;
-        if (mapping != null) {
-            mappingAsMap = CloudifyPluginUtilities.readYamlOrJson(mapping);
-        } else {
-            logger.println(String.format("Reading inputs mapping from %s", mappingLocation));
-            mappingAsMap = CloudifyPluginUtilities.readYamlOrJson(workspace.child(mappingLocation));
-        }
+        Map<String, Map<String, String>> mappingAsMap = CloudifyPluginUtilities.createMapping(workspace, mapping,
+                mappingLocation);
         Map<String, Object> results = new HashMap<String, Object>();
         CloudifyPluginUtilities.transformOutputsFile(outputsFile, mappingAsMap, results);
         inputsFile.act(new JsonFileWriterFileCallable(CloudifyPluginUtilities.jsonFromMap(results)));

@@ -160,14 +160,28 @@ public class CloudifyPluginUtilities {
         }
     }
 
-    public static Map<String, Object> createMapping(final FilePath workspace, final String mappingString,
+    /**
+     * Creates a combined outputs file mapping, from a mapping file and a
+     * mapping string.
+     * 
+     * @param workspace       build's workspace root
+     * @param mappingString   mapping, as a string (may be <code>null</code>)
+     * @param mappingLocation workspace location of a mapping file (may be <code>null</code>,
+     *                        may not exist)
+     * 
+     * @return Combined mapping.
+     * 
+     * @throws IOException          Thrown by underlying code.
+     * @throws InterruptedException Thrown by underlying code.
+     */
+    public static Map<String, Map<String, String>> createMapping(final FilePath workspace, final String mappingString,
             final String mappingLocation) throws IOException, InterruptedException {
-        Map<String, Object> mapping = null;
-        if (StringUtils.isNotBlank(mappingLocation)) {
+        Map<String, Map<String, String>> mapping = null;
+        if (mappingLocation != null) {
             FilePath mappingFile = workspace.child(mappingLocation);
-            mapping = readYamlOrJson(mappingFile);
-        } else if (StringUtils.isNotBlank(mappingString)) {
-            mapping = readYamlOrJson(mappingString);
+            mapping = (Map) readYamlOrJson(mappingFile);
+        } else if (mappingString != null) {
+            mapping = (Map) readYamlOrJson(mappingString);
         }
         return mapping;
     }
@@ -187,17 +201,13 @@ public class CloudifyPluginUtilities {
      * @param mapping         mapping structure
      * @param result          {@link Map} to populate with results
      */
-    public static void transformOutputsFile(final FilePath outputsFile, final Map<String, Object> mapping,
+    public static void transformOutputsFile(final FilePath outputsFile, final Map<String, Map<String, String>> mapping,
             final Map<String, Object> results) throws IOException, InterruptedException {
         Map<String, Object> outputsContents = readYamlOrJson(outputsFile);
-        Map<String, Object> outputs = (Map<String, Object>) outputsContents.getOrDefault("outputs",
-                Collections.EMPTY_MAP);
-        Map<String, Object> capabilities = (Map<String, Object>) outputsContents.getOrDefault("capabilities",
-                Collections.EMPTY_MAP);
-        Map<String, String> outputMap = (Map<String, String>) mapping.getOrDefault("outputs", Collections.EMPTY_MAP);
-        Map<String, String> capsMap = (Map<String, String>) mapping.getOrDefault("capabilities", Collections.EMPTY_MAP);
-        transform(outputMap, results, outputs);
-        transform(capsMap, results, capabilities);
+        for (Map.Entry<String, Map<String, String>> entry : mapping.entrySet()) {
+            transform(entry.getValue(), results,
+                    (Map<String, Object>) outputsContents.getOrDefault(entry.getKey(), Collections.EMPTY_MAP));
+        }
     }
 
     /**
@@ -228,7 +238,7 @@ public class CloudifyPluginUtilities {
             FilePath expectedLocation = workspace.child(inputsFile);
             if (expectedLocation.exists()) {
                 jenkinsLog.println(String.format("Reading inputs from %s", expectedLocation));
-                Map<String, Object> mappingJson = createMapping(workspace, mapping, mappingFile);
+                Map<String, Map<String, String>> mappingJson = createMapping(workspace, mapping, mappingFile);
                 if (mappingJson != null) {
                     transformOutputsFile(expectedLocation, mappingJson, inputsMap);
                 }
