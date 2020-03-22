@@ -6,8 +6,8 @@
       <jobProperties/>
       <triggers/>
       <parameters>
+        <string>infra_type</string>
         <string>deployment_id</string>
-        <string>blueprint_id</string>
       </parameters>
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
@@ -18,16 +18,16 @@
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
+        <co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+          <name>infra_type</name>
+          <description>Type of environment to create</description>
+          <filter>infra</filter>
+        </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>Name of environment to create</description>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
-        <co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
-          <name>blueprint_id</name>
-          <description>Type of environment to create</description>
-          <filter>infra</filter>
-        </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -36,23 +36,16 @@
     agent any
     
     parameters {
+        cloudifyBlueprintParam(name: &apos;infra_type&apos;, description: &apos;Type of environment to create&apos;, filter: &apos;infra&apos;)
         string(name: &apos;deployment_id&apos;, description: &apos;Name of environment to create&apos;)
-        cloudifyBlueprintParam(name: &apos;blueprint_id&apos;, description: &apos;Type of environment to create&apos;, filter: &apos;infra&apos;)
     }
     stages {
         stage(&apos;Build Cloudify Environment&apos;) {
             steps {
-                createCloudifyEnv blueprintId: &quot;${params.blueprint_id}&quot;,
+                createCloudifyEnv blueprintId: &quot;${params.infra_type}&quot;,
                     deploymentId: &quot;${params.deployment_id}&quot;,
                     echoOutputs: true,
                     outputFile: &apos;outputs.json&apos;
-            }
-        }
-        stage(&apos;Deploy NodeJS Application&apos;) {
-            steps {
-                script {
-                    def outputs = readJSON file: &apos;outputs.json&apos;
-                }
             }
         }
         stage(&apos;Wait for Input&apos;) {
