@@ -85,6 +85,7 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
         return mainFileName;
     }
 
+    @DataBoundSetter
     public void setMainFileName(String mainFileName) {
         this.mainFileName = mainFileName;
     }
