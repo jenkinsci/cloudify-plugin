@@ -106,7 +106,7 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Upload Cloudify Plugin";
+            return Messages.UploadPluginBuildstep_DescriptorImpl_displayName();
         }
     }
 

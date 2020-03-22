@@ -273,7 +273,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 
         @Override
         public String getDisplayName() {
-            return "Cloudify Environment";
+            return Messages.CloudifyBuildWrapper_DescriptorImpl_displayName();
         }
     }
 

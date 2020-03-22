@@ -132,7 +132,7 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Convert Cloudify Environment Outputs/Capabilities to Inputs";
+            return Messages.OutputsToInputsBuildStep_DescriptorImpl_displayName();
         }
     }
 

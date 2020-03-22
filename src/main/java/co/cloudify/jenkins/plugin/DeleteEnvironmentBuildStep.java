@@ -84,7 +84,7 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Delete Cloudify Environment";
+            return Messages.DeleteEnvironmentBuildStep_DescriptorImpl_displayName();
         }
     }
 

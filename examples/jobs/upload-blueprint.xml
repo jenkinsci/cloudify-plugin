@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><project>
   <actions/>
-  <description>Shows basic usage of the Cloudify Build Wrapper.&#13;
-&#13;
-*NOTE*: this example requires that the "jq" utility is installed on the Jenkins machine that runs this job.</description>
+  <description/>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.4">
@@ -32,26 +30,14 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <hudson.tasks.Shell>
-      <command>endpoint=$(jq  -r '.capabilities.endpoint' outputs.json)
-
-echo "Endpoint: ${endpoint}"
-</command>
-    </hudson.tasks.Shell>
+    <co.cloudify.jenkins.plugin.UploadBlueprintBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <blueprintId>blueprint-${BUILD_ID}</blueprintId>
+      <archiveUrl/>
+      <archivePath/>
+      <rootDirectory>repo/getting-started/infra</rootDirectory>
+      <mainFileName>aws.yaml</mainFileName>
+    </co.cloudify.jenkins.plugin.UploadBlueprintBuildStep>
   </builders>
   <publishers/>
-  <buildWrappers>
-    <co.cloudify.jenkins.plugin.CloudifyBuildWrapper plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
-      <blueprintId>blueprint-${BUILD_ID}</blueprintId>
-      <blueprintRootDirectory>repo/getting-started/infra</blueprintRootDirectory>
-      <blueprintMainFile>openstack.yaml</blueprintMainFile>
-      <deploymentId>deployment-${BUILD_ID}</deploymentId>
-      <inputs/>
-      <inputsLocation/>
-      <outputsLocation>outputs.json</outputsLocation>
-      <ignoreFailureOnTeardown>false</ignoreFailureOnTeardown>
-      <echoOutputs>true</echoOutputs>
-      <debugOutput>false</debugOutput>
-    </co.cloudify.jenkins.plugin.CloudifyBuildWrapper>
-  </buildWrappers>
+  <buildWrappers/>
 </project>

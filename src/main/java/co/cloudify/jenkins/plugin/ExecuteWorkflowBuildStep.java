@@ -145,7 +145,7 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Execute Cloudify Workflow";
+            return Messages.ExecuteWorkflowBuildStep_DescriptorImpl_displayName();
         }
     }
 

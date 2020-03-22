@@ -169,7 +169,7 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Upload Cloudify Blueprint";
+            return Messages.UploadBlueprintBuildStep_DescriptorImpl_displayName();
         }
     }
 

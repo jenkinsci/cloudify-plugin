@@ -69,7 +69,7 @@ public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Delete Cloudify Blueprint";
+            return Messages.DeleteBlueprintBuildStep_DescriptorImpl_displayName();
         }
     }
 

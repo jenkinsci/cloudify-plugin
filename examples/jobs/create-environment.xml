@@ -1,7 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<project>
+<?xml version="1.0" encoding="UTF-8"?><project>
   <actions/>
-  <description>This job demonstrates the usage of the &quot;Create Cloudify Environment&quot; build step, in combination with the &quot;Cloudify Blueprint Selector&quot; parameter type.</description>
+  <description>This job demonstrates the usage of the "Create Cloudify Environment" build step, in combination with the "Cloudify Blueprint Selector" parameter type.</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.model.ParametersDefinitionProperty>
@@ -9,12 +8,12 @@
         <co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
           <name>blueprint_id</name>
           <description>Blueprint to create an environment from.</description>
-          <filter></filter>
+          <filter/>
         </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>ID of deployment to create.</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
         </hudson.model.StringParameterDefinition>
         <hudson.model.FileParameterDefinition>
           <name>inputs.json</name>
@@ -23,11 +22,11 @@
         <hudson.model.TextParameterDefinition>
           <name>inputs</name>
           <description>YAML/JSON containing inputs for the new deployment. These inputs will be merged with the ones provided through a file (see above).</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
         </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>outputs_file</name>
-          <description>File to create, containing the new environment&apos;s outputs and capabilities.</description>
+          <description>File to create, containing the new environment's outputs and capabilities.</description>
           <defaultValue>outputs.json</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
@@ -46,8 +45,8 @@
       <deploymentId>${deployment_id}</deploymentId>
       <inputs>${inputs}</inputs>
       <inputsFile>inputs.json</inputsFile>
-      <mapping></mapping>
-      <mappingFile></mappingFile>
+      <mapping/>
+      <mappingFile/>
       <outputFile>${outputs_file}</outputFile>
       <echoOutputs>true</echoOutputs>
       <debugOutput>false</debugOutput>

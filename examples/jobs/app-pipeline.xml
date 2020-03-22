@@ -1,0 +1,75 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.37">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.6.0"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.6.0">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>deployment_id</string>
+        <string>blueprint_id</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>deployment_id</name>
+          <description>Name of environment to create</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+          <name>blueprint_id</name>
+          <description>Type of environment to create</description>
+          <filter>infra</filter>
+        </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.80">
+    <script>pipeline {
+    agent any
+    
+    parameters {
+        string(name: &apos;deployment_id&apos;, description: &apos;Name of environment to create&apos;)
+        cloudifyBlueprintParam(name: &apos;blueprint_id&apos;, description: &apos;Type of environment to create&apos;, filter: &apos;infra&apos;)
+    }
+    stages {
+        stage(&apos;Build Cloudify Environment&apos;) {
+            steps {
+                createCloudifyEnv blueprintId: &quot;${params.blueprint_id}&quot;,
+                    deploymentId: &quot;${params.deployment_id}&quot;,
+                    echoOutputs: true,
+                    outputFile: &apos;outputs.json&apos;
+            }
+        }
+        stage(&apos;Deploy NodeJS Application&apos;) {
+            steps {
+                script {
+                    def outputs = readJSON file: &apos;outputs.json&apos;
+                }
+            }
+        }
+        stage(&apos;Wait for Input&apos;) {
+            steps {
+                input message: &apos;Proceed&apos;
+            }
+        }
+        stage(&apos;Delete Cloudify Environment&apos;) {
+            steps {
+                deleteCloudifyEnv deploymentId: &quot;${params.deployment_id}&quot;
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

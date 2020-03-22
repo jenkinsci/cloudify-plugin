@@ -271,6 +271,11 @@
                     <artifactId>script-security</artifactId>
                     <version>1.25</version>
                 </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci</groupId>
+                    <artifactId>annotation-indexer</artifactId>
+                    <version>1.12</version>
+                </dependency>
                 <!--
 				<dependency>
 					<groupId>org.jenkins-ci.plugins</groupId>
@@ -286,6 +291,15 @@
                 </dependency>
                 -->
             </dependencies>
+        </profile>
+        <profile>
+            <id>latest</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <jenkins.version>2.204.5</jenkins.version>
+            </properties>
         </profile>
     </profiles>
 </project>

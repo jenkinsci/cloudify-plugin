@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?><project>
-  <description>This job demonstrates how to use the "Delete Cloudify Environment" build step, together with the "Cloudify Deployment Selector" parameter type.</description>
+  <description/>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
           <name>deployment_id</name>
-          <description>ID of deployment to delete.</description>
+          <description/>
           <blueprintId/>
         </co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition>
       </parameterDefinitions>
@@ -20,11 +20,14 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+    <co.cloudify.jenkins.plugin.ExecuteWorkflowBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <deploymentId>${deployment_id}</deploymentId>
-      <ignoreFailure>false</ignoreFailure>
+      <workflowId>validate_agents</workflowId>
+      <executionParameters/>
+      <waitForCompletion>true</waitForCompletion>
+      <printLogs>true</printLogs>
       <debugOutput>false</debugOutput>
-    </co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep>
+    </co.cloudify.jenkins.plugin.ExecuteWorkflowBuildStep>
   </builders>
   <publishers/>
   <buildWrappers/>

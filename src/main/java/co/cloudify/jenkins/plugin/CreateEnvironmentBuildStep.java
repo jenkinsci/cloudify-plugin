@@ -187,7 +187,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Build Cloudify Environment";
+            return Messages.CreateEnvironmentBuildStep_DescriptorImpl_displayName();
         }
     }
 

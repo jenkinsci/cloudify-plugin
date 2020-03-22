@@ -3,6 +3,13 @@
 		"parameter-types",
 		"cloudify-wrapper",
 		"create-environment",
-		"delete-environment"
+		"delete-environment",
+		"upload-blueprint",
+		"delete-blueprint",
+		"execute-workflow",
+		"app-pipeline"
+	],
+	"views": [
+		"plugin-features"
 	]
 }
