@@ -3,6 +3,8 @@
 This modules provides tight integration between Jenkins and Cloudify, simplifying using
 Cloudify Manager through Jenkins jobs and pipelines.
 
+For a walk-through, refer to the following demo: https://drive.google.com/open?id=18nGGXbw73RIvWye-MBz42hNrNWa_sffC
+
 * [Prerequisites](#prerequisites)
 * [Examples](#examples)
 * [Terminology](#terminology)
