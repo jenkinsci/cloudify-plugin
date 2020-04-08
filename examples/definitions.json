@@ -1,14 +1,14 @@
 {
 	"definitions": [
-		"parameter-types",
-		"cloudify-wrapper",
+		"app-pipeline",
 		"cloudify-environment-as-a-service",
+		"cloudify-wrapper",
 		"create-environment",
-		"delete-environment",
-		"upload-blueprint",
 		"delete-blueprint",
+		"delete-environment",
 		"execute-workflow",
-		"app-pipeline"
+		"parameter-types",
+		"upload-blueprint"
 	],
 	"views": [
 	]

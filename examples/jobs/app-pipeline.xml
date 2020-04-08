@@ -22,6 +22,7 @@
           <name>infra_type</name>
           <description>Type of environment to create</description>
           <filter>infra</filter>
+          <descending>false</descending>
         </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
