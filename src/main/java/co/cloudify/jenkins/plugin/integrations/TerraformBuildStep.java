@@ -1,0 +1,155 @@
+package co.cloudify.jenkins.plugin.integrations;
+
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
+
+import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
+import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
+import co.cloudify.jenkins.plugin.Messages;
+import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractProject;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
+import hudson.util.FormValidation;
+
+/**
+ * A build step for applying a Terraform template.
+ * 
+ * @author Isaac Shabtay
+ */
+public class TerraformBuildStep extends IntegrationBuildStep {
+    private String templateUrl;
+    private String variables;
+    private String variablesFile;
+
+    private transient BlueprintUploadSpec uploadSpec;
+
+    @DataBoundConstructor
+    public TerraformBuildStep() {
+        super();
+    }
+
+    public String getTemplateUrl() {
+        return templateUrl;
+    }
+
+    @DataBoundSetter
+    public void setTemplateUrl(String templateUrl) {
+        this.templateUrl = templateUrl;
+    }
+
+    public String getVariables() {
+        return variables;
+    }
+
+    @DataBoundSetter
+    public void setVariables(String parameters) {
+        this.variables = parameters;
+    }
+
+    public String getVariablesFile() {
+        return variablesFile;
+    }
+
+    @DataBoundSetter
+    public void setVariablesFile(String variablesFile) {
+        this.variablesFile = variablesFile;
+    }
+
+    @Override
+    protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
+            final FilePath workspace,
+            final EnvVars envVars,
+            final CloudifyClient cloudifyClient) throws Exception {
+        PrintStream logger = listener.getLogger();
+        Path tempBlueprintDir = Files.createTempDirectory("cfy-tf");
+        Path blueprintPath = tempBlueprintDir.resolve("blueprint.yaml");
+        ClassLoader classLoader = getClass().getClassLoader();
+        try (InputStream resourceAsStream = classLoader.getResourceAsStream("/blueprints/terraform/blueprint.yaml")) {
+            Files.copy(resourceAsStream, tempBlueprintDir.resolve("blueprint.yaml"));
+        }
+
+        uploadSpec = new BlueprintUploadSpec(blueprintPath.toFile());
+
+        String templateUrl = expandString(envVars, this.templateUrl);
+        String variables = expandString(envVars, this.variables);
+        String variablesFile = expandString(envVars, this.variablesFile);
+
+        Map<String, Object> variablesMap = new LinkedHashMap<>();
+        variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(variables));
+
+        if (variablesFile != null) {
+            FilePath variablesFilePath = workspace.child(variablesFile);
+            if (variablesFilePath.exists()) {
+                logger.println(String.format("Reading template variables from %s", variablesFilePath));
+                variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(variablesFilePath));
+            } else {
+                logger.println(String.format("Variables file (%s) doesn't exist; skipping", variablesFilePath));
+            }
+        }
+
+        inputs = new LinkedHashMap<>();
+        inputs.put("module_source", templateUrl);
+        inputs.put("variables", variablesMap);
+        try {
+            super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
+        } finally {
+            blueprintPath.toFile().delete();
+            tempBlueprintDir.toFile().delete();
+        }
+    }
+
+    @Override
+    protected String getIntegrationName() {
+        return "terraform";
+    }
+
+    @Override
+    protected BlueprintUploadSpec getBlueprintUploadSpec() {
+        return uploadSpec;
+    }
+
+    @Symbol("cfyTerraform")
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Builder> {
+        @Override
+        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            return true;
+        }
+
+        public FormValidation doCheckTemplateUrl(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.TerraformBuildStep_DescriptorImpl_displayName();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("templateUrl", templateUrl)
+                .append("variables", variables)
+                .append("variablesFile", variablesFile)
+                .toString();
+    }
+}

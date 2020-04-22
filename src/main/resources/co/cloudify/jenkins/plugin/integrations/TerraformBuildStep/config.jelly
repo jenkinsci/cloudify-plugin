@@ -1,0 +1,25 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <j:set var="escapeEntryTitleAndDescription" value="false" />
+    <f:entry title="${%Environment ID}" field="deploymentId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Template URL}" field="templateUrl">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Template variables}" field="variables">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Template variables file}" field="variablesFile">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Output file}" field="envDataLocation">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Print environment data}" field="echoEnvData">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Show debug-level Cloudify output}" field="debugOutput">
+        <f:checkbox />
+    </f:entry>
+</j:jelly>

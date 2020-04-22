@@ -3,6 +3,9 @@ package co.cloudify.jenkins.plugin;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import co.cloudify.rest.model.Deployment;
@@ -39,6 +42,19 @@ public class CloudifyEnvironmentData implements Serializable {
 
     public Map<String, Object> getCapabilities() {
         return capabilities;
+    }
+
+    // TODO: this requires the JSON object to be in memory. Perhaps a better
+    // way would be to make this class a JAXB-bound type and marshal it
+    // using JAXB?
+    public JsonObject toJson() {
+        JsonObject contents = Json.createObjectBuilder()
+                .add("deployment",
+                        Json.createObjectBuilder().add("id", deployment.getId()))
+                .add("outputs", CloudifyPluginUtilities.jsonFromMap(outputs))
+                .add("capabilities", CloudifyPluginUtilities.jsonFromMap(capabilities))
+                .build();
+        return contents;
     }
 
     @Override

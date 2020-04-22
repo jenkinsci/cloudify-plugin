@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.io.IOUtils;
@@ -135,8 +136,9 @@ public class CloudifyPluginUtilities {
      */
     public static void writeJson(final JsonObject object, final FilePath path)
             throws IOException, InterruptedException {
+        JsonWriterFactory fac = Json.createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
         try (OutputStreamWriter os = new OutputStreamWriter(path.write());
-                JsonWriter jw = Json.createWriter(os)) {
+                JsonWriter jw = fac.createWriter(os)) {
             jw.writeObject(object);
         }
     }
@@ -172,6 +174,9 @@ public class CloudifyPluginUtilities {
      * @return A {@link JSONObject} containing the parsed data.
      */
     public static Map<String, Object> readYamlOrJson(final String str) {
+        if (StringUtils.isBlank(str)) {
+            return Collections.EMPTY_MAP;
+        }
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(str, JSONObject.class);
@@ -269,6 +274,57 @@ public class CloudifyPluginUtilities {
         return inputsMap;
     }
 
+    public static CloudifyEnvironmentData createEnvironment(
+            TaskListener listener,
+            FilePath workspace,
+            CloudifyClient client,
+            String blueprintId,
+            String deploymentId,
+            Map<String, Object> inputs,
+            String outputsLocation,
+            boolean echoOutputs,
+            boolean debugOutput) throws IOException, InterruptedException {
+        PrintStream logger = listener.getLogger();
+        ExecutionFollowCallback follower = CloudifyPluginUtilities.getExecutionFollowCallback(true,
+                debugOutput, client, logger);
+
+        try {
+            logger.println(String.format(
+                    "Creating deployment '%s' from blueprint '%s' using the following inputs: %s",
+                    deploymentId, blueprintId, JSONObject.fromObject(inputs).toString(4)));
+            Deployment deployment = DeploymentsHelper.createDeploymentAndWait(client, deploymentId, blueprintId,
+                    inputs, follower);
+            Execution execution = ExecutionsHelper.install(client, deployment.getId(), follower);
+            ExecutionsHelper.validate(execution, "Environment setup failed");
+
+            DeploymentsClient deploymentsClient = client.getDeploymentsClient();
+            Map<String, Object> outputs = deploymentsClient.getOutputs(deployment);
+            Map<String, Object> capabilities = deploymentsClient.getCapabilities(deployment);
+
+            CloudifyEnvironmentData data = new CloudifyEnvironmentData(deployment, outputs, capabilities);
+
+            JsonObject dataJsonObject = data.toJson();
+
+            if (echoOutputs) {
+                logger.println(String.format("Environment data: %s",
+                        toString(dataJsonObject)));
+            }
+            if (outputsLocation != null) {
+                FilePath outputFilePath = workspace.child(outputsLocation);
+                logger.println(String.format(
+                        "Writing environment data to %s", outputFilePath));
+                CloudifyPluginUtilities.writeJson(dataJsonObject, outputFilePath);
+            }
+
+            return data;
+        } catch (IOException | InterruptedException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            ex.printStackTrace(logger);
+            throw new AbortException("Failed during environment creation");
+        }
+    }
+
     /**
      * Create a Cloudify environment.
      * 
@@ -303,52 +359,11 @@ public class CloudifyPluginUtilities {
             String outputsLocation,
             boolean echoOutputs,
             boolean debugOutput) throws IOException, InterruptedException {
-        PrintStream logger = listener.getLogger();
-
         Map<String, Object> inputsMap = CloudifyPluginUtilities.createInputsMap(
                 workspace, listener, inputs, inputsLocation,
                 mapping, mappingLocation);
-        ExecutionFollowCallback follower = CloudifyPluginUtilities.getExecutionFollowCallback(true,
-                debugOutput, client, logger);
-
-        try {
-            logger.println(String.format(
-                    "Creating deployment '%s' from blueprint '%s' using the following inputs: %s",
-                    deploymentId, blueprintId, JSONObject.fromObject(inputsMap).toString(4)));
-            Deployment deployment = DeploymentsHelper.createDeploymentAndWait(client, deploymentId, blueprintId,
-                    inputsMap, follower);
-            Execution execution = ExecutionsHelper.install(client, deployment.getId(), follower);
-            ExecutionsHelper.validate(execution, "Environment setup failed");
-
-            DeploymentsClient deploymentsClient = client.getDeploymentsClient();
-            Map<String, Object> outputs = deploymentsClient.getOutputs(deployment);
-            Map<String, Object> capabilities = deploymentsClient.getCapabilities(deployment);
-
-            CloudifyEnvironmentData data = new CloudifyEnvironmentData(deployment, outputs, capabilities);
-
-            JsonObject outputContents = Json.createObjectBuilder()
-                    .add("outputs", jsonFromMap(outputs))
-                    .add("capabilities", jsonFromMap(capabilities))
-                    .build();
-
-            if (echoOutputs) {
-                logger.println(String.format("Outputs and capabilities: %s",
-                        toString(outputContents)));
-            }
-            if (outputsLocation != null) {
-                FilePath outputFilePath = workspace.child(outputsLocation);
-                logger.println(String.format(
-                        "Writing outputs and capabilities to %s", outputFilePath));
-                CloudifyPluginUtilities.writeJson(outputContents, outputFilePath);
-            }
-
-            return data;
-        } catch (IOException | InterruptedException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            ex.printStackTrace(logger);
-            throw new AbortException("Failed during environment creation");
-        }
+        return createEnvironment(listener, workspace, client, blueprintId, deploymentId, inputsMap, outputsLocation,
+                echoOutputs, debugOutput);
     }
 
     /**
