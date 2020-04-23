@@ -1,6 +1,11 @@
 package co.cloudify.jenkins.plugin.integrations;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Map;
 
@@ -63,6 +68,17 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
     @DataBoundSetter
     public void setDeploymentId(String deploymentId) {
         this.deploymentId = deploymentId;
+    }
+
+    protected File prepareBlueprintDirectory(final String blueprintResourceName) throws IOException {
+        Path tempBlueprintDir = Files.createTempDirectory("cfy");
+        Path blueprintPath = tempBlueprintDir.resolve("blueprint.yaml");
+        ClassLoader classLoader = getClass().getClassLoader();
+        try (InputStream resourceAsStream = classLoader.getResourceAsStream(blueprintResourceName)) {
+            Files.copy(resourceAsStream, blueprintPath);
+        }
+
+        return blueprintPath.toFile();
     }
 
     @Override

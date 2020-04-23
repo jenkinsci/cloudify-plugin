@@ -1,9 +1,7 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.InputStream;
+import java.io.File;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -78,14 +76,6 @@ public class TerraformBuildStep extends IntegrationBuildStep {
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
-        Path tempBlueprintDir = Files.createTempDirectory("cfy-tf");
-        Path blueprintPath = tempBlueprintDir.resolve("blueprint.yaml");
-        ClassLoader classLoader = getClass().getClassLoader();
-        try (InputStream resourceAsStream = classLoader.getResourceAsStream("/blueprints/terraform/blueprint.yaml")) {
-            Files.copy(resourceAsStream, tempBlueprintDir.resolve("blueprint.yaml"));
-        }
-
-        uploadSpec = new BlueprintUploadSpec(blueprintPath.toFile());
 
         String templateUrl = expandString(envVars, this.templateUrl);
         String variables = expandString(envVars, this.variables);
@@ -107,11 +97,15 @@ public class TerraformBuildStep extends IntegrationBuildStep {
         inputs = new LinkedHashMap<>();
         inputs.put("module_source", templateUrl);
         inputs.put("variables", variablesMap);
+
+        File blueprintPath = prepareBlueprintDirectory("/blueprints/terraform/blueprint.yaml");
+
         try {
+            uploadSpec = new BlueprintUploadSpec(blueprintPath);
             super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
         } finally {
-            blueprintPath.toFile().delete();
-            tempBlueprintDir.toFile().delete();
+            blueprintPath.delete();
+            blueprintPath.getParentFile().delete();
         }
     }
 

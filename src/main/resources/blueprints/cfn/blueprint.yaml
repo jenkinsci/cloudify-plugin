@@ -1,0 +1,55 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-aws-plugin
+
+inputs:
+
+  aws_access_key_id:
+    type: string
+    default: { get_secret: aws_access_key_id }
+
+  aws_secret_access_key:
+    type: string
+    default: { get_secret: aws_secret_access_key }
+
+  aws_region_name:
+    type: string
+    default: { get_secret: aws_region_name }
+
+  stack_name:
+    type: string
+
+  parameters:
+    default: []
+    description: >
+      Parameters to pass. At the moment, this should be a list of dictionaries,
+      each one consisting of a "ParameterName" field and a "ParameterValue" field.
+
+  template_url:
+    type: string
+    description: >
+      URL to template.
+
+dsl_definitions:
+  client_config: &client_config
+    aws_access_key_id: { get_input: aws_access_key_id }
+    aws_secret_access_key: { get_input: aws_secret_access_key }
+    region_name: { get_input: aws_region_name }
+
+node_templates:
+  stack:
+    type: cloudify.nodes.aws.CloudFormation.Stack
+    properties:
+      client_config: *client_config
+      resource_config:
+        kwargs:
+          StackName: { get_input: stack_name }
+          Parameters: { get_input: parameters }
+          TemplateURL: { get_input: template_url }
+
+capabilities:
+  stack_outputs:
+    description: Outputs of the CloudFormation stack
+    value: { get_attribute: [ stack, Outputs ] }
