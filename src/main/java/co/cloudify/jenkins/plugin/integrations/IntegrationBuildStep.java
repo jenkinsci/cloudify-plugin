@@ -112,6 +112,12 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
         }
     }
 
+    protected void putIfNonNullValue(final Map<String, Object> map, final String key, final String value) {
+        if (value != null) {
+            map.put(key, value);
+        }
+    }
+
     protected abstract String getIntegrationName();
 
     protected abstract BlueprintUploadSpec getBlueprintUploadSpec();

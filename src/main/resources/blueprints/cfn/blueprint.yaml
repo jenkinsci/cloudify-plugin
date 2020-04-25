@@ -49,7 +49,7 @@ node_templates:
           Parameters: { get_input: parameters }
           TemplateURL: { get_input: template_url }
 
-capabilities:
+outputs:
   stack_outputs:
     description: Outputs of the CloudFormation stack
     value: { get_attribute: [ stack, Outputs ] }

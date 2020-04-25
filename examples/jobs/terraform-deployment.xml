@@ -1,0 +1,55 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>environment_id</name>
+          <description>ID of environment to create (optional; automatically generated if not provided)</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>template_url</name>
+          <description>URL of Terraform template</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>variables</name>
+          <description>Template variables (in YAML/JSON format)</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.FileParameterDefinition>
+          <name>tf_vars</name>
+          <description>YAML/JSON file containing template variables</description>
+        </hudson.model.FileParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <co.cloudify.jenkins.plugin.integrations.TerraformBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <deploymentId>${environment_id}</deploymentId>
+      <echoEnvData>true</echoEnvData>
+      <debugOutput>true</debugOutput>
+      <envDataLocation>env_data.json</envDataLocation>
+      <templateUrl>${template_url}</templateUrl>
+      <variables>${variables}</variables>
+      <variablesFile>${tf_vars}</variablesFile>
+    </co.cloudify.jenkins.plugin.integrations.TerraformBuildStep>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

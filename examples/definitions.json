@@ -1,6 +1,7 @@
 {
 	"definitions": [
 		"app-pipeline",
+		"cloudformation-deployment",
 		"cloudify-environment-as-a-service",
 		"cloudify-wrapper",
 		"create-environment",
@@ -8,6 +9,7 @@
 		"delete-environment",
 		"execute-workflow",
 		"parameter-types",
+		"terraform-deployment",
 		"upload-blueprint"
 	],
 	"views": [

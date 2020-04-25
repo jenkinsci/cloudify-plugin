@@ -21,7 +21,7 @@
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.FileParameterDefinition>
-          <name>inputs.json</name>
+          <name>inputs_file</name>
           <description>YAML/JSON file containing inputs for the new deployment. These inputs will be merged with the ones provided through a string (see below).</description>
         </hudson.model.FileParameterDefinition>
         <hudson.model.TextParameterDefinition>
@@ -51,7 +51,7 @@
       <blueprintId>${blueprint_id}</blueprintId>
       <deploymentId>${deployment_id}</deploymentId>
       <inputs>${inputs}</inputs>
-      <inputsFile>inputs.json</inputsFile>
+      <inputsFile>${inputs_file}</inputsFile>
       <mapping></mapping>
       <mappingFile></mappingFile>
       <outputFile>${outputs_file}</outputFile>

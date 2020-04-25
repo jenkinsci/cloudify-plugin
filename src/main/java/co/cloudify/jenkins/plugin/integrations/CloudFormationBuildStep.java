@@ -29,6 +29,7 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 
 /**
  * A build step for applying a CloudFormation stack.
@@ -36,8 +37,8 @@ import hudson.util.FormValidation;
  * @author Isaac Shabtay
  */
 public class CloudFormationBuildStep extends IntegrationBuildStep {
-    private String accessKeyId;
-    private String secretAccessKey;
+    private Secret accessKeyId;
+    private Secret secretAccessKey;
     private String regionName;
     private String stackName;
     private String parameters;
@@ -51,21 +52,21 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         super();
     }
 
-    public String getAccessKeyId() {
+    public Secret getAccessKeyId() {
         return accessKeyId;
     }
 
     @DataBoundSetter
-    public void setAccessKeyId(String accessKeyId) {
+    public void setAccessKeyId(Secret accessKeyId) {
         this.accessKeyId = accessKeyId;
     }
 
-    public String getSecretAccessKey() {
+    public Secret getSecretAccessKey() {
         return secretAccessKey;
     }
 
     @DataBoundSetter
-    public void setSecretAccessKey(String secretAccessKey) {
+    public void setSecretAccessKey(Secret secretAccessKey) {
         this.secretAccessKey = secretAccessKey;
     }
 
@@ -121,8 +122,8 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
 
-        String accessKeyId = expandString(envVars, this.accessKeyId);
-        String secretAccessKey = expandString(envVars, this.secretAccessKey);
+        String accessKeyId = expandString(envVars, this.accessKeyId.getPlainText());
+        String secretAccessKey = expandString(envVars, this.secretAccessKey.getPlainText());
         String regionName = expandString(envVars, this.regionName);
         String stackName = expandString(envVars, this.stackName);
         String parameters = expandString(envVars, this.parameters);
@@ -152,16 +153,9 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
                 })).collect(Collectors.toList());
 
         inputs = new LinkedHashMap<>();
-        if (accessKeyId != null) {
-            inputs.put("aws_access_key_id", accessKeyId);
-        }
-        if (secretAccessKey != null) {
-            inputs.put("secretAccessKey", secretAccessKey);
-        }
-        if (regionName != null) {
-            inputs.put("aws_region_name", regionName);
-        }
-
+        putIfNonNullValue(inputs, "aws_access_key_id", accessKeyId);
+        putIfNonNullValue(inputs, "aws_secret_access_key", secretAccessKey);
+        putIfNonNullValue(inputs, "aws_region_name", regionName);
         inputs.put("stack_name", stackName);
         inputs.put("parameters", parametersAsList);
         inputs.put("template_url", templateUrl);

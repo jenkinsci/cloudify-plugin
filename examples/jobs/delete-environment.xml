@@ -1,13 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
-  <description>This job demonstrates how to use the "Delete Cloudify Environment" build step, together with the "Cloudify Deployment Selector" parameter type.</description>
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>This job demonstrates how to use the &quot;Delete Cloudify Environment&quot; build step, together with the &quot;Cloudify Deployment Selector&quot; parameter type.</description>
   <keepDependencies>false</keepDependencies>
   <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
           <name>deployment_id</name>
           <description>ID of deployment to delete.</description>
-          <blueprintId/>
+          <blueprintId></blueprintId>
         </co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -22,7 +25,8 @@
   <builders>
     <co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <deploymentId>${deployment_id}</deploymentId>
-      <ignoreFailure>false</ignoreFailure>
+      <deleteBlueprintIfLast>true</deleteBlueprintIfLast>
+      <ignoreFailure>true</ignoreFailure>
       <debugOutput>false</debugOutput>
     </co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep>
   </builders>

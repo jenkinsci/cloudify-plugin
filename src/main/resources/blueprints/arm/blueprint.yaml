@@ -1,0 +1,52 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://cloudify.co/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-azure-plugin
+
+inputs:
+  azure_subscription_id:
+    type: string
+    default: { get_secret: azure_subscription_id }
+  azure_tenant_id:
+    type: string
+    default: { get_secret: azure_tenant_id }
+  azure_client_id:
+    type: string
+    default: { get_secret: azure_client_id }
+  azure_client_secret:
+    type: string
+    default: { get_secret: azure_client_secret }    
+  location:
+    type: string
+    description: Your Azure Region
+    default: { get_secret: azure_default_location }
+  resource_group_name:
+    type: string
+  parameters:
+    default: {}
+  template:
+    default: {}
+  template_file:
+    type: string
+    default: ''
+
+node_templates:
+  deployment:
+    type: cloudify.azure.Deployment
+    properties:
+      azure_config:
+        subscription_id: { get_input: azure_subscription_id }
+        tenant_id: { get_input: azure_tenant_id }
+        client_id: { get_input: azure_client_id }
+        client_secret: { get_input: azure_client_secret }
+      location: { get_input: location }
+      name: { get_input: resource_group_name }
+      params: { get_input: parameters }
+      template: { get_input: template }
+      template_file: { get_input: template_file }
+
+outputs:
+  outputs:
+    description: Azure deployment's outputs
+    value: { get_attribute: [ deployment, outputs ] }
