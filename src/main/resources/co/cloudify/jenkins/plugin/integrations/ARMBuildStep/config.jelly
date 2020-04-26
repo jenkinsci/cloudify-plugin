@@ -21,15 +21,10 @@
             <f:password />
         </f:entry>
     </f:section>
-    <f:section title="${%Template}">
-        <f:entry title="${%Path / URL}" field="templatePathUrl">
-            <f:textbox />
-        </f:entry>
-        <f:entry title="${%File}" field="templateFile">
-            <f:textbox />
-        </f:entry>
-    </f:section>
     <f:entry title="${%Location}" field="location">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%File}" field="templateFile">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Resource Group Name}" field="resourceGroupName">
@@ -37,9 +32,6 @@
     </f:entry>
     <f:entry title="${%Parameters}" field="parameters">
         <f:textarea />
-    </f:entry>
-    <f:entry title="${%Parameters File}" field="parametersFile">
-        <f:textbox />
     </f:entry>
     <f:entry title="${%Print environment data}" field="echoEnvData">
         <f:checkbox />

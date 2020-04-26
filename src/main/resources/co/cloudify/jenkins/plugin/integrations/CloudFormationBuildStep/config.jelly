@@ -10,9 +10,6 @@
     <f:entry title="${%Template parameters}" field="parameters">
         <f:textarea />
     </f:entry>
-    <f:entry title="${%Template parameters file}" field="parametersFile">
-        <f:textbox />
-    </f:entry>
     <f:entry title="${%Access Key ID}" field="accessKeyId">
         <f:password />
     </f:entry>

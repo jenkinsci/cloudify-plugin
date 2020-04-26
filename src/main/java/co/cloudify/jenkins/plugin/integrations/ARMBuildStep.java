@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,7 +15,6 @@ import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
 import co.cloudify.rest.client.CloudifyClient;
-import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -43,8 +41,6 @@ public class ARMBuildStep extends IntegrationBuildStep {
     private String location;
     private String resourceGroupName;
     private String parameters;
-    private String parametersFile;
-    private String templatePathUrl;
     private String templateFile;
 
     private transient BlueprintUploadSpec uploadSpec;
@@ -126,24 +122,6 @@ public class ARMBuildStep extends IntegrationBuildStep {
         this.parameters = parameters;
     }
 
-    public String getParametersFile() {
-        return parametersFile;
-    }
-
-    @DataBoundSetter
-    public void setParametersFile(String parametersFile) {
-        this.parametersFile = parametersFile;
-    }
-
-    public String getTemplatePathUrl() {
-        return templatePathUrl;
-    }
-
-    @DataBoundSetter
-    public void setTemplatePathUrl(String templatePathUrl) {
-        this.templatePathUrl = templatePathUrl;
-    }
-
     public String getTemplateFile() {
         return templateFile;
     }
@@ -158,8 +136,6 @@ public class ARMBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        PrintStream logger = listener.getLogger();
-
         String subscriptionId = expandString(envVars, this.subscriptionId);
         String tenantId = expandString(envVars, this.tenantId);
         String clientId = expandString(envVars, this.clientId);
@@ -168,34 +144,14 @@ public class ARMBuildStep extends IntegrationBuildStep {
         String location = expandString(envVars, this.location);
         String resourceGroupName = expandString(envVars, this.resourceGroupName);
         String parameters = expandString(envVars, this.parameters);
-        String parametersFile = expandString(envVars, this.parametersFile);
-        String templatePathUrl = expandString(envVars, this.templatePathUrl);
         String templateFile = expandString(envVars, this.templateFile);
 
-        // TODO: Move this validation to the descriptor, once we know how to
-        // only invoke validation during job execution and not in the config.
-
-        if (!(templatePathUrl != null ^ templateFile != null)) {
-            throw new AbortException(String.format(
-                    "Both template path/URL (%s) and file (%s) were specified; please specify exactly one",
-                    templatePathUrl, templateFile));
-        }
         Map<String, Object> variablesMap = new LinkedHashMap<>();
         variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(parameters));
 
-        if (parametersFile != null) {
-            FilePath parametersFilePath = workspace.child(parametersFile);
-            if (parametersFilePath.exists()) {
-                logger.println(String.format("Reading template parameters from %s", parametersFilePath));
-                variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(parametersFilePath));
-            } else {
-                logger.println(String.format("Parameters file (%s) doesn't exist; skipping", parametersFilePath));
-            }
-        }
-
         String effectiveClientSecret;
         if (clientSecretParameter != null) {
-            effectiveClientSecret = envVars.expand(String.format("${%s}", clientSecretParameter));
+            effectiveClientSecret = expandString(envVars, String.format("${%s}", clientSecretParameter));
         } else {
             effectiveClientSecret = clientSecret;
         }
@@ -208,17 +164,8 @@ public class ARMBuildStep extends IntegrationBuildStep {
         putIfNonNullValue(inputs, "azure_client_secret", effectiveClientSecret);
         putIfNonNullValue(inputs, "location", location);
         putIfNonNullValue(inputs, "resource_group_name", resourceGroupName);
-        putIfNonNullValue(inputs, "parameters", parameters);
-
-        if (templateFile != null) {
-            // Read the template as a JSON.
-            FilePath templateFilePath = workspace.child(templateFile);
-            logger.println(String.format("Reading template from %s", templateFilePath));
-            Map<String, Object> templateContents = CloudifyPluginUtilities.readYamlOrJson(templateFilePath);
-            inputs.put("template", templateContents);
-        } else {
-            inputs.put("template_file", templatePathUrl);
-        }
+        inputs.put("parameters", variablesMap);
+        inputs.put("template_file", templateFile);
 
         File blueprintPath = prepareBlueprintDirectory("/blueprints/arm/blueprint.yaml");
 
@@ -248,26 +195,6 @@ public class ARMBuildStep extends IntegrationBuildStep {
         public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
             return true;
         }
-
-        // TODO: comment out because we only need this validation on parameterized builds,
-        // not in the config screen.
-//        public FormValidation checkTemplate(final String templatePathUrl, final String templateFile) {
-//            if (!(StringUtils.isBlank(templateFile) ^ StringUtils.isBlank(templatePathUrl))) {
-//                return FormValidation.error("Either template path/URL or file must be provided, not both");
-//            }
-//            return FormValidation.ok();
-//        }
-//
-//        public FormValidation doCheckTemplateFile(final @QueryParameter String value,
-//                final @QueryParameter String templatePathUrl) {
-//            return checkTemplate(templatePathUrl, value);
-//        }
-//
-//        public FormValidation doCheckTemplatePathUrl(final @QueryParameter String value,
-//                final @QueryParameter String templateFile) {
-//            return checkTemplate(value, templateFile);
-//        }
-//
 
         public FormValidation checkClientSecret(final Secret clientSecret, final String clientSecretParameter) {
             if (!(StringUtils.isBlank(clientSecret.getPlainText()) ^ StringUtils.isBlank(clientSecretParameter))) {
@@ -305,7 +232,6 @@ public class ARMBuildStep extends IntegrationBuildStep {
                 .append("location", location)
                 .append("resourceGroupName", resourceGroupName)
                 .append("parameters", parameters)
-                .append("parametersFile", parametersFile)
                 .append("templateFile", templateFile)
                 .toString();
     }

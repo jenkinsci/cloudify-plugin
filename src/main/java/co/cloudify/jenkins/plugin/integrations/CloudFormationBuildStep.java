@@ -42,7 +42,6 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
     private String regionName;
     private String stackName;
     private String parameters;
-    private String parametersFile;
     private String templateUrl;
 
     private transient BlueprintUploadSpec uploadSpec;
@@ -97,15 +96,6 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         this.parameters = parameters;
     }
 
-    public String getParametersFile() {
-        return parametersFile;
-    }
-
-    @DataBoundSetter
-    public void setParametersFile(String parametersFile) {
-        this.parametersFile = parametersFile;
-    }
-
     public String getTemplateUrl() {
         return templateUrl;
     }
@@ -127,21 +117,10 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         String regionName = expandString(envVars, this.regionName);
         String stackName = expandString(envVars, this.stackName);
         String parameters = expandString(envVars, this.parameters);
-        String parametersFile = expandString(envVars, this.parametersFile);
         String templateUrl = expandString(envVars, this.templateUrl);
 
         Map<String, Object> parametersMap = new LinkedHashMap<>();
         parametersMap.putAll(CloudifyPluginUtilities.readYamlOrJson(parameters));
-
-        if (parametersFile != null) {
-            FilePath parametersFilePath = workspace.child(parametersFile);
-            if (parametersFilePath.exists()) {
-                logger.println(String.format("Reading template parameters from %s", parametersFilePath));
-                parametersMap.putAll(CloudifyPluginUtilities.readYamlOrJson(parametersFilePath));
-            } else {
-                logger.println(String.format("Parameters file (%s) doesn't exist; skipping", parametersFilePath));
-            }
-        }
 
         // As of AWS plugin 2.3.2, we need to convert the parameters to a list.
         // There's probably a more elegant way to do this without using commons-collections,
@@ -212,7 +191,6 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
                 .append("stackName", stackName)
                 .append("templateUrl", templateUrl)
                 .append("parameters", parameters)
-                .append("parametersFile", parametersFile)
                 .toString();
     }
 }

@@ -10,9 +10,6 @@
     <f:entry title="${%Template variables}" field="variables">
         <f:textarea />
     </f:entry>
-    <f:entry title="${%Template variables file}" field="variablesFile">
-        <f:textbox />
-    </f:entry>
     <f:entry title="${%Output file}" field="envDataLocation">
         <f:textbox />
     </f:entry>

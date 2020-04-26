@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ import hudson.util.FormValidation;
 public class TerraformBuildStep extends IntegrationBuildStep {
     private String templateUrl;
     private String variables;
-    private String variablesFile;
 
     private transient BlueprintUploadSpec uploadSpec;
 
@@ -61,38 +59,16 @@ public class TerraformBuildStep extends IntegrationBuildStep {
         this.variables = parameters;
     }
 
-    public String getVariablesFile() {
-        return variablesFile;
-    }
-
-    @DataBoundSetter
-    public void setVariablesFile(String variablesFile) {
-        this.variablesFile = variablesFile;
-    }
-
     @Override
     protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        PrintStream logger = listener.getLogger();
-
         String templateUrl = expandString(envVars, this.templateUrl);
         String variables = expandString(envVars, this.variables);
-        String variablesFile = expandString(envVars, this.variablesFile);
 
         Map<String, Object> variablesMap = new LinkedHashMap<>();
         variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(variables));
-
-        if (variablesFile != null) {
-            FilePath variablesFilePath = workspace.child(variablesFile);
-            if (variablesFilePath.exists()) {
-                logger.println(String.format("Reading template variables from %s", variablesFilePath));
-                variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(variablesFilePath));
-            } else {
-                logger.println(String.format("Variables file (%s) doesn't exist; skipping", variablesFilePath));
-            }
-        }
 
         inputs = new LinkedHashMap<>();
         inputs.put("module_source", templateUrl);
@@ -143,7 +119,6 @@ public class TerraformBuildStep extends IntegrationBuildStep {
                 .appendSuper(super.toString())
                 .append("templateUrl", templateUrl)
                 .append("variables", variables)
-                .append("variablesFile", variablesFile)
                 .toString();
     }
 }
