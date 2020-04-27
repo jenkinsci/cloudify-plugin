@@ -89,7 +89,7 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
         String blueprintId = generateBlueprintId();
         String deploymentId = expandString(envVars, this.deploymentId);
         if (StringUtils.isBlank(deploymentId)) {
-            deploymentId = generateDeploymentId();
+            deploymentId = generateDeploymentId(blueprintId);
         }
         String envDataLocation = expandString(envVars, this.envDataLocation);
 
@@ -130,10 +130,10 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
     }
 
     /**
-     * @return A generated dID. May be overridden by subclasses for specialized implementations.
+     * @return A generated deployment ID. May be overridden by subclasses for specialized implementations.
      */
-    protected String generateDeploymentId() {
-        return generateBlueprintId();
+    protected String generateDeploymentId(final String blueprintId) {
+        return blueprintId;
     }
 
     @Override
