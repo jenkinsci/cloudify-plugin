@@ -22,6 +22,9 @@
     <f:entry title="${%Stack name}" field="stackName">
         <f:textbox />
     </f:entry>
+    <f:entry title="${%Environment data output path}" field="envDataLocation">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%Print environment data}" field="echoEnvData">
         <f:checkbox />
     </f:entry>

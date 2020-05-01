@@ -10,7 +10,7 @@
     <f:entry title="${%Template variables}" field="variables">
         <f:textarea />
     </f:entry>
-    <f:entry title="${%Output file}" field="envDataLocation">
+    <f:entry title="${%Environment data output path}" field="envDataLocation">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Print environment data}" field="echoEnvData">
