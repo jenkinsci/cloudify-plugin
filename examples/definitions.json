@@ -1,6 +1,8 @@
 {
 	"definitions": [
+		"ansible-deployment",
 		"app-pipeline",
+		"azure-arm-deployment",
 		"cloudformation-deployment",
 		"cloudify-environment-as-a-service",
 		"cloudify-wrapper",

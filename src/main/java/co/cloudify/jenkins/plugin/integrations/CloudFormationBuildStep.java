@@ -131,13 +131,12 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
                         { "ParameterValue", entry.getValue() }
                 })).collect(Collectors.toList());
 
-        inputs = new LinkedHashMap<>();
-        putIfNonNullValue(inputs, "aws_access_key_id", accessKeyId);
-        putIfNonNullValue(inputs, "aws_secret_access_key", secretAccessKey);
-        putIfNonNullValue(inputs, "aws_region_name", regionName);
-        inputs.put("stack_name", stackName);
-        inputs.put("parameters", parametersAsList);
-        inputs.put("template_url", templateUrl);
+        putIfNonNullValue(operationInputs, "aws_access_key_id", accessKeyId);
+        putIfNonNullValue(operationInputs, "aws_secret_access_key", secretAccessKey);
+        putIfNonNullValue(operationInputs, "aws_region_name", regionName);
+        operationInputs.put("stack_name", stackName);
+        operationInputs.put("parameters", parametersAsList);
+        operationInputs.put("template_url", templateUrl);
 
         File blueprintPath = prepareBlueprintDirectory("/blueprints/cfn/blueprint.yaml");
 

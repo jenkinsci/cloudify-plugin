@@ -1,0 +1,91 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>environment_id</name>
+          <description>ID of environment to create (optional; automatically generated if not provided)</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>subscription_id</name>
+          <description>Azure subscription ID</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>tenant_id</name>
+          <description>Azure tenant ID</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>client_id</name>
+          <description>Azure client ID</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>client_secret</name>
+          <description>Azure client secret</description>
+          <defaultValue>{AQAAABAAAAAQ7qsq9thNJJbCpJXBIxbl4AjmmRnptXZ774qODPIMWMU=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>location</name>
+          <description>Azure location</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>resource_group_name</name>
+          <description>Name of resource group for the new deployment</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>parameters</name>
+          <description>Template parameters (in YAML/JSON format)</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>template_file</name>
+          <description>Path or URL to template</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <co.cloudify.jenkins.plugin.integrations.ARMBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <deploymentId>${environment_id}</deploymentId>
+      <echoEnvData>true</echoEnvData>
+      <debugOutput>false</debugOutput>
+      <subscriptionId>${subscription_id}</subscriptionId>
+      <tenantId>${tenant_id}</tenantId>
+      <clientId>${client_id}</clientId>
+      <clientSecret>{AQAAABAAAAAQYdm/OcKqlEdRFR2/SvPJgW+GG9Fro+0rksiHgwaem9g=}</clientSecret>
+      <clientSecretParameter>client_secret</clientSecretParameter>
+      <location>${location}</location>
+      <resourceGroupName>${resource_group_name}</resourceGroupName>
+      <parameters>${parameters}</parameters>
+      <templateFile>${template_file}</templateFile>
+    </co.cloudify.jenkins.plugin.integrations.ARMBuildStep>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

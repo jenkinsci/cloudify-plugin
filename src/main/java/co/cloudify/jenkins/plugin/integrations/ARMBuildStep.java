@@ -156,16 +156,14 @@ public class ARMBuildStep extends IntegrationBuildStep {
             effectiveClientSecret = clientSecret;
         }
 
-        inputs = new LinkedHashMap<>();
-
-        putIfNonNullValue(inputs, "azure_subscription_id", subscriptionId);
-        putIfNonNullValue(inputs, "azure_tenant_id", tenantId);
-        putIfNonNullValue(inputs, "azure_client_id", clientId);
-        putIfNonNullValue(inputs, "azure_client_secret", effectiveClientSecret);
-        putIfNonNullValue(inputs, "location", location);
-        putIfNonNullValue(inputs, "resource_group_name", resourceGroupName);
-        inputs.put("parameters", variablesMap);
-        inputs.put("template_file", templateFile);
+        putIfNonNullValue(operationInputs, "azure_subscription_id", subscriptionId);
+        putIfNonNullValue(operationInputs, "azure_tenant_id", tenantId);
+        putIfNonNullValue(operationInputs, "azure_client_id", clientId);
+        putIfNonNullValue(operationInputs, "azure_client_secret", effectiveClientSecret);
+        putIfNonNullValue(operationInputs, "location", location);
+        putIfNonNullValue(operationInputs, "resource_group_name", resourceGroupName);
+        operationInputs.put("parameters", variablesMap);
+        operationInputs.put("template_file", templateFile);
 
         File blueprintPath = prepareBlueprintDirectory("/blueprints/arm/blueprint.yaml");
 

@@ -1,0 +1,45 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <co.cloudify.jenkins.plugin.integrations.AnsibleBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <deploymentId></deploymentId>
+      <echoEnvData>false</echoEnvData>
+      <debugOutput>false</debugOutput>
+      <envDataLocation></envDataLocation>
+      <operationInputs class="linked-hash-map"/>
+      <executablePath></executablePath>
+      <sourcePath></sourcePath>
+      <playbookPath></playbookPath>
+      <siteYamlPath></siteYamlPath>
+      <savePlaybook>false</savePlaybook>
+      <remergeSources>false</remergeSources>
+      <sources></sources>
+      <runData></runData>
+      <sensitiveKeys></sensitiveKeys>
+      <optionsConfig></optionsConfig>
+      <ansibleEnvVars></ansibleEnvVars>
+      <debugLevel>1</debugLevel>
+      <additionalArgs></additionalArgs>
+      <startAtTask></startAtTask>
+      <scpExtraArgs></scpExtraArgs>
+      <sftpExtraArgs></sftpExtraArgs>
+      <sshCommonArgs></sshCommonArgs>
+      <sshExtraArgs></sshExtraArgs>
+    </co.cloudify.jenkins.plugin.integrations.AnsibleBuildStep>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

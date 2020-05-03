@@ -70,9 +70,8 @@ public class TerraformBuildStep extends IntegrationBuildStep {
         Map<String, Object> variablesMap = new LinkedHashMap<>();
         variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(variables));
 
-        inputs = new LinkedHashMap<>();
-        inputs.put("module_source", templateUrl);
-        inputs.put("variables", variablesMap);
+        operationInputs.put("module_source", templateUrl);
+        operationInputs.put("variables", variablesMap);
 
         File blueprintPath = prepareBlueprintDirectory("/blueprints/terraform/blueprint.yaml");
 

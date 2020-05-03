@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.json.JsonObject;
@@ -32,7 +33,7 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
     private boolean echoEnvData;
     private boolean debugOutput;
     protected String envDataLocation;
-    protected Map<String, Object> inputs;
+    protected Map<String, Object> operationInputs = new LinkedHashMap<String, Object>();
 
     public boolean isEchoEnvData() {
         return echoEnvData;
@@ -97,7 +98,7 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
         Blueprint blueprint = uploadSpec.upload(cloudifyClient.getBlueprintsClient(), blueprintId);
         CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
                 listener, workspace, cloudifyClient,
-                blueprint.getId(), deploymentId, inputs, envDataLocation,
+                blueprint.getId(), deploymentId, operationInputs, envDataLocation,
                 echoEnvData, debugOutput);
         JsonObject dataJsonObject = envData.toJson();
         if (echoEnvData) {
@@ -143,7 +144,7 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
                 .append("deploymentId", deploymentId)
                 .append("debugOutput", debugOutput)
                 .append("echoOutputs", echoEnvData)
-                .append("inputs", inputs)
+                .append("inputs", operationInputs)
                 .append("outputsLocation", envDataLocation)
                 .toString();
     }

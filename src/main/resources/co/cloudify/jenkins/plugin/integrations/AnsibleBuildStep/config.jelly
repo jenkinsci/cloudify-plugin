@@ -1,0 +1,73 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <j:set var="escapeEntryTitleAndDescription" value="false" />
+    <f:entry title="${%Environment ID}" field="deploymentId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Executable path}" field="executablePath">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Source path}" field="sourcePath">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Playbook path}" field="playbookPath">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Site YAML path}" field="siteYamlPath">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Save Playbook?}" field="savePlaybook">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Re-merge sources?}" field="remergeSources">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Sources}" field="sources">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Run data}" field="runData">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Sensitive keys}" field="sensitiveKeys">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Options configuration}" field="optionsConfig">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Environment variables}" field="ansibleEnvVars">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Debug level}" field="debugLevel">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Additional arguments}" field="additionalArgs">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Start at task}" field="startAtTask">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%SCP extra arguments}" field="scpExtraArgs">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%SFTP extra arguments}" field="sftpExtraArgs">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%SSH common arguments}" field="sshCommonArgs">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%SSH extra arguments}" field="sshExtraArgs">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Timeout}" field="timeout">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Print environment data}" field="echoEnvData">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Environment data output path}" field="envDataLocation">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Show debug-level Cloudify output}" field="debugOutput">
+        <f:checkbox />
+    </f:entry>
+</j:jelly>
