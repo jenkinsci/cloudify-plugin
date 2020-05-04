@@ -137,7 +137,7 @@ public class CloudifyPluginUtilities {
     public static void writeJson(final JsonObject object, final FilePath path)
             throws IOException, InterruptedException {
         JsonWriterFactory fac = Json.createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
-        try (OutputStreamWriter os = new OutputStreamWriter(path.write());
+        try (OutputStreamWriter os = new OutputStreamWriter(path.write(), StandardCharsets.UTF_8);
                 JsonWriter jw = fac.createWriter(os)) {
             jw.writeObject(object);
         }

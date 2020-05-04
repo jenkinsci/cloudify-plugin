@@ -1,6 +1,7 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -136,6 +137,8 @@ public class ARMBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
+        PrintStream logger = listener.getLogger();
+
         String subscriptionId = expandString(envVars, this.subscriptionId);
         String tenantId = expandString(envVars, this.tenantId);
         String clientId = expandString(envVars, this.clientId);
@@ -171,8 +174,12 @@ public class ARMBuildStep extends IntegrationBuildStep {
             uploadSpec = new BlueprintUploadSpec(blueprintPath);
             super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
         } finally {
-            blueprintPath.delete();
-            blueprintPath.getParentFile().delete();
+            if (!blueprintPath.delete()) {
+                logger.println("Failed deleting blueprint file");
+            }
+            if (!blueprintPath.getParentFile().delete()) {
+                logger.println("Failed deleting temporary directory");
+            }
         }
     }
 

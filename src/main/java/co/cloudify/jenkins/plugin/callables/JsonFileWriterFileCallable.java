@@ -1,8 +1,10 @@
 package co.cloudify.jenkins.plugin.callables;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 import javax.json.JsonObject;
 
@@ -29,8 +31,9 @@ public class JsonFileWriterFileCallable implements FileCallable<Void> {
 
     @Override
     public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        try (FileWriter fw = new FileWriter(f)) {
-            fw.write(CloudifyPluginUtilities.toString(json));
+        try (FileOutputStream fos = new FileOutputStream(f);
+                OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
+            osw.write(CloudifyPluginUtilities.toString(json));
         }
         return null;
     }

@@ -111,7 +111,6 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
-
         String accessKeyId = expandString(envVars, this.accessKeyId.getPlainText());
         String secretAccessKey = expandString(envVars, this.secretAccessKey.getPlainText());
         String regionName = expandString(envVars, this.regionName);
@@ -144,8 +143,12 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
             uploadSpec = new BlueprintUploadSpec(blueprintPath);
             super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
         } finally {
-            blueprintPath.delete();
-            blueprintPath.getParentFile().delete();
+            if (!blueprintPath.delete()) {
+                logger.println("Failed deleting blueprint file");
+            }
+            if (!blueprintPath.getParentFile().delete()) {
+                logger.println("Failed deleting temporary directory");
+            }
         }
     }
 

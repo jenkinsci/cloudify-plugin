@@ -1,6 +1,7 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -64,6 +65,8 @@ public class TerraformBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
+        PrintStream logger = listener.getLogger();
+
         String templateUrl = expandString(envVars, this.templateUrl);
         String variables = expandString(envVars, this.variables);
 
@@ -79,8 +82,12 @@ public class TerraformBuildStep extends IntegrationBuildStep {
             uploadSpec = new BlueprintUploadSpec(blueprintPath);
             super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
         } finally {
-            blueprintPath.delete();
-            blueprintPath.getParentFile().delete();
+            if (!blueprintPath.delete()) {
+                logger.println("Failed deleting blueprint file");
+            }
+            if (!blueprintPath.getParentFile().delete()) {
+                logger.println("Failed deleting temporary directory");
+            }
         }
     }
 

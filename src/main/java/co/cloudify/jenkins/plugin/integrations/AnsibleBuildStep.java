@@ -1,6 +1,7 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -235,6 +236,8 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
+        PrintStream logger = listener.getLogger();
+
         String executablePath = expandString(envVars, this.executablePath);
         String sourcePath = expandString(envVars, this.sourcePath);
         String playbookPath = expandString(envVars, this.playbookPath);
@@ -284,8 +287,12 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
             uploadSpec = new BlueprintUploadSpec(blueprintPath);
             super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
         } finally {
-            blueprintPath.delete();
-            blueprintPath.getParentFile().delete();
+            if (!blueprintPath.delete()) {
+                logger.println("Failed deleting blueprint file");
+            }
+            if (!blueprintPath.getParentFile().delete()) {
+                logger.println("Failed deleting temporary directory");
+            }
         }
     }
 
