@@ -4,16 +4,10 @@
     <f:entry title="${%Environment ID}" field="deploymentId">
         <f:textbox />
     </f:entry>
-    <f:entry title="${%Executable path}" field="executablePath">
-        <f:textbox />
-    </f:entry>
     <f:entry title="${%Source path}" field="sourcePath">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Playbook path}" field="playbookPath">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Site YAML path}" field="siteYamlPath">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Save Playbook?}" field="savePlaybook">

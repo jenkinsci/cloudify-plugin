@@ -33,10 +33,8 @@ import hudson.tasks.Builder;
  * @author Isaac Shabtay
  */
 public class AnsibleBuildStep extends IntegrationBuildStep {
-    private String executablePath;
     private String sourcePath;
     private String playbookPath;
-    private String siteYamlPath;
     private Boolean savePlaybook;
     private Boolean remergeSources;
     private String sources;
@@ -60,15 +58,6 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
         super();
     }
 
-    public String getExecutablePath() {
-        return executablePath;
-    }
-
-    @DataBoundSetter
-    public void setExecutablePath(String executablePath) {
-        this.executablePath = executablePath;
-    }
-
     public String getSourcePath() {
         return sourcePath;
     }
@@ -85,15 +74,6 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
     @DataBoundSetter
     public void setPlaybookPath(String playbookPath) {
         this.playbookPath = playbookPath;
-    }
-
-    public String getSiteYamlPath() {
-        return siteYamlPath;
-    }
-
-    @DataBoundSetter
-    public void setSiteYamlPath(String siteYamlPath) {
-        this.siteYamlPath = siteYamlPath;
     }
 
     public Boolean getSavePlaybook() {
@@ -238,10 +218,8 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
 
-        String executablePath = expandString(envVars, this.executablePath);
         String sourcePath = expandString(envVars, this.sourcePath);
         String playbookPath = expandString(envVars, this.playbookPath);
-        String siteYamlPath = expandString(envVars, this.siteYamlPath);
         List<String> sources = Arrays.asList(StringUtils.defaultString(expandString(envVars, this.sources)));
         Map<String, Object> runData = CloudifyPluginUtilities.readYamlOrJson(
                 expandString(envVars, this.runData));
@@ -259,10 +237,8 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
         String sshExtraArgs = expandString(envVars, this.sshExtraArgs);
 
         Map<String, Object> ansibleOpInputs = new LinkedHashMap<>();
-        ansibleOpInputs.put("ansible_playbook_executable_path", executablePath);
         ansibleOpInputs.put("playbook_source_path", sourcePath);
         ansibleOpInputs.put("playbook_path", playbookPath);
-        ansibleOpInputs.put("site_yaml_path", siteYamlPath);
         ansibleOpInputs.put("save_playbook", savePlaybook);
         ansibleOpInputs.put("remerge_sources", remergeSources);
         ansibleOpInputs.put("sources", sources);
