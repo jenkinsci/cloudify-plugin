@@ -218,23 +218,23 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
 
-        String sourcePath = expandString(envVars, this.sourcePath);
-        String playbookPath = expandString(envVars, this.playbookPath);
-        List<String> sources = Arrays.asList(StringUtils.defaultString(expandString(envVars, this.sources)));
+        String sourcePath = CloudifyPluginUtilities.expandString(envVars, this.sourcePath);
+        String playbookPath = CloudifyPluginUtilities.expandString(envVars, this.playbookPath);
+        List<String> sources = Arrays.asList(StringUtils.defaultString(CloudifyPluginUtilities.expandString(envVars, this.sources)));
         Map<String, Object> runData = CloudifyPluginUtilities.readYamlOrJson(
-                expandString(envVars, this.runData));
+                CloudifyPluginUtilities.expandString(envVars, this.runData));
         List<String> sensitiveKeys = Arrays
-                .asList(StringUtils.defaultString(expandString(envVars, this.sensitiveKeys)).split("\n"));
+                .asList(StringUtils.defaultString(CloudifyPluginUtilities.expandString(envVars, this.sensitiveKeys)).split("\n"));
         Map<String, Object> optionsConfig = CloudifyPluginUtilities.readYamlOrJson(
-                expandString(envVars, this.optionsConfig));
+                CloudifyPluginUtilities.expandString(envVars, this.optionsConfig));
         Map<String, Object> ansibleEnvVars = CloudifyPluginUtilities.readYamlOrJson(
-                expandString(envVars, this.ansibleEnvVars));
-        String additionalArgs = expandString(envVars, this.additionalArgs);
-        String startAtTask = expandString(envVars, this.startAtTask);
-        String scpExtraArgs = expandString(envVars, this.scpExtraArgs);
-        String sftpExtraArgs = expandString(envVars, this.sftpExtraArgs);
-        String sshCommonArgs = expandString(envVars, this.sshCommonArgs);
-        String sshExtraArgs = expandString(envVars, this.sshExtraArgs);
+                CloudifyPluginUtilities.expandString(envVars, this.ansibleEnvVars));
+        String additionalArgs = CloudifyPluginUtilities.expandString(envVars, this.additionalArgs);
+        String startAtTask = CloudifyPluginUtilities.expandString(envVars, this.startAtTask);
+        String scpExtraArgs = CloudifyPluginUtilities.expandString(envVars, this.scpExtraArgs);
+        String sftpExtraArgs = CloudifyPluginUtilities.expandString(envVars, this.sftpExtraArgs);
+        String sshCommonArgs = CloudifyPluginUtilities.expandString(envVars, this.sshCommonArgs);
+        String sshExtraArgs = CloudifyPluginUtilities.expandString(envVars, this.sshExtraArgs);
 
         Map<String, Object> ansibleOpInputs = new LinkedHashMap<>();
         ansibleOpInputs.put("playbook_source_path", sourcePath);
@@ -300,6 +300,23 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
+                .append("additionalArgs", additionalArgs)
+                .append("ansibleEnvVars", ansibleEnvVars)
+                .append("debugLevel", debugLevel)
+                .append("optionsConfig", optionsConfig)
+                .append("playbookPath", playbookPath)
+                .append("remergeSources", remergeSources)
+                .append("runData", runData)
+                .append("savePlaybook", savePlaybook)
+                .append("scpExtraArgs", scpExtraArgs)
+                .append("sensitiveKeys", sensitiveKeys)
+                .append("sftpExtraArgs", sftpExtraArgs)
+                .append("sourcePath", sourcePath)
+                .append("sources", sources)
+                .append("sshCommonArgs", sshCommonArgs)
+                .append("sshExtraArgs", sshExtraArgs)
+                .append("startAtTask", startAtTask)
+                .append("timeout", timeout)
                 .toString();
     }
 }

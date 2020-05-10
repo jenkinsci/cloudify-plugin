@@ -5,6 +5,10 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
@@ -73,8 +77,11 @@
   <builders>
     <co.cloudify.jenkins.plugin.integrations.ARMBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <deploymentId>${environment_id}</deploymentId>
+      <echoInputs>false</echoInputs>
       <echoEnvData>true</echoEnvData>
       <debugOutput>false</debugOutput>
+      <envDataLocation>env-data.json</envDataLocation>
+      <operationInputs class="linked-hash-map"/>
       <subscriptionId>${subscription_id}</subscriptionId>
       <tenantId>${tenant_id}</tenantId>
       <clientId>${client_id}</clientId>

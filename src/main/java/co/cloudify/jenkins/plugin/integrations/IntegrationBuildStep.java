@@ -30,10 +30,20 @@ import hudson.model.TaskListener;
 
 public abstract class IntegrationBuildStep extends CloudifyBuildStep {
     private String deploymentId;
+    private boolean echoInputs;
     private boolean echoEnvData;
     private boolean debugOutput;
     protected String envDataLocation;
     protected Map<String, Object> operationInputs = new LinkedHashMap<String, Object>();
+
+    public boolean isEchoInputs() {
+        return echoInputs;
+    }
+
+    @DataBoundSetter
+    public void setEchoInputs(boolean echoInputs) {
+        this.echoInputs = echoInputs;
+    }
 
     public boolean isEchoEnvData() {
         return echoEnvData;
@@ -88,18 +98,18 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
         PrintStream logger = listener.getLogger();
 
         String blueprintId = generateBlueprintId();
-        String deploymentId = expandString(envVars, this.deploymentId);
+        String deploymentId = CloudifyPluginUtilities.expandString(envVars, this.deploymentId);
         if (StringUtils.isBlank(deploymentId)) {
             deploymentId = generateDeploymentId(blueprintId);
         }
-        String envDataLocation = expandString(envVars, this.envDataLocation);
+        String envDataLocation = CloudifyPluginUtilities.expandString(envVars, this.envDataLocation);
 
         BlueprintUploadSpec uploadSpec = getBlueprintUploadSpec();
         Blueprint blueprint = uploadSpec.upload(cloudifyClient.getBlueprintsClient(), blueprintId);
         CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
                 listener, workspace, cloudifyClient,
                 blueprint.getId(), deploymentId, operationInputs, envDataLocation,
-                echoEnvData, debugOutput);
+                echoInputs, echoEnvData, debugOutput);
         JsonObject dataJsonObject = envData.toJson();
         if (echoEnvData) {
             logger.println(String.format("Environment data: %s",
@@ -143,7 +153,8 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
                 .appendSuper(super.toString())
                 .append("deploymentId", deploymentId)
                 .append("debugOutput", debugOutput)
-                .append("echoOutputs", echoEnvData)
+                .append("echoInputs", echoInputs)
+                .append("echoEnvData", echoEnvData)
                 .append("inputs", operationInputs)
                 .append("outputsLocation", envDataLocation)
                 .toString();

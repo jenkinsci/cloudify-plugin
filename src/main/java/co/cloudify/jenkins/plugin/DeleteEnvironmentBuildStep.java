@@ -81,7 +81,7 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
-        String deploymentId = expandString(envVars, this.deploymentId);
+        String deploymentId = CloudifyPluginUtilities.expandString(envVars, this.deploymentId);
         DeploymentsClient deploymentsClient = cloudifyClient.getDeploymentsClient();
         Deployment deployment = deploymentsClient.get(deploymentId);
         CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure, debugOutput);

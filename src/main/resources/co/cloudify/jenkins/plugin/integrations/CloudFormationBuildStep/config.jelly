@@ -10,11 +10,17 @@
     <f:entry title="${%Template parameters}" field="parameters">
         <f:textarea />
     </f:entry>
-    <f:entry title="${%Access Key ID}" field="accessKeyId">
+    <f:entry title="${%Access key ID}" field="accessKeyId">
         <f:password />
     </f:entry>
-    <f:entry title="${%Secret Access Key}" field="secretAccessKey">
+    <f:entry title="${%Access key ID parameter}" field="accessKeyIdParameter">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Secret access key}" field="secretAccessKey">
         <f:password />
+    </f:entry>
+    <f:entry title="${%Secret access key parameter}" field="secretAccessKeyParameter">
+        <f:textbox />
     </f:entry>
     <f:entry title="${%Region name}" field="regionName">
         <f:textbox />
@@ -24,6 +30,9 @@
     </f:entry>
     <f:entry title="${%Environment data output path}" field="envDataLocation">
         <f:textbox />
+    </f:entry>
+    <f:entry title="${%Print environment inputs}" field="echoInputs">
+        <f:checkbox />
     </f:entry>
     <f:entry title="${%Print environment data}" field="echoEnvData">
         <f:checkbox />

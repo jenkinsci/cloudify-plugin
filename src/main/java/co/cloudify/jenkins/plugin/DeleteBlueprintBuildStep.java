@@ -47,7 +47,7 @@ public class DeleteBlueprintBuildStep extends CloudifyBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        String blueprintId = expandString(envVars, this.blueprintId);
+        String blueprintId = CloudifyPluginUtilities.expandString(envVars, this.blueprintId);
 
         PrintStream jenkinsLog = listener.getLogger();
         jenkinsLog.println(String.format("Deleting blueprint: %s", blueprintId));

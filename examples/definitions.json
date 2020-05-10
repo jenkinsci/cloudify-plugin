@@ -1,9 +1,9 @@
 {
 	"definitions": [
-		"ansible-deployment",
+		"ansible-build-step",
 		"app-pipeline",
-		"azure-arm-deployment",
-		"cloudformation-deployment",
+		"arm-build-step",
+		"cloudformation-build-step",
 		"cloudify-environment-as-a-service",
 		"cloudify-wrapper",
 		"create-environment",
@@ -11,9 +11,14 @@
 		"delete-environment",
 		"execute-workflow",
 		"parameter-types",
-		"terraform-deployment",
+		"terraform-build-step",
+		"terraform-pipeline",
 		"upload-blueprint"
 	],
 	"views": [
+		"ansible",
+		"arm",
+		"cloudformation",
+		"terraform"
 	]
 }

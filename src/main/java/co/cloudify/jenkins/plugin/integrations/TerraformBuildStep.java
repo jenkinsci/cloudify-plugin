@@ -2,8 +2,8 @@ package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
@@ -33,7 +33,10 @@ import hudson.util.FormValidation;
  */
 public class TerraformBuildStep extends IntegrationBuildStep {
     private String templateUrl;
-    private String variables;
+    private String variablesAsString;
+    private Map<String, Object> variables;
+    private String environmentVariablesAsString;
+    private Map<String, String> environmentVariables;
 
     private transient BlueprintUploadSpec uploadSpec;
 
@@ -51,13 +54,40 @@ public class TerraformBuildStep extends IntegrationBuildStep {
         this.templateUrl = templateUrl;
     }
 
-    public String getVariables() {
+    public String getVariablesAsString() {
+        return variablesAsString;
+    }
+
+    @DataBoundSetter
+    public void setVariablesAsString(String parameters) {
+        this.variablesAsString = parameters;
+    }
+
+    public Map<String, Object> getVariables() {
         return variables;
     }
 
     @DataBoundSetter
-    public void setVariables(String parameters) {
-        this.variables = parameters;
+    public void setVariables(Map<String, Object> variables) {
+        this.variables = variables;
+    }
+
+    public String getEnvironmentVariablesAsString() {
+        return environmentVariablesAsString;
+    }
+
+    @DataBoundSetter
+    public void setEnvironmentVariablesAsString(String environmentVariablesAsString) {
+        this.environmentVariablesAsString = environmentVariablesAsString;
+    }
+
+    public Map<String, String> getEnvironmentVariables() {
+        return environmentVariables;
+    }
+
+    @DataBoundSetter
+    public void setEnvironmentVariables(Map<String, String> environmentVariables) {
+        this.environmentVariables = environmentVariables;
     }
 
     @Override
@@ -67,14 +97,22 @@ public class TerraformBuildStep extends IntegrationBuildStep {
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
 
-        String templateUrl = expandString(envVars, this.templateUrl);
-        String variables = expandString(envVars, this.variables);
+        String templateUrl = CloudifyPluginUtilities.expandString(envVars, this.templateUrl);
+        String variablesAsString = CloudifyPluginUtilities.expandString(envVars, this.variablesAsString);
+        String environmentVariablesAsString = CloudifyPluginUtilities.expandString(envVars, this.environmentVariablesAsString);
 
-        Map<String, Object> variablesMap = new LinkedHashMap<>();
-        variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(variables));
+        Map<String, Object> variablesMap = CloudifyPluginUtilities.getMapFromMapOrString(variablesAsString,
+                this.variables);
+        Map<String, String> envVariablesMap = CloudifyPluginUtilities
+                .getMapFromMapOrString(environmentVariablesAsString, this.environmentVariables)
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> (entry.getValue() != null ? entry.getValue().toString() : null)));
 
         operationInputs.put("module_source", templateUrl);
         operationInputs.put("variables", variablesMap);
+        operationInputs.put("environment_variables", envVariablesMap);
 
         File blueprintPath = prepareBlueprintDirectory("/blueprints/terraform/blueprint.yaml");
 
@@ -124,7 +162,10 @@ public class TerraformBuildStep extends IntegrationBuildStep {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
                 .append("templateUrl", templateUrl)
+                .append("variablesAsString", variablesAsString)
                 .append("variables", variables)
+                .append("environmentVariablesAsString", environmentVariablesAsString)
+                .append("environmentVariables", environmentVariables)
                 .toString();
     }
 }

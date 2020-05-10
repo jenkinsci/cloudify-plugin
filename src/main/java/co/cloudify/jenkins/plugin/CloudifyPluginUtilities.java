@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.json.Json;
@@ -68,6 +69,16 @@ public class CloudifyPluginUtilities {
             return getEnvironment((AbstractBuild) run, listener);
         }
         return null;
+    }
+
+    public static Map<String, Object> getMapFromMapOrString(final String str, final Map<String, ?> map) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (StringUtils.isNotBlank(str)) {
+            m.putAll(readYamlOrJson(str));
+        } else if (map != null) {
+            m.putAll(map);
+        }
+        return m;
     }
 
     /**
@@ -282,6 +293,7 @@ public class CloudifyPluginUtilities {
             String deploymentId,
             Map<String, Object> inputs,
             String outputsLocation,
+            boolean echoInputs,
             boolean echoOutputs,
             boolean debugOutput) throws IOException, InterruptedException {
         PrintStream logger = listener.getLogger();
@@ -289,9 +301,13 @@ public class CloudifyPluginUtilities {
                 debugOutput, client, logger);
 
         try {
-            logger.println(String.format(
-                    "Creating deployment '%s' from blueprint '%s' using the following inputs: %s",
-                    deploymentId, blueprintId, JSONObject.fromObject(inputs).toString(4)));
+            logger.println(
+                    echoInputs ? String.format(
+                            "Creating deployment '%s' from blueprint '%s' using the following inputs: %s",
+                            deploymentId, blueprintId, JSONObject.fromObject(inputs).toString(4))
+                            : String.format(
+                                    "Creating deployment '%s' from blueprint '%s'",
+                                    deploymentId, blueprintId));
             Deployment deployment = DeploymentsHelper.createDeploymentAndWait(client, deploymentId, blueprintId,
                     inputs, follower);
             Execution execution = ExecutionsHelper.install(client, deployment.getId(), follower);
@@ -357,13 +373,14 @@ public class CloudifyPluginUtilities {
             String mapping,
             String mappingLocation,
             String outputsLocation,
+            boolean echoInputs,
             boolean echoOutputs,
             boolean debugOutput) throws IOException, InterruptedException {
         Map<String, Object> inputsMap = CloudifyPluginUtilities.createInputsMap(
                 workspace, listener, inputs, inputsLocation,
                 mapping, mappingLocation);
         return createEnvironment(listener, workspace, client, blueprintId, deploymentId, inputsMap, outputsLocation,
-                echoOutputs, debugOutput);
+                echoInputs, echoOutputs, debugOutput);
     }
 
     /**
@@ -442,5 +459,27 @@ public class CloudifyPluginUtilities {
             gen.write(json);
         }
         return sw.toString();
+    }
+
+    public static String getValueWithProxy(final EnvVars envVars, final String parameterName,
+            final String defaultValue) {
+        if (parameterName != null) {
+            return expandString(envVars, String.format("${%s}", parameterName));
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Expand a string input, for variables.
+     * 
+     * @param value string to expand
+     * 
+     * @return Expanded value.
+     */
+    public static String expandString(final EnvVars envVars, final String value) {
+        if (envVars != null) {
+            return StringUtils.trimToNull(envVars.expand(value));
+        }
+        return value;
     }
 }

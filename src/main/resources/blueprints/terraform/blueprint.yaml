@@ -21,6 +21,8 @@ inputs:
     type: string
   variables:
     default: {}
+  environment_variables:
+    default: {}
 
 node_templates:
   terraform_module:
@@ -31,6 +33,7 @@ node_templates:
       plugins_dir: { get_input: terraform_plugins_dir }
       storage_path: { get_input: terraform_storage_dir }
       resource_config:
+        environment_variables: { get_input: environment_variables }
         variables: { get_input: variables }
         source: { get_input: module_source }
 

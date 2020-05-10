@@ -42,6 +42,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     private String inputsLocation;
     private String outputsLocation;
     private boolean ignoreFailureOnTeardown;
+    private boolean echoInputs;
     private boolean echoOutputs;
     private boolean debugOutput;
 
@@ -122,6 +123,15 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         this.ignoreFailureOnTeardown = ignoreFailureOnTeardown;
     }
 
+    public boolean isEchoInputs() {
+        return echoInputs;
+    }
+
+    @DataBoundSetter
+    public void setEchoInputs(boolean echoInputs) {
+        this.echoInputs = echoInputs;
+    }
+
     public boolean isEchoOutputs() {
         return echoOutputs;
     }
@@ -187,7 +197,8 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
 
         CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
                 listener, workspace, client, blueprint.getId(),
-                deploymentId, inputs, inputsLocation, null, null, outputsLocation, echoOutputs, debugOutput);
+                deploymentId, inputs, inputsLocation, null, null, outputsLocation, echoInputs, echoOutputs,
+                debugOutput);
 
         disposer.setDeployment(envData.getDeployment(), ignoreFailureOnTeardown);
         action.applyEnvironmentData(envData);
@@ -291,6 +302,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
                 .append("inputsLocation", inputsLocation)
                 .append("outputsLocation", outputsLocation)
                 .append("ignoreFailureOnTeardown", ignoreFailureOnTeardown)
+                .append("echoInputs", echoInputs)
                 .append("echoOutputs", echoOutputs)
                 .append("debugOutput", debugOutput)
                 .toString();

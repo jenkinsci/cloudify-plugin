@@ -3,8 +3,6 @@ package co.cloudify.jenkins.plugin;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.lang3.StringUtils;
-
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -43,20 +41,6 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
      */
     protected abstract void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener,
             FilePath workspace, EnvVars envVars, CloudifyClient cloudifyClient) throws Exception;
-
-    /**
-     * Expand a string input, for variables.
-     * 
-     * @param value string to expand
-     * 
-     * @return Expanded value.
-     */
-    protected String expandString(final EnvVars envVars, final String value) {
-        if (envVars != null) {
-            return StringUtils.trimToNull(envVars.expand(value));
-        }
-        return value;
-    }
 
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener)

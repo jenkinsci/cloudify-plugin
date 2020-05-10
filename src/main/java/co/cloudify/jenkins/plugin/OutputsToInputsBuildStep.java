@@ -81,10 +81,10 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        String inputsLocation = expandString(envVars, this.inputsLocation);
-        String outputsLocation = expandString(envVars, this.outputsLocation);
-        String mapping = expandString(envVars, this.mapping);
-        String mappingLocation = expandString(envVars, this.mappingLocation);
+        String inputsLocation = CloudifyPluginUtilities.expandString(envVars, this.inputsLocation);
+        String outputsLocation = CloudifyPluginUtilities.expandString(envVars, this.outputsLocation);
+        String mapping = CloudifyPluginUtilities.expandString(envVars, this.mapping);
+        String mappingLocation = CloudifyPluginUtilities.expandString(envVars, this.mappingLocation);
 
         FilePath inputsFile = workspace.child(inputsLocation);
         FilePath outputsFile = workspace.child(outputsLocation);

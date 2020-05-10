@@ -33,6 +33,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
     private String mapping;
     private String mappingFile;
     private String outputFile;
+    private boolean echoInputs;
     private boolean echoOutputs;
     private boolean debugOutput;
 
@@ -104,6 +105,15 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
         this.outputFile = outputFile;
     }
 
+    public boolean isEchoInputs() {
+        return echoInputs;
+    }
+
+    @DataBoundSetter
+    public void setEchoInputs(boolean echoInputs) {
+        this.echoInputs = echoInputs;
+    }
+
     public boolean isEchoOutputs() {
         return echoOutputs;
     }
@@ -127,13 +137,13 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        String blueprintId = expandString(envVars, this.blueprintId);
-        String deploymentId = expandString(envVars, this.deploymentId);
-        String inputs = expandString(envVars, this.inputs);
-        String inputsFile = expandString(envVars, this.inputsFile);
-        String mapping = expandString(envVars, this.mapping);
-        String mappingFile = expandString(envVars, this.mappingFile);
-        String outputFile = expandString(envVars, this.outputFile);
+        String blueprintId = CloudifyPluginUtilities.expandString(envVars, this.blueprintId);
+        String deploymentId = CloudifyPluginUtilities.expandString(envVars, this.deploymentId);
+        String inputs = CloudifyPluginUtilities.expandString(envVars, this.inputs);
+        String inputsFile = CloudifyPluginUtilities.expandString(envVars, this.inputsFile);
+        String mapping = CloudifyPluginUtilities.expandString(envVars, this.mapping);
+        String mappingFile = CloudifyPluginUtilities.expandString(envVars, this.mappingFile);
+        String outputFile = CloudifyPluginUtilities.expandString(envVars, this.outputFile);
 
         EnvironmentBuildAction action = new EnvironmentBuildAction();
         action.setBlueprintId(blueprintId);
@@ -142,7 +152,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
 
         CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
                 listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile,
-                mapping, mappingFile, outputFile, echoOutputs, debugOutput);
+                mapping, mappingFile, outputFile, echoInputs, echoOutputs, debugOutput);
         action.applyEnvironmentData(envData);
     }
 
@@ -201,6 +211,7 @@ public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
                 .append("mapping", mapping)
                 .append("mappingFile", mappingFile)
                 .append("outputFile", outputFile)
+                .append("echoInputs", echoInputs)
                 .append("echoOutputs", echoOutputs)
                 .append("debugOutput", debugOutput)
                 .toString();

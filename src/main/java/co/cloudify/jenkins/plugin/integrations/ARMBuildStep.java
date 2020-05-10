@@ -139,25 +139,21 @@ public class ARMBuildStep extends IntegrationBuildStep {
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
 
-        String subscriptionId = expandString(envVars, this.subscriptionId);
-        String tenantId = expandString(envVars, this.tenantId);
-        String clientId = expandString(envVars, this.clientId);
-        String clientSecret = expandString(envVars, this.clientSecret.getPlainText());
-        String clientSecretParameter = expandString(envVars, this.clientSecretParameter);
-        String location = expandString(envVars, this.location);
-        String resourceGroupName = expandString(envVars, this.resourceGroupName);
-        String parameters = expandString(envVars, this.parameters);
-        String templateFile = expandString(envVars, this.templateFile);
+        String subscriptionId = CloudifyPluginUtilities.expandString(envVars, this.subscriptionId);
+        String tenantId = CloudifyPluginUtilities.expandString(envVars, this.tenantId);
+        String clientId = CloudifyPluginUtilities.expandString(envVars, this.clientId);
+        String clientSecret = CloudifyPluginUtilities.expandString(envVars, this.clientSecret.getPlainText());
+        String clientSecretParameter = CloudifyPluginUtilities.expandString(envVars, this.clientSecretParameter);
+        String location = CloudifyPluginUtilities.expandString(envVars, this.location);
+        String resourceGroupName = CloudifyPluginUtilities.expandString(envVars, this.resourceGroupName);
+        String parameters = CloudifyPluginUtilities.expandString(envVars, this.parameters);
+        String templateFile = CloudifyPluginUtilities.expandString(envVars, this.templateFile);
 
         Map<String, Object> variablesMap = new LinkedHashMap<>();
         variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(parameters));
 
-        String effectiveClientSecret;
-        if (clientSecretParameter != null) {
-            effectiveClientSecret = expandString(envVars, String.format("${%s}", clientSecretParameter));
-        } else {
-            effectiveClientSecret = clientSecret;
-        }
+        String effectiveClientSecret = CloudifyPluginUtilities.getValueWithProxy(envVars, clientSecretParameter,
+                clientSecret);
 
         putIfNonNullValue(operationInputs, "azure_subscription_id", subscriptionId);
         putIfNonNullValue(operationInputs, "azure_tenant_id", tenantId);

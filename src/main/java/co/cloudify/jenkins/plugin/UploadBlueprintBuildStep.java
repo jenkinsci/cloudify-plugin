@@ -94,11 +94,11 @@ public class UploadBlueprintBuildStep extends CloudifyBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        String blueprintId = expandString(envVars, this.blueprintId);
-        String archiveUrl = expandString(envVars, this.archiveUrl);
-        String archivePath = expandString(envVars, this.archivePath);
-        String rootDirectory = expandString(envVars, this.rootDirectory);
-        String mainFileName = expandString(envVars, this.mainFileName);
+        String blueprintId = CloudifyPluginUtilities.expandString(envVars, this.blueprintId);
+        String archiveUrl = CloudifyPluginUtilities.expandString(envVars, this.archiveUrl);
+        String archivePath = CloudifyPluginUtilities.expandString(envVars, this.archivePath);
+        String rootDirectory = CloudifyPluginUtilities.expandString(envVars, this.rootDirectory);
+        String mainFileName = CloudifyPluginUtilities.expandString(envVars, this.mainFileName);
 
         PrintStream jenkinsLog = listener.getLogger();
         BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();

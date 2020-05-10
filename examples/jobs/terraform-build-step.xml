@@ -5,6 +5,10 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
@@ -21,14 +25,20 @@
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>variables</name>
-          <description>Template variables (in YAML/JSON format)</description>
+          <description>Template variables (in YAML format)</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
-        <hudson.model.FileParameterDefinition>
-          <name>tf_vars</name>
-          <description>YAML/JSON file containing template variables</description>
-        </hudson.model.FileParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>aws_access_key_id</name>
+          <description>AWS access key ID</description>
+          <defaultValue>{AQAAABAAAAAQxe+TvCw5kZivAevtL3GPubTJlwzccQ5TguvYPL84FDo=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>aws_secret_access_key</name>
+          <description>AWS secret access key</description>
+          <defaultValue>{AQAAABAAAAAQk8UzEL8YyCijacRlQwlQ1wZ5+mUD6xFcSP1OD9Z7TKo=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -42,12 +52,16 @@
   <builders>
     <co.cloudify.jenkins.plugin.integrations.TerraformBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <deploymentId>${environment_id}</deploymentId>
+      <echoInputs>false</echoInputs>
       <echoEnvData>true</echoEnvData>
-      <debugOutput>true</debugOutput>
-      <envDataLocation>env_data.json</envDataLocation>
+      <debugOutput>false</debugOutput>
+      <envDataLocation>env-data.json</envDataLocation>
+      <operationInputs class="linked-hash-map"/>
       <templateUrl>${template_url}</templateUrl>
-      <variables>${variables}</variables>
-      <variablesFile>${tf_vars}</variablesFile>
+      <variablesAsString>access_key: ${aws_access_key_id}
+secret_key: ${aws_secret_access_key}
+${variables}</variablesAsString>
+      <environmentVariablesAsString></environmentVariablesAsString>
     </co.cloudify.jenkins.plugin.integrations.TerraformBuildStep>
   </builders>
   <publishers/>

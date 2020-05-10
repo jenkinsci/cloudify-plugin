@@ -1,11 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
   <actions/>
-  <description>Shows basic usage of the Cloudify Build Wrapper.&#13;
-&#13;
-*NOTE*: this example requires that the "jq" utility is installed on the Jenkins machine that runs this job.</description>
+  <description>Shows basic usage of the Cloudify Build Wrapper.&#xd;
+&#xd;
+*NOTE*: this example requires that the &quot;jq&quot; utility is installed on the Jenkins machine that runs this job.</description>
   <keepDependencies>false</keepDependencies>
-  <properties/>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.4">
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@4.2.2">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -33,9 +40,9 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>endpoint=$(jq  -r '.capabilities.endpoint' outputs.json)
+      <command>endpoint=$(jq  -r &apos;.capabilities.endpoint&apos; outputs.json)
 
-echo "Endpoint: ${endpoint}"
+echo &quot;Endpoint: ${endpoint}&quot;
 </command>
     </hudson.tasks.Shell>
   </builders>
@@ -43,13 +50,14 @@ echo "Endpoint: ${endpoint}"
   <buildWrappers>
     <co.cloudify.jenkins.plugin.CloudifyBuildWrapper plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <blueprintId>blueprint-${BUILD_ID}</blueprintId>
-      <blueprintRootDirectory>repo/getting-started/infra</blueprintRootDirectory>
+      <blueprintRootDirectory>repo/virtual-machine</blueprintRootDirectory>
       <blueprintMainFile>openstack.yaml</blueprintMainFile>
       <deploymentId>deployment-${BUILD_ID}</deploymentId>
-      <inputs/>
-      <inputsLocation/>
+      <inputs></inputs>
+      <inputsLocation></inputsLocation>
       <outputsLocation>outputs.json</outputsLocation>
       <ignoreFailureOnTeardown>false</ignoreFailureOnTeardown>
+      <echoInputs>false</echoInputs>
       <echoOutputs>true</echoOutputs>
       <debugOutput>false</debugOutput>
     </co.cloudify.jenkins.plugin.CloudifyBuildWrapper>

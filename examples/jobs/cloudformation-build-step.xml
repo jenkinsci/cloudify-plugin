@@ -5,6 +5,10 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
@@ -19,16 +23,15 @@
           <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
           <name>access_key_id</name>
-          <description>Access Key ID to use</description>
-          <defaultValue></defaultValue>
-          <trim>true</trim>
-        </hudson.model.StringParameterDefinition>
+          <description></description>
+          <defaultValue>{AQAAABAAAAAQHXsHA/7qmAFjJ/7HvOD96ii0pPyof9buPfcGDV53Px4=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
           <name>secret_access_key</name>
           <description>Secret access key to use</description>
-          <defaultValue>{AQAAABAAAAAQKBLcgVIX0a4+4vBxABtK0csWG8miCIr4VsP7YMDzlUo=}</defaultValue>
+          <defaultValue>{AQAAABAAAAAQf5i1JOE60WoNChb1zv1WeO29GVpY4SpN0e70DakYqec=}</defaultValue>
         </hudson.model.PasswordParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>stack_name</name>
@@ -48,10 +51,6 @@
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
-        <hudson.model.FileParameterDefinition>
-          <name>cfn_vars</name>
-          <description>YAML/JSON file containing template parameters</description>
-        </hudson.model.FileParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -65,14 +64,18 @@
   <builders>
     <co.cloudify.jenkins.plugin.integrations.CloudFormationBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <deploymentId>${environment_id}</deploymentId>
+      <echoInputs>false</echoInputs>
       <echoEnvData>true</echoEnvData>
       <debugOutput>false</debugOutput>
-      <accessKeyId>${access_key_id}</accessKeyId>
-      <secretAccessKey>${secret_access_key}</secretAccessKey>
+      <envDataLocation>env-data.json</envDataLocation>
+      <operationInputs class="linked-hash-map"/>
+      <accessKeyId>{AQAAABAAAAAQrKikPebmlRs2Z5elWbQquSWq3avwEyPNEVphVLE4o4E=}</accessKeyId>
+      <accessKeyIdParameter>access_key_id</accessKeyIdParameter>
+      <secretAccessKey>{AQAAABAAAAAQQxdtmE4yvnj0uETsvvWs49gDfjNJEnBLEOW6O3wSOx8=}</secretAccessKey>
+      <secretAccessKeyParameter>secret_access_key</secretAccessKeyParameter>
       <regionName>${region_name}</regionName>
       <stackName>${stack_name}</stackName>
       <parameters>${parameters}</parameters>
-      <parametersFile>${cfn_vars}</parametersFile>
       <templateUrl>${template_url}</templateUrl>
     </co.cloudify.jenkins.plugin.integrations.CloudFormationBuildStep>
   </builders>

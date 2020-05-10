@@ -101,9 +101,9 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        String deploymentId = expandString(envVars, this.deploymentId);
-        String workflowId = expandString(envVars, this.workflowId);
-        String executionParameters = expandString(envVars, this.executionParameters);
+        String deploymentId = CloudifyPluginUtilities.expandString(envVars, this.deploymentId);
+        String workflowId = CloudifyPluginUtilities.expandString(envVars, this.workflowId);
+        String executionParameters = CloudifyPluginUtilities.expandString(envVars, this.executionParameters);
 
         PrintStream jenkinsLog = listener.getLogger();
 

@@ -67,9 +67,9 @@ public class UploadPluginBuildStep extends CloudifyBuildStep {
     protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
             final FilePath workspace,
             final EnvVars envVars, CloudifyClient cloudifyClient) throws Exception {
-        String wagonLocation = expandString(envVars, this.wagonLocation);
-        String yamlLocation = expandString(envVars, this.yamlLocation);
-        String outputLocation = expandString(envVars, this.outputLocation);
+        String wagonLocation = CloudifyPluginUtilities.expandString(envVars, this.wagonLocation);
+        String yamlLocation = CloudifyPluginUtilities.expandString(envVars, this.yamlLocation);
+        String outputLocation = CloudifyPluginUtilities.expandString(envVars, this.outputLocation);
 
         PrintStream jenkinsLog = listener.getLogger();
 

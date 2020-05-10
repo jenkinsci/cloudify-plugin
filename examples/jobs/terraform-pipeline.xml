@@ -1,0 +1,91 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.37">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.6.0"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.6.0">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>template_url</string>
+        <string>environment_id</string>
+        <string>template_vars</string>
+        <string>aws_access_key_id</string>
+        <string>aws_secret_access_key</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>environment_id</name>
+          <description>Environment identifier (translates to Cloudify deployment ID)</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>template_url</name>
+          <description>URL of the Terraform template archive</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>template_vars</name>
+          <description>Template variables (as YAML or JSON)</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>aws_access_key_id</name>
+          <description>AWS access key ID</description>
+          <defaultValue>{AQAAABAAAAAQL2PAdMKVSNv4xo+9JngHhemCXAo5h1WOCY7NFhR6cug=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>aws_secret_access_key</name>
+          <description>AWS secret access key</description>
+          <defaultValue>{AQAAABAAAAAQBOW0It/tblLxKcPkWB4UncITJIeO6l4UZV+RPYqdBIo=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.80">
+    <script>pipeline {
+    agent any
+    
+    parameters {
+        string(name: &apos;environment_id&apos;, description: &apos;Environment identifier (translates to Cloudify deployment ID)&apos;, trim: true)
+        string(name: &apos;template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
+        text(name: &apos;template_vars&apos;, description: &apos;Template variables (as YAML or JSON)&apos;)
+        password(name: &apos;aws_access_key_id&apos;, description: &apos;AWS access key ID&apos;)
+        password(name: &apos;aws_secret_access_key&apos;, description: &apos;AWS secret access key&apos;)
+    }
+
+    stages {
+        stage(&apos;Build Cloudify Environment&apos;) {
+            steps {
+                script {
+                    def template_vars_map = readYaml text: &quot;${params.template_vars}&quot;
+                    template_vars_map[&apos;access_key&apos;] = &quot;${params.aws_access_key_id}&quot;
+                    template_vars_map[&apos;secret_key&apos;] = &quot;${params.aws_secret_access_key}&quot;
+                    cfyTerraform deploymentId: &quot;${params.environment_id}&quot;,
+                        echoInputs: false,
+                        echoEnvData: true,
+                        envDataLocation: &apos;env-data.json&apos;,
+                        templateUrl: &quot;${params.template_url}&quot;,
+                        variables: template_vars_map
+                }
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
