@@ -5,7 +5,7 @@ import subprocess
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('mode', choices=['get', 'put'])
+    parser.add_argument('mode', choices=['get', 'put', 'delete-builds'])
     parser.add_argument('file')
     parser.add_argument('url')
     parser.add_argument('jar_path')
@@ -50,3 +50,8 @@ if __name__ == '__main__':
         for view in definitions['views']:
             with open(os.path.join('views', '%s.xml' % view), 'r') as input_file:
                 _run(['update-view', view], stdin=input_file)
+
+    elif mode == 'delete-builds':
+        for definition in definitions['definitions']:
+            print("Deleting builds for: %s" % (definition))
+            _run(['delete-builds', definition, '1-1000'])

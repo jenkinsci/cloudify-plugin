@@ -1,0 +1,87 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.37">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.6.0"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.6.0">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>sdlc_type</string>
+        <string>deployment_id</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>sdlc_type</name>
+          <description>SDLC stage to deploy for</description>
+          <choices>
+            <string>qa</string>
+            <string>production</string>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>deployment_id</name>
+          <description>Name of environment to create</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.80">
+    <script>pipeline {
+    agent any
+    
+    parameters {
+        choice(name: &apos;sdlc_type&apos;, choices: [&apos;qa&apos;, &apos;production&apos;], description: &apos;SDLC stage to deploy for&apos;)
+        string(name: &apos;deployment_id&apos;, description: &apos;Name of environment to create&apos;, trim: true)
+    }
+    stages {
+        stage(&apos;Build Cloudify Environment&apos;) {
+            steps {
+                script {
+                    switch(params[&apos;sdlc_type&apos;]) {
+                        case &apos;qa&apos;:
+                            def infra_blueprint = &apos;aws-terraform&apos;
+                            break
+                        case &apos;production&apos;:
+                            def infra_blueprint = &apos;openstack&apos;
+                            break
+                        default:
+                            throw new Exception(&quot;Unhandled value: &quot; + params[&apos;sdlc_type&apos;])
+                    }
+                }
+                echo infra_blueprint
+                // createCloudifyEnv blueprintId: &quot;mc-jboss&quot;,
+                //     deploymentId: &quot;${params.deployment_id}&quot;,
+                //     inputs: &quot;{ }&quot;
+                //     echoOutputs: true,
+                //     outputFile: &apos;outputs.json&apos;
+            }
+        }
+        stage(&apos;Wait for Input&apos;) {
+            steps {
+                // input message: &apos;Proceed&apos;
+                echo &quot;Ba&quot;
+            }
+        }
+        stage(&apos;Delete Cloudify Environment&apos;) {
+            steps {
+                echo &quot;Boo&quot;
+                // deleteCloudifyEnv deploymentId: &quot;${params.deployment_id}&quot;
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

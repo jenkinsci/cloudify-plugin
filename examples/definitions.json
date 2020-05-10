@@ -5,6 +5,7 @@
 		"arm-build-step",
 		"cloudformation-build-step",
 		"cloudify-environment-as-a-service",
+		"cloudify-environment-as-a-service-sdlc-type",
 		"cloudify-wrapper",
 		"create-environment",
 		"delete-blueprint",
