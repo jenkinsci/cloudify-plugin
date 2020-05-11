@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.File;
-import java.io.PrintStream;
+import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -37,8 +36,6 @@ public class TerraformBuildStep extends IntegrationBuildStep {
     private Map<String, Object> variables;
     private String environmentVariablesAsString;
     private Map<String, String> environmentVariables;
-
-    private transient BlueprintUploadSpec uploadSpec;
 
     @DataBoundConstructor
     public TerraformBuildStep() {
@@ -95,11 +92,10 @@ public class TerraformBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        PrintStream logger = listener.getLogger();
-
         String templateUrl = CloudifyPluginUtilities.expandString(envVars, this.templateUrl);
         String variablesAsString = CloudifyPluginUtilities.expandString(envVars, this.variablesAsString);
-        String environmentVariablesAsString = CloudifyPluginUtilities.expandString(envVars, this.environmentVariablesAsString);
+        String environmentVariablesAsString = CloudifyPluginUtilities.expandString(envVars,
+                this.environmentVariablesAsString);
 
         Map<String, Object> variablesMap = CloudifyPluginUtilities.getMapFromMapOrString(variablesAsString,
                 this.variables);
@@ -113,20 +109,7 @@ public class TerraformBuildStep extends IntegrationBuildStep {
         operationInputs.put("module_source", templateUrl);
         operationInputs.put("variables", variablesMap);
         operationInputs.put("environment_variables", envVariablesMap);
-
-        File blueprintPath = prepareBlueprintDirectory("/blueprints/terraform/blueprint.yaml");
-
-        try {
-            uploadSpec = new BlueprintUploadSpec(blueprintPath);
-            super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
-        } finally {
-            if (!blueprintPath.delete()) {
-                logger.println("Failed deleting blueprint file");
-            }
-            if (!blueprintPath.getParentFile().delete()) {
-                logger.println("Failed deleting temporary directory");
-            }
-        }
+        super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
     }
 
     @Override
@@ -135,8 +118,13 @@ public class TerraformBuildStep extends IntegrationBuildStep {
     }
 
     @Override
-    protected BlueprintUploadSpec getBlueprintUploadSpec() {
-        return uploadSpec;
+    protected String getIntegrationVersion() {
+        return "1.0";
+    }
+
+    @Override
+    protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
+        return new BlueprintUploadSpec(prepareBlueprintDirectory("/blueprints/terraform/blueprint.yaml"));
     }
 
     @Symbol("cfyTerraform")

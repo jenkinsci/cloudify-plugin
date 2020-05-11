@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.File;
-import java.io.PrintStream;
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -40,8 +39,6 @@ public class ARMBuildStep extends IntegrationBuildStep {
     private Map<String, Object> parameters;
     private String parametersAsString;
     private String templateFile;
-
-    private transient BlueprintUploadSpec uploadSpec;
 
     @DataBoundConstructor
     public ARMBuildStep() {
@@ -143,8 +140,6 @@ public class ARMBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        PrintStream logger = listener.getLogger();
-
         String subscriptionId = CloudifyPluginUtilities.expandString(envVars, this.subscriptionId);
         String tenantId = CloudifyPluginUtilities.expandString(envVars, this.tenantId);
         String clientId = CloudifyPluginUtilities.expandString(envVars, this.clientId);
@@ -167,20 +162,7 @@ public class ARMBuildStep extends IntegrationBuildStep {
         putIfNonNullValue(operationInputs, "resource_group_name", resourceGroupName);
         operationInputs.put("parameters", variablesMap);
         operationInputs.put("template_file", templateFile);
-
-        File blueprintPath = prepareBlueprintDirectory("/blueprints/arm/blueprint.yaml");
-
-        try {
-            uploadSpec = new BlueprintUploadSpec(blueprintPath);
-            super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
-        } finally {
-            if (!blueprintPath.delete()) {
-                logger.println("Failed deleting blueprint file");
-            }
-            if (!blueprintPath.getParentFile().delete()) {
-                logger.println("Failed deleting temporary directory");
-            }
-        }
+        super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
     }
 
     @Override
@@ -189,8 +171,13 @@ public class ARMBuildStep extends IntegrationBuildStep {
     }
 
     @Override
-    protected BlueprintUploadSpec getBlueprintUploadSpec() {
-        return uploadSpec;
+    protected String getIntegrationVersion() {
+        return "1.0";
+    }
+
+    @Override
+    protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
+        return new BlueprintUploadSpec(prepareBlueprintDirectory("/blueprints/arm/blueprint.yaml"));
     }
 
     @Symbol("cfyAzureArm")

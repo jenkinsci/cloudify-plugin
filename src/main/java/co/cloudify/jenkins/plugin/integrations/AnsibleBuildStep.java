@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.File;
-import java.io.PrintStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,8 +49,6 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
     private String sshCommonArgs;
     private String sshExtraArgs;
     private Integer timeout;
-
-    private transient BlueprintUploadSpec uploadSpec;
 
     @DataBoundConstructor
     public AnsibleBuildStep() {
@@ -216,15 +213,15 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        PrintStream logger = listener.getLogger();
-
         String sourcePath = CloudifyPluginUtilities.expandString(envVars, this.sourcePath);
         String playbookPath = CloudifyPluginUtilities.expandString(envVars, this.playbookPath);
-        List<String> sources = Arrays.asList(StringUtils.defaultString(CloudifyPluginUtilities.expandString(envVars, this.sources)));
+        List<String> sources = Arrays
+                .asList(StringUtils.defaultString(CloudifyPluginUtilities.expandString(envVars, this.sources)));
         Map<String, Object> runData = CloudifyPluginUtilities.readYamlOrJson(
                 CloudifyPluginUtilities.expandString(envVars, this.runData));
         List<String> sensitiveKeys = Arrays
-                .asList(StringUtils.defaultString(CloudifyPluginUtilities.expandString(envVars, this.sensitiveKeys)).split("\n"));
+                .asList(StringUtils.defaultString(CloudifyPluginUtilities.expandString(envVars, this.sensitiveKeys))
+                        .split("\n"));
         Map<String, Object> optionsConfig = CloudifyPluginUtilities.readYamlOrJson(
                 CloudifyPluginUtilities.expandString(envVars, this.optionsConfig));
         Map<String, Object> ansibleEnvVars = CloudifyPluginUtilities.readYamlOrJson(
@@ -254,22 +251,9 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
         ansibleOpInputs.put("ssh_common_args", sshCommonArgs);
         ansibleOpInputs.put("ssh_extra_args", sshExtraArgs);
         ansibleOpInputs.put("timeout", timeout);
-
         operationInputs.put("operation_inputs", ansibleOpInputs);
 
-        File blueprintPath = prepareBlueprintDirectory("/blueprints/ansible/blueprint.yaml");
-
-        try {
-            uploadSpec = new BlueprintUploadSpec(blueprintPath);
-            super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
-        } finally {
-            if (!blueprintPath.delete()) {
-                logger.println("Failed deleting blueprint file");
-            }
-            if (!blueprintPath.getParentFile().delete()) {
-                logger.println("Failed deleting temporary directory");
-            }
-        }
+        super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
     }
 
     @Override
@@ -278,8 +262,13 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
     }
 
     @Override
-    protected BlueprintUploadSpec getBlueprintUploadSpec() {
-        return uploadSpec;
+    protected String getIntegrationVersion() {
+        return "1.0";
+    }
+
+    @Override
+    protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
+        return new BlueprintUploadSpec(prepareBlueprintDirectory("/blueprints/ansible/blueprint.yaml"));
     }
 
     @Symbol("cfyAnsible")

@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.File;
-import java.io.PrintStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +44,6 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
     private Map<String, Object> parameters;
     private String parametersAsString;
     private String templateUrl;
-
-    private transient BlueprintUploadSpec uploadSpec;
 
     @DataBoundConstructor
     public CloudFormationBuildStep() {
@@ -139,7 +136,6 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        PrintStream logger = listener.getLogger();
         String accessKeyIdAsString = CloudifyPluginUtilities.expandString(envVars, this.accessKeyIdAsString);
         String secretAccessKeyAsString = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKeyAsString);
         String regionName = CloudifyPluginUtilities.expandString(envVars, this.regionName);
@@ -169,20 +165,7 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         operationInputs.put("stack_name", stackName);
         operationInputs.put("parameters", parametersAsList);
         operationInputs.put("template_url", templateUrl);
-
-        File blueprintPath = prepareBlueprintDirectory("/blueprints/cfn/blueprint.yaml");
-
-        try {
-            uploadSpec = new BlueprintUploadSpec(blueprintPath);
-            super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
-        } finally {
-            if (!blueprintPath.delete()) {
-                logger.println("Failed deleting blueprint file");
-            }
-            if (!blueprintPath.getParentFile().delete()) {
-                logger.println("Failed deleting temporary directory");
-            }
-        }
+        super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
     }
 
     @Override
@@ -191,8 +174,13 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
     }
 
     @Override
-    protected BlueprintUploadSpec getBlueprintUploadSpec() {
-        return uploadSpec;
+    protected String getIntegrationVersion() {
+        return "1.0";
+    }
+
+    @Override
+    protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
+        return new BlueprintUploadSpec(prepareBlueprintDirectory("/blueprints/cfn/blueprint.yaml"));
     }
 
     @Symbol("cfyCloudFormation")
