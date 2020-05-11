@@ -9,8 +9,6 @@
         <string>template_url</string>
         <string>environment_id</string>
         <string>template_vars</string>
-        <string>aws_access_key_id</string>
-        <string>aws_secret_access_key</string>
       </parameters>
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
@@ -40,16 +38,13 @@
           <description>Template variables (as YAML or JSON)</description>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>aws_access_key_id</name>
-          <description>AWS access key ID</description>
-          <defaultValue>{AQAAABAAAAAQktzUO0akdATbYpsNNvead1epny7Aa2k3FnvOnkyTTsI=}</defaultValue>
-        </hudson.model.PasswordParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>aws_secret_access_key</name>
-          <description>AWS secret access key</description>
-          <defaultValue>{AQAAABAAAAAQxsrBfevN/fHHxILFGVL9vtU6FWtgYd/a8ev381TNQwY=}</defaultValue>
-        </hudson.model.PasswordParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+          <name>aws_credentials</name>
+          <description></description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -61,8 +56,6 @@
         string(name: &apos;environment_id&apos;, description: &apos;Environment identifier (translates to Cloudify deployment ID)&apos;, trim: true)
         string(name: &apos;template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
         text(name: &apos;template_vars&apos;, description: &apos;Template variables (as YAML or JSON)&apos;)
-        password(name: &apos;aws_access_key_id&apos;, description: &apos;AWS access key ID&apos;)
-        password(name: &apos;aws_secret_access_key&apos;, description: &apos;AWS secret access key&apos;)
     }
 
     stages {
@@ -70,14 +63,23 @@
             steps {
                 script {
                     def template_vars_map = readYaml text: &quot;${params.template_vars}&quot;
-                    template_vars_map[&apos;access_key&apos;] = &quot;${params.aws_access_key_id}&quot;
-                    template_vars_map[&apos;secret_key&apos;] = &quot;${params.aws_secret_access_key}&quot;
-                    cfyTerraform deploymentId: &quot;${params.environment_id}&quot;,
-                        echoInputs: false,
-                        echoEnvData: true,
-                        envDataLocation: &apos;env-data.json&apos;,
-                        templateUrl: &quot;${params.template_url}&quot;,
-                        variables: template_vars_map
+                    
+                    withCredentials([[
+                        $class: &apos;AmazonWebServicesCredentialsBinding&apos;,
+                        accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
+                        credentialsId: &quot;${params.aws_credentials}&quot;,
+                        secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
+
+                        template_vars_map[&apos;access_key&apos;] = &quot;${AWS_ACCESS_KEY_ID}&quot;
+                        template_vars_map[&apos;secret_key&apos;] = &quot;${AWS_SECRET_ACCESS_KEY}&quot;
+
+                        cfyTerraform deploymentId: &quot;${params.environment_id}&quot;,
+                            echoInputs: false,
+                            echoEnvData: true,
+                            envDataLocation: &apos;env-data.json&apos;,
+                            templateUrl: &quot;${params.template_url}&quot;,
+                            variables: template_vars_map
+                        }
                 }
             }
         }

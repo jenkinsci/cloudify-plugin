@@ -14,11 +14,8 @@
         <f:entry title="${%Client ID}" field="clientId">
             <f:textbox />
         </f:entry>
-        <f:entry title="${%Client Secret Parameter}" field="clientSecretParameter">
+        <f:entry title="${%Client Secret}" field="clientSecretAsString">
             <f:textbox />
-        </f:entry>
-        <f:entry title="${%Client Secret}" field="clientSecret">
-            <f:password />
         </f:entry>
     </f:section>
     <f:entry title="${%Location}" field="location">
@@ -30,7 +27,7 @@
     <f:entry title="${%Resource Group Name}" field="resourceGroupName">
         <f:textbox />
     </f:entry>
-    <f:entry title="${%Parameters}" field="parameters">
+    <f:entry title="${%Parameters}" field="parametersAsString">
         <f:textarea />
     </f:entry>
     <f:entry title="${%Print environment inputs}" field="echoInputs">

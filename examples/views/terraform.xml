@@ -6,8 +6,6 @@
   <properties class="hudson.model.View$PropertyList"/>
   <jobNames>
     <comparator class="hudson.util.CaseInsensitiveComparator"/>
-    <string>terraform-build-step</string>
-    <string>terraform-pipeline</string>
   </jobNames>
   <jobFilters/>
   <columns>
@@ -20,5 +18,6 @@
     <hudson.views.BuildButtonColumn/>
     <hudson.plugins.favorite.column.FavoriteColumn plugin="favorite@2.3.2"/>
   </columns>
+  <includeRegex>^terraform-.*</includeRegex>
   <recurse>false</recurse>
 </hudson.model.ListView>

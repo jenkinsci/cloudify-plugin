@@ -6,14 +6,15 @@
       <jobProperties/>
       <triggers/>
       <parameters>
-        <string>environment_id</string>
+        <string>arm_resource_group</string>
+        <string>environment_prefix</string>
         <string>cfn_template_url</string>
-        <string>aws_access_key_id</string>
         <string>tf_template_url</string>
-        <string>aws_secret_access_key</string>
         <string>cfn_template_vars</string>
         <string>cfn_stack_name</string>
         <string>tf_template_vars</string>
+        <string>arm_template_url</string>
+        <string>arm_template_vars</string>
       </parameters>
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
@@ -29,7 +30,7 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
-          <name>environment_id</name>
+          <name>environment_prefix</name>
           <description>Environment identifier prefix</description>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
@@ -58,16 +59,35 @@
           <description>CloudFormation template variables (as YAML or JSON)</description>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>aws_access_key_id</name>
-          <description>AWS access key ID</description>
-          <defaultValue>{AQAAABAAAAAQ36JsfK9NPktRWCWXh9FEQRLYN4vjr6MDYmie6PFQ2wg=}</defaultValue>
-        </hudson.model.PasswordParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>aws_secret_access_key</name>
-          <description>AWS secret access key</description>
-          <defaultValue>{AQAAABAAAAAQXUw231WegMafUvpNspw82om9ysv/K2iAav2/vkWD8+Q=}</defaultValue>
-        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>arm_template_url</name>
+          <description>URL of the ARM template</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>arm_template_vars</name>
+          <description>ARM template variables (as YAML or JSON)</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>arm_resource_group</name>
+          <description>Resource group to create on Azure</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+          <name>aws_credentials</name>
+          <description>Credentials for AWS</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+          <name>azure_credentials</name>
+          <description>Credentials for Azure</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -76,14 +96,15 @@
     agent any
     
     parameters {
-        string(name: &apos;environment_id&apos;, description: &apos;Environment identifier prefix&apos;, trim: true)
+        string(name: &apos;environment_prefix&apos;, description: &apos;Environment identifier prefix&apos;, trim: true)
         string(name: &apos;tf_template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
         text(name: &apos;tf_template_vars&apos;, description: &apos;Terraform template variables (as YAML or JSON)&apos;)
         string(name: &apos;cfn_stack_name&apos;, description: &apos;CloudFormation stack name to create&apos;, trim: true)
         string(name: &apos;cfn_template_url&apos;, description: &apos;URL of the CloudFormation template&apos;, trim: true)
         text(name: &apos;cfn_template_vars&apos;, description: &apos;CloudFormation template variables (as YAML or JSON)&apos;)
-        password(name: &apos;aws_access_key_id&apos;, description: &apos;AWS access key ID&apos;)
-        password(name: &apos;aws_secret_access_key&apos;, description: &apos;AWS secret access key&apos;)
+        string(name: &apos;arm_template_url&apos;, description: &apos;URL of the ARM template&apos;, trim: true)
+        text(name: &apos;arm_template_vars&apos;, description: &apos;ARM template variables (as YAML or JSON)&apos;)
+        string(name: &apos;arm_resource_group&apos;, description: &apos;Resource group to create on Azure&apos;, trim: true)
     }
 
     stages {
@@ -93,14 +114,21 @@
                     steps {
                         script {
                             def template_vars_map = readYaml text: &quot;${params.tf_template_vars}&quot;
-                            template_vars_map[&apos;access_key&apos;] = &quot;${params.aws_access_key_id}&quot;
-                            template_vars_map[&apos;secret_key&apos;] = &quot;${params.aws_secret_access_key}&quot;
-                            cfyTerraform deploymentId: &quot;${params.environment_id}_tf&quot;,
-                                echoInputs: false,
-                                echoEnvData: true,
-                                envDataLocation: &apos;env-data-tf.json&apos;,
-                                templateUrl: &quot;${params.tf_template_url}&quot;,
-                                variables: template_vars_map
+                            
+                            withCredentials([[
+                                $class: &apos;AmazonWebServicesCredentialsBinding&apos;,
+                                accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
+                                credentialsId: &quot;${params.aws_credentials}&quot;,
+                                secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
+                                    template_vars_map[&apos;access_key&apos;] = &quot;${AWS_ACCESS_KEY_ID}&quot;
+                                    template_vars_map[&apos;secret_key&apos;] = &quot;${AWS_SECRET_ACCESS_KEY}&quot;
+                                    cfyTerraform deploymentId: &quot;${params.environment_prefix}_tf&quot;,
+                                        echoInputs: false,
+                                        echoEnvData: true,
+                                        envDataLocation: &apos;env-data-tf.json&apos;,
+                                        templateUrl: &quot;${params.tf_template_url}&quot;,
+                                        variables: template_vars_map
+                                }
                         }
                     }
                 }
@@ -108,14 +136,41 @@
                     steps {
                         script {
                             def cfn_template_vars_map = readYaml text: &quot;${params.cfn_template_vars}&quot;
-                            cfyCloudFormation accessKeyIdStr: &quot;${params.aws_access_key_id}&quot;,
-                                deploymentId: &quot;${params.environment_id}_cfn&quot;,
-                                echoEnvData: true,
-                                envDataLocation: &apos;env-data-cfn.json&apos;,
-                                parameters: cfn_template_vars_map,
-                                secretAccessKeyStr: &quot;${params.aws_secret_access_key}&quot;,
-                                stackName: &quot;${params.cfn_stack_name}&quot;,
-                                templateUrl: &quot;${params.cfn_template_url}&quot;
+
+                            withCredentials([[
+                                $class: &apos;AmazonWebServicesCredentialsBinding&apos;,
+                                accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
+                                credentialsId: &quot;${params.aws_credentials}&quot;,
+                                secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
+                                    cfyCloudFormation accessKeyIdAsString: &quot;${AWS_ACCESS_KEY_ID}&quot;,
+                                        deploymentId: &quot;${params.environment_prefix}_cfn&quot;,
+                                        echoEnvData: true,
+                                        envDataLocation: &apos;env-data-cfn.json&apos;,
+                                        parameters: cfn_template_vars_map,
+                                        secretAccessKeyAsString: &quot;${AWS_SECRET_ACCESS_KEY}&quot;,
+                                        stackName: &quot;${params.cfn_stack_name}&quot;,
+                                        templateUrl: &quot;${params.cfn_template_url}&quot;
+                                }
+                        }
+                    }
+                }
+                stage(&apos;Azure using ARM&apos;) {
+                    steps {
+                        script {
+                            def arm_template_vars_map = readYaml text: &quot;${params.arm_template_vars}&quot;
+
+                            withCredentials([azureServicePrincipal(&quot;${params.azure_credentials}&quot;)]) {
+                                    cfyAzureArm clientId: &quot;${AZURE_CLIENT_ID}&quot;,
+                                    clientSecretAsString: &quot;${AZURE_CLIENT_SECRET}&quot;,
+                                    deploymentId: &quot;${params.environment_prefix}_arm&quot;,
+                                    echoEnvData: true,
+                                    envDataLocation: &apos;env-arm.json&apos;,
+                                    parameters: arm_template_vars_map,
+                                    resourceGroupName: &quot;${params.arm_resource_group}&quot;,
+                                    subscriptionId: &quot;${AZURE_SUBSCRIPTION_ID}&quot;,
+                                    templateFile: &quot;${params.arm_template_url}&quot;,
+                                    tenantId: &quot;${AZURE_TENANT_ID}&quot;
+                                }
                         }
                     }
                 }
@@ -131,14 +186,21 @@
                 stage(&apos;Destroy Terraform environment&apos;) {
                     steps {
                         deleteCloudifyEnv deleteBlueprintIfLast: true,
-                            deploymentId: &quot;${params.environment_id}_tf&quot;,
+                            deploymentId: &quot;${params.environment_prefix}_tf&quot;,
                             ignoreFailure: true
                     }
                 }
                 stage(&apos;Destroy CloudFormation environment&apos;) {
                     steps {
                         deleteCloudifyEnv deleteBlueprintIfLast: true,
-                            deploymentId: &quot;${params.environment_id}_cfn&quot;,
+                            deploymentId: &quot;${params.environment_prefix}_cfn&quot;,
+                            ignoreFailure: true
+                    }
+                }
+                stage(&apos;Destroy Azure ARM environment&apos;) {
+                    steps {
+                        deleteCloudifyEnv deleteBlueprintIfLast: true,
+                            deploymentId: &quot;${params.environment_prefix}_arm&quot;,
                             ignoreFailure: true
                     }
                 }

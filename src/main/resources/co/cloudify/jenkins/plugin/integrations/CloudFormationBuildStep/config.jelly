@@ -10,16 +10,10 @@
     <f:entry title="${%Template parameters}" field="parametersAsString">
         <f:textarea />
     </f:entry>
-    <f:entry title="${%Access key ID}" field="accessKeyId">
-        <f:password />
-    </f:entry>
-    <f:entry title="${%Access key ID parameter}" field="accessKeyIdParameter">
+    <f:entry title="${%Access key ID}" field="accessKeyIdAsString">
         <f:textbox />
     </f:entry>
-    <f:entry title="${%Secret access key}" field="secretAccessKey">
-        <f:password />
-    </f:entry>
-    <f:entry title="${%Secret access key parameter}" field="secretAccessKeyParameter">
+    <f:entry title="${%Secret access key}" field="secretAccessKeyAsString">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Region name}" field="regionName">

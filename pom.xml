@@ -19,7 +19,6 @@
         <jersey.version>2.28</jersey.version>
         <jackson.version>2.10.3</jackson.version>
         <git.version>3.9.4</git.version>
-        <credentials.version>2.3.3</credentials.version>
     </properties>
     <name>Cloudify Plugin for Jenkins</name>
     <licenses>
@@ -233,6 +232,10 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            <properties>
+                <azure-credentials.version>4.0.2</azure-credentials.version>
+                <azure-commons.version>1.0.4</azure-commons.version>
+            </properties>
             <dependencies>
 				<!-- In development mode, include some convenience plugins. These aren't 
 					mandatory for release. -->
@@ -256,6 +259,21 @@
                     <artifactId>extensible-choice-parameter</artifactId>
                     <version>1.6.0</version>
                 </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>azure-credentials</artifactId>
+                    <version>${azure-credentials.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>azure-commons-core</artifactId>
+                    <version>${azure-commons.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>aws-credentials</artifactId>
+                    <version>1.28</version>
+                </dependency>
                 <!--
                 Pin these versions, to make the plugins above work nicely together.
                 -->
@@ -265,14 +283,54 @@
                     <version>1.20</version>
                 </dependency>
                 <dependency>
-                    <groupId>org.jenkins-ci.plugins</groupId>
-                    <artifactId>script-security</artifactId>
-                    <version>1.25</version>
-                </dependency>
-                <dependency>
                     <groupId>org.jenkins-ci</groupId>
                     <artifactId>annotation-indexer</artifactId>
                     <version>1.12</version>
+                </dependency>
+                <dependency>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
+                    <version>2.9.9</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                    <version>0.1.54</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                    <version>4.4.6</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.squareup.retrofit2</groupId>
+                    <artifactId>retrofit</artifactId>
+                    <version>2.6.2</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.squareup.okhttp3</groupId>
+                    <artifactId>okhttp</artifactId>
+                    <version>3.12.6</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>script-security</artifactId>
+                    <version>1.53</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>structs</artifactId>
+                    <version>1.17</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>credentials</artifactId>
+                    <version>2.1.18</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>credentials-binding</artifactId>
+                    <version>1.16</version>
                 </dependency>
             </dependencies>
         </profile>

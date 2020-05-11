@@ -3,7 +3,9 @@
 		"ansible-build-step",
 		"app-pipeline",
 		"arm-build-step",
+		"arm-build-step-with-creds",
 		"cloudformation-build-step",
+		"cloudformation-build-step-with-creds",
 		"cloudify-environment-as-a-service",
 		"cloudify-environment-as-a-service-sdlc-type",
 		"cloudify-wrapper-with-git",
@@ -15,6 +17,7 @@
 		"mixed-pipeline",
 		"parameter-types",
 		"terraform-build-step",
+		"terraform-build-step-with-creds",
 		"terraform-pipeline",
 		"upload-blueprint"
 	],

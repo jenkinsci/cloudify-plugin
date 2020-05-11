@@ -2,15 +2,12 @@ package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
@@ -25,7 +22,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.FormValidation;
 import hudson.util.Secret;
 
 /**
@@ -38,10 +34,11 @@ public class ARMBuildStep extends IntegrationBuildStep {
     private String tenantId;
     private String clientId;
     private Secret clientSecret;
-    private String clientSecretParameter;
+    private String clientSecretAsString;
     private String location;
     private String resourceGroupName;
-    private String parameters;
+    private Map<String, Object> parameters;
+    private String parametersAsString;
     private String templateFile;
 
     private transient BlueprintUploadSpec uploadSpec;
@@ -87,13 +84,13 @@ public class ARMBuildStep extends IntegrationBuildStep {
         this.clientSecret = clientSecret;
     }
 
-    public String getClientSecretParameter() {
-        return clientSecretParameter;
+    public String getClientSecretAsString() {
+        return clientSecretAsString;
     }
 
     @DataBoundSetter
-    public void setClientSecretParameter(String clientSecretParameter) {
-        this.clientSecretParameter = clientSecretParameter;
+    public void setClientSecretAsString(String clientSecretAsString) {
+        this.clientSecretAsString = clientSecretAsString;
     }
 
     public String getLocation() {
@@ -114,13 +111,22 @@ public class ARMBuildStep extends IntegrationBuildStep {
         this.resourceGroupName = resourceGroupName;
     }
 
-    public String getParameters() {
+    public Map<String, Object> getParameters() {
         return parameters;
     }
 
     @DataBoundSetter
-    public void setParameters(String parameters) {
+    public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
+    }
+
+    public String getParametersAsString() {
+        return parametersAsString;
+    }
+
+    @DataBoundSetter
+    public void setParametersAsString(String parametersAsString) {
+        this.parametersAsString = parametersAsString;
     }
 
     public String getTemplateFile() {
@@ -142,18 +148,16 @@ public class ARMBuildStep extends IntegrationBuildStep {
         String subscriptionId = CloudifyPluginUtilities.expandString(envVars, this.subscriptionId);
         String tenantId = CloudifyPluginUtilities.expandString(envVars, this.tenantId);
         String clientId = CloudifyPluginUtilities.expandString(envVars, this.clientId);
-        String clientSecret = CloudifyPluginUtilities.expandString(envVars, this.clientSecret);
-        String clientSecretParameter = CloudifyPluginUtilities.expandString(envVars, this.clientSecretParameter);
+        String clientSecretAsString = CloudifyPluginUtilities.expandString(envVars, this.clientSecretAsString);
         String location = CloudifyPluginUtilities.expandString(envVars, this.location);
         String resourceGroupName = CloudifyPluginUtilities.expandString(envVars, this.resourceGroupName);
-        String parameters = CloudifyPluginUtilities.expandString(envVars, this.parameters);
+        String parametersAsString = CloudifyPluginUtilities.expandString(envVars, this.parametersAsString);
         String templateFile = CloudifyPluginUtilities.expandString(envVars, this.templateFile);
 
-        Map<String, Object> variablesMap = new LinkedHashMap<>();
-        variablesMap.putAll(CloudifyPluginUtilities.readYamlOrJson(parameters));
+        Map<String, Object> variablesMap = CloudifyPluginUtilities.getMapFromMapOrString(parametersAsString,
+                this.parameters);
 
-        String effectiveClientSecret = CloudifyPluginUtilities.getValueWithProxy(envVars, clientSecretParameter,
-                clientSecret);
+        String effectiveClientSecret = CloudifyPluginUtilities.getPassword(this.clientSecret, clientSecretAsString);
 
         putIfNonNullValue(operationInputs, "azure_subscription_id", subscriptionId);
         putIfNonNullValue(operationInputs, "azure_tenant_id", tenantId);
@@ -197,24 +201,6 @@ public class ARMBuildStep extends IntegrationBuildStep {
             return true;
         }
 
-        public FormValidation checkClientSecret(final Secret clientSecret, final String clientSecretParameter) {
-            if (!(StringUtils.isBlank(clientSecret.getPlainText()) ^ StringUtils.isBlank(clientSecretParameter))) {
-                return FormValidation
-                        .error("Either a Client Secret or a Client Secret Parameter must be specified, not both");
-            }
-            return FormValidation.ok();
-        }
-
-        public FormValidation doCheckClientSecret(final @QueryParameter Secret value,
-                final @QueryParameter String clientSecretParameter) {
-            return checkClientSecret(value, clientSecretParameter);
-        }
-
-        public FormValidation doCheckClientSecretParameter(final @QueryParameter String value,
-                final @QueryParameter Secret clientSecret) {
-            return checkClientSecret(clientSecret, value);
-        }
-
         @Override
         public String getDisplayName() {
             return Messages.ARMBuildStep_DescriptorImpl_displayName();
@@ -228,11 +214,11 @@ public class ARMBuildStep extends IntegrationBuildStep {
                 .append("subscriptionId", subscriptionId)
                 .append("tenantId", tenantId)
                 .append("clientId", clientId)
-                .append("clientSecretParameter", clientSecretParameter)
                 // Skip Client Secret
                 .append("location", location)
                 .append("resourceGroupName", resourceGroupName)
                 .append("parameters", parameters)
+                .append("parametersAsString", parametersAsString)
                 .append("templateFile", templateFile)
                 .toString();
     }

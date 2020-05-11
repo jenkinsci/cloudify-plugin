@@ -462,12 +462,11 @@ public class CloudifyPluginUtilities {
         return sw.toString();
     }
 
-    public static String getValueWithProxy(final EnvVars envVars, final String parameterName,
-            final String defaultValue) {
-        if (parameterName != null) {
-            return expandString(envVars, String.format("${%s}", parameterName));
+    public static String getPassword(final Secret secret, final String s) {
+        if (secret != null) {
+            return secret.getPlainText();
         }
-        return defaultValue;
+        return s;
     }
 
     /**
@@ -482,17 +481,5 @@ public class CloudifyPluginUtilities {
             return StringUtils.trimToNull(envVars.expand(value));
         }
         return value;
-    }
-
-    public static String expandString(final EnvVars envVars, final Secret value) {
-        if (value == null) {
-            return null;
-        }
-
-        String plainText = value.getPlainText();
-        if (envVars != null) {
-            return StringUtils.trimToNull(envVars.expand(plainText));
-        }
-        return plainText;
     }
 }

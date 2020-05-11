@@ -37,11 +37,9 @@ import hudson.util.Secret;
  */
 public class CloudFormationBuildStep extends IntegrationBuildStep {
     private Secret accessKeyId;
-    private String accessKeyIdParameter;
-    private String accessKeyIdStr;
+    private String accessKeyIdAsString;
     private Secret secretAccessKey;
-    private String secretAccessKeyParameter;
-    private String secretAccessKeyStr;
+    private String secretAccessKeyAsString;
     private String regionName;
     private String stackName;
     private Map<String, Object> parameters;
@@ -64,22 +62,13 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         this.accessKeyId = accessKeyId;
     }
 
-    public String getAccessKeyIdParameter() {
-        return accessKeyIdParameter;
+    public String getAccessKeyIdAsString() {
+        return accessKeyIdAsString;
     }
 
     @DataBoundSetter
-    public void setAccessKeyIdParameter(String accessKeyIdParameter) {
-        this.accessKeyIdParameter = accessKeyIdParameter;
-    }
-
-    public String getAccessKeyIdStr() {
-        return accessKeyIdStr;
-    }
-
-    @DataBoundSetter
-    public void setAccessKeyIdStr(String accessKeyIdStr) {
-        this.accessKeyIdStr = accessKeyIdStr;
+    public void setAccessKeyIdAsString(String accessKeyIdAsString) {
+        this.accessKeyIdAsString = accessKeyIdAsString;
     }
 
     public Secret getSecretAccessKey() {
@@ -91,22 +80,13 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         this.secretAccessKey = secretAccessKey;
     }
 
-    public String getSecretAccessKeyParameter() {
-        return secretAccessKeyParameter;
+    public String getSecretAccessKeyAsString() {
+        return secretAccessKeyAsString;
     }
 
     @DataBoundSetter
-    public void setSecretAccessKeyParameter(String secretAccessKeyParameter) {
-        this.secretAccessKeyParameter = secretAccessKeyParameter;
-    }
-
-    public String getSecretAccessKeyStr() {
-        return secretAccessKeyStr;
-    }
-
-    @DataBoundSetter
-    public void setSecretAccessKeyStr(String secretAccessKeyStr) {
-        this.secretAccessKeyStr = secretAccessKeyStr;
+    public void setSecretAccessKeyAsString(String secretAccessKeyAsString) {
+        this.secretAccessKeyAsString = secretAccessKeyAsString;
     }
 
     public String getRegionName() {
@@ -160,23 +140,16 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
-        String accessKeyId = CloudifyPluginUtilities.expandString(envVars, this.accessKeyId);
-        String accessKeyIdParameter = CloudifyPluginUtilities.expandString(envVars, this.accessKeyIdParameter);
-        String accessKeyIdStr = CloudifyPluginUtilities.expandString(envVars, this.accessKeyIdStr);
-        String secretAccessKey = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKey);
-        String secretAccessKeyParameter = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKeyParameter);
-        String secretAccessKeyStr = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKeyStr);
+        String accessKeyIdAsString = CloudifyPluginUtilities.expandString(envVars, this.accessKeyIdAsString);
+        String secretAccessKeyAsString = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKeyAsString);
         String regionName = CloudifyPluginUtilities.expandString(envVars, this.regionName);
         String stackName = CloudifyPluginUtilities.expandString(envVars, this.stackName);
         String parametersAsString = CloudifyPluginUtilities.expandString(envVars, this.parametersAsString);
         String templateUrl = CloudifyPluginUtilities.expandString(envVars, this.templateUrl);
 
-        String effectiveAccessKeyId = accessKeyIdStr != null ? accessKeyIdStr
-                : CloudifyPluginUtilities.getValueWithProxy(envVars, accessKeyIdParameter,
-                        accessKeyId);
-        String effectiveSecretAccessKey = secretAccessKeyStr != null ? secretAccessKeyStr
-                : CloudifyPluginUtilities.getValueWithProxy(envVars, secretAccessKeyParameter,
-                        secretAccessKey);
+        String effectiveAccessKeyId = CloudifyPluginUtilities.getPassword(this.accessKeyId, accessKeyIdAsString);
+        String effectiveSecretAccessKey = CloudifyPluginUtilities.getPassword(this.secretAccessKey,
+                secretAccessKeyAsString);
 
         Map<String, Object> parametersMap = CloudifyPluginUtilities.getMapFromMapOrString(parametersAsString,
                 this.parameters);
@@ -214,7 +187,7 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
 
     @Override
     protected String getIntegrationName() {
-        return "cloud-formation";
+        return "cloudformation";
     }
 
     @Override
@@ -250,8 +223,6 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
                 .appendSuper(super.toString())
                 // Omit confidential info (access key, etc)
                 .append("regionName", regionName)
-                .append("accessKeyIdParameter", accessKeyIdParameter)
-                .append("secretAccessKeyParameter", secretAccessKeyParameter)
                 .append("stackName", stackName)
                 .append("templateUrl", templateUrl)
                 .append("parametersAsString", parametersAsString)
