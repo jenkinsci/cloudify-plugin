@@ -3,7 +3,6 @@ package co.cloudify.jenkins.plugin.integrations;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,11 +38,14 @@ import hudson.util.Secret;
 public class CloudFormationBuildStep extends IntegrationBuildStep {
     private Secret accessKeyId;
     private String accessKeyIdParameter;
+    private String accessKeyIdStr;
     private Secret secretAccessKey;
     private String secretAccessKeyParameter;
+    private String secretAccessKeyStr;
     private String regionName;
     private String stackName;
-    private String parameters;
+    private Map<String, Object> parameters;
+    private String parametersAsString;
     private String templateUrl;
 
     private transient BlueprintUploadSpec uploadSpec;
@@ -71,6 +73,15 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         this.accessKeyIdParameter = accessKeyIdParameter;
     }
 
+    public String getAccessKeyIdStr() {
+        return accessKeyIdStr;
+    }
+
+    @DataBoundSetter
+    public void setAccessKeyIdStr(String accessKeyIdStr) {
+        this.accessKeyIdStr = accessKeyIdStr;
+    }
+
     public Secret getSecretAccessKey() {
         return secretAccessKey;
     }
@@ -87,6 +98,15 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
     @DataBoundSetter
     public void setSecretAccessKeyParameter(String secretAccessKeyParameter) {
         this.secretAccessKeyParameter = secretAccessKeyParameter;
+    }
+
+    public String getSecretAccessKeyStr() {
+        return secretAccessKeyStr;
+    }
+
+    @DataBoundSetter
+    public void setSecretAccessKeyStr(String secretAccessKeyStr) {
+        this.secretAccessKeyStr = secretAccessKeyStr;
     }
 
     public String getRegionName() {
@@ -107,12 +127,21 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         this.stackName = stackName;
     }
 
-    public String getParameters() {
+    public String getParametersAsString() {
+        return parametersAsString;
+    }
+
+    @DataBoundSetter
+    public void setParametersAsString(String parameters) {
+        this.parametersAsString = parameters;
+    }
+
+    public Map<String, Object> getParameters() {
         return parameters;
     }
 
     @DataBoundSetter
-    public void setParameters(String parameters) {
+    public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
     }
 
@@ -131,22 +160,26 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
         PrintStream logger = listener.getLogger();
-        String accessKeyId = CloudifyPluginUtilities.expandString(envVars, this.accessKeyId.getPlainText());
+        String accessKeyId = CloudifyPluginUtilities.expandString(envVars, this.accessKeyId);
         String accessKeyIdParameter = CloudifyPluginUtilities.expandString(envVars, this.accessKeyIdParameter);
-        String secretAccessKey = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKey.getPlainText());
+        String accessKeyIdStr = CloudifyPluginUtilities.expandString(envVars, this.accessKeyIdStr);
+        String secretAccessKey = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKey);
         String secretAccessKeyParameter = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKeyParameter);
+        String secretAccessKeyStr = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKeyStr);
         String regionName = CloudifyPluginUtilities.expandString(envVars, this.regionName);
         String stackName = CloudifyPluginUtilities.expandString(envVars, this.stackName);
-        String parameters = CloudifyPluginUtilities.expandString(envVars, this.parameters);
+        String parametersAsString = CloudifyPluginUtilities.expandString(envVars, this.parametersAsString);
         String templateUrl = CloudifyPluginUtilities.expandString(envVars, this.templateUrl);
 
-        String effectiveAccessKeyId = CloudifyPluginUtilities.getValueWithProxy(envVars, accessKeyIdParameter,
-                accessKeyId);
-        String effectiveSecretAccessKey = CloudifyPluginUtilities.getValueWithProxy(envVars, secretAccessKeyParameter,
-                secretAccessKey);
+        String effectiveAccessKeyId = accessKeyIdStr != null ? accessKeyIdStr
+                : CloudifyPluginUtilities.getValueWithProxy(envVars, accessKeyIdParameter,
+                        accessKeyId);
+        String effectiveSecretAccessKey = secretAccessKeyStr != null ? secretAccessKeyStr
+                : CloudifyPluginUtilities.getValueWithProxy(envVars, secretAccessKeyParameter,
+                        secretAccessKey);
 
-        Map<String, Object> parametersMap = new LinkedHashMap<>();
-        parametersMap.putAll(CloudifyPluginUtilities.readYamlOrJson(parameters));
+        Map<String, Object> parametersMap = CloudifyPluginUtilities.getMapFromMapOrString(parametersAsString,
+                this.parameters);
 
         // As of AWS plugin 2.3.2, we need to convert the parameters to a list.
         // There's probably a more elegant way to do this without using commons-collections,
@@ -221,6 +254,7 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
                 .append("secretAccessKeyParameter", secretAccessKeyParameter)
                 .append("stackName", stackName)
                 .append("templateUrl", templateUrl)
+                .append("parametersAsString", parametersAsString)
                 .append("parameters", parameters)
                 .toString();
     }

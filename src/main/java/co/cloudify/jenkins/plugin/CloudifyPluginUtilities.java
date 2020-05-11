@@ -44,6 +44,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import hudson.util.VariableResolver;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -481,5 +482,17 @@ public class CloudifyPluginUtilities {
             return StringUtils.trimToNull(envVars.expand(value));
         }
         return value;
+    }
+
+    public static String expandString(final EnvVars envVars, final Secret value) {
+        if (value == null) {
+            return null;
+        }
+
+        String plainText = value.getPlainText();
+        if (envVars != null) {
+            return StringUtils.trimToNull(envVars.expand(plainText));
+        }
+        return plainText;
     }
 }

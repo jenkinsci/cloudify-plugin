@@ -7,7 +7,7 @@
     <f:entry title="${%Template URL}" field="templateUrl">
         <f:textbox />
     </f:entry>
-    <f:entry title="${%Template parameters}" field="parameters">
+    <f:entry title="${%Template parameters}" field="parametersAsString">
         <f:textarea />
     </f:entry>
     <f:entry title="${%Access key ID}" field="accessKeyId">

@@ -2,6 +2,7 @@ package co.cloudify.jenkins.plugin;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -36,6 +37,7 @@ import jenkins.tasks.SimpleBuildWrapper;
 public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     private String blueprintId;
     private String blueprintRootDirectory;
+    private String blueprintArchiveUrl;
     private String blueprintMainFile;
     private String deploymentId;
     private String inputs;
@@ -67,6 +69,15 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     @DataBoundSetter
     public void setBlueprintRootDirectory(String blueprintRootDirectory) {
         this.blueprintRootDirectory = blueprintRootDirectory;
+    }
+
+    public String getBlueprintArchiveUrl() {
+        return blueprintArchiveUrl;
+    }
+
+    @DataBoundSetter
+    public void setBlueprintArchiveUrl(String blueprintArchiveUrl) {
+        this.blueprintArchiveUrl = blueprintArchiveUrl;
     }
 
     public String getBlueprintMainFile() {
@@ -159,6 +170,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
             EnvVars initialEnvironment) throws IOException, InterruptedException {
         String blueprintId = expand(initialEnvironment, this.blueprintId);
         String blueprintRootDirectory = expand(initialEnvironment, this.blueprintRootDirectory);
+        String blueprintArchiveUrl = expand(initialEnvironment, this.blueprintArchiveUrl);
         String blueprintMainFile = expand(initialEnvironment, this.blueprintMainFile);
         String deploymentId = expand(initialEnvironment, this.deploymentId);
         String inputs = expand(initialEnvironment, this.inputs);
@@ -178,19 +190,27 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         PrintStream logger = listener.getLogger();
 
         Blueprint blueprint;
-        if (blueprintRootDirectory == null) {
+        if (blueprintMainFile == null) {
             logger.println(String.format("Retrieving blueprint: %s", blueprintId));
             blueprint = blueprintsClient.get(blueprintId);
         } else {
-            FilePath rootFilePath = workspace.child(blueprintRootDirectory);
-            logger.println(String.format(
-                    "Uploading blueprint '%s' from %s (main filename: %s)",
-                    blueprintId,
-                    rootFilePath, blueprintMainFile));
+            if (blueprintArchiveUrl != null) {
+                logger.println(String.format(
+                        "Uploading blueprint '%s' from %s (main filename: %s)",
+                        blueprintId,
+                        blueprintArchiveUrl, blueprintMainFile));
+                blueprint = blueprintsClient.upload(blueprintId, new URL(blueprintArchiveUrl), blueprintMainFile);
+            } else {
+                FilePath rootFilePath = workspace.child(blueprintRootDirectory);
+                logger.println(String.format(
+                        "Uploading blueprint '%s' from %s (main filename: %s)",
+                        blueprintId,
+                        rootFilePath, blueprintMainFile));
 
-            blueprint = rootFilePath.act(
-                    new BlueprintUploadDirFileCallable(
-                            blueprintsClient, blueprintId, blueprintMainFile));
+                blueprint = rootFilePath.act(
+                        new BlueprintUploadDirFileCallable(
+                                blueprintsClient, blueprintId, blueprintMainFile));
+            }
             // This blueprint will need to be disposed of.
             disposer.setBlueprint(blueprint);
         }
@@ -258,22 +278,31 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         }
 
         private FormValidation checkBlueprintParams(final String blueprintRootDirectory,
+                final String blueprintArchiveUrl,
                 final String blueprintMainFile) {
-            if (StringUtils.isBlank(blueprintMainFile) ^ StringUtils.isBlank(blueprintRootDirectory)) {
+            if (StringUtils.isNotBlank(blueprintMainFile) && StringUtils.isBlank(blueprintRootDirectory)
+                    && StringUtils.isBlank(blueprintArchiveUrl)) {
                 return FormValidation
-                        .error("Both blueprint root directory and main file must either be populated, or remain empty");
+                        .error("If blueprint's main file is populated, then either blueprint's root directory or archive URL must be specified at runtime");
             }
             return FormValidation.ok();
         }
 
+        public FormValidation checkBlueprintArchiveUrl(@QueryParameter String value,
+                @QueryParameter String blueprintRootDirectory, @QueryParameter String blueprintMainFile) {
+            return checkBlueprintParams(blueprintRootDirectory, value, blueprintMainFile);
+        }
+
         public FormValidation doCheckBlueprintMainFile(@QueryParameter String value,
+                @QueryParameter String blueprintArchiveUrl,
                 @QueryParameter String blueprintRootDirectory) {
-            return checkBlueprintParams(blueprintRootDirectory, value);
+            return checkBlueprintParams(blueprintRootDirectory, blueprintArchiveUrl, value);
         }
 
         public FormValidation doCheckBlueprintRootDirectory(@QueryParameter String value,
+                @QueryParameter String blueprintArchiveUrl,
                 @QueryParameter String blueprintMainFile) {
-            return checkBlueprintParams(value, blueprintMainFile);
+            return checkBlueprintParams(value, blueprintArchiveUrl, blueprintMainFile);
         }
 
         public FormValidation doCheckDeploymentId(@QueryParameter String value) {
@@ -297,6 +326,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
                 .append("blueprintId", blueprintId)
                 .append("blueprintMainFile", blueprintMainFile)
                 .append("blueprintRootDirectory", blueprintRootDirectory)
+                .append("blueprintArchiveUrl", blueprintArchiveUrl)
                 .append("deploymentId", deploymentId)
                 .append("inputs", inputs)
                 .append("inputsLocation", inputsLocation)

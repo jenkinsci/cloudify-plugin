@@ -1,0 +1,154 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.37">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.6.0"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.6.0">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>environment_id</string>
+        <string>cfn_template_url</string>
+        <string>aws_access_key_id</string>
+        <string>tf_template_url</string>
+        <string>aws_secret_access_key</string>
+        <string>cfn_template_vars</string>
+        <string>cfn_stack_name</string>
+        <string>tf_template_vars</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>environment_id</name>
+          <description>Environment identifier prefix</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>tf_template_url</name>
+          <description>URL of the Terraform template archive</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>tf_template_vars</name>
+          <description>Terraform template variables (as YAML or JSON)</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cfn_stack_name</name>
+          <description>CloudFormation stack name to create</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cfn_template_url</name>
+          <description>URL of the CloudFormation template</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>cfn_template_vars</name>
+          <description>CloudFormation template variables (as YAML or JSON)</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>aws_access_key_id</name>
+          <description>AWS access key ID</description>
+          <defaultValue>{AQAAABAAAAAQ36JsfK9NPktRWCWXh9FEQRLYN4vjr6MDYmie6PFQ2wg=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>aws_secret_access_key</name>
+          <description>AWS secret access key</description>
+          <defaultValue>{AQAAABAAAAAQXUw231WegMafUvpNspw82om9ysv/K2iAav2/vkWD8+Q=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.80">
+    <script>pipeline {
+    agent any
+    
+    parameters {
+        string(name: &apos;environment_id&apos;, description: &apos;Environment identifier prefix&apos;, trim: true)
+        string(name: &apos;tf_template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
+        text(name: &apos;tf_template_vars&apos;, description: &apos;Terraform template variables (as YAML or JSON)&apos;)
+        string(name: &apos;cfn_stack_name&apos;, description: &apos;CloudFormation stack name to create&apos;, trim: true)
+        string(name: &apos;cfn_template_url&apos;, description: &apos;URL of the CloudFormation template&apos;, trim: true)
+        text(name: &apos;cfn_template_vars&apos;, description: &apos;CloudFormation template variables (as YAML or JSON)&apos;)
+        password(name: &apos;aws_access_key_id&apos;, description: &apos;AWS access key ID&apos;)
+        password(name: &apos;aws_secret_access_key&apos;, description: &apos;AWS secret access key&apos;)
+    }
+
+    stages {
+        stage(&apos;Build Cloudify Environments&apos;) {
+            parallel {
+                stage(&apos;AWS using Terraform&apos;) {
+                    steps {
+                        script {
+                            def template_vars_map = readYaml text: &quot;${params.tf_template_vars}&quot;
+                            template_vars_map[&apos;access_key&apos;] = &quot;${params.aws_access_key_id}&quot;
+                            template_vars_map[&apos;secret_key&apos;] = &quot;${params.aws_secret_access_key}&quot;
+                            cfyTerraform deploymentId: &quot;${params.environment_id}_tf&quot;,
+                                echoInputs: false,
+                                echoEnvData: true,
+                                envDataLocation: &apos;env-data-tf.json&apos;,
+                                templateUrl: &quot;${params.tf_template_url}&quot;,
+                                variables: template_vars_map
+                        }
+                    }
+                }
+                stage(&apos;AWS using Cloudformation&apos;) {
+                    steps {
+                        script {
+                            def cfn_template_vars_map = readYaml text: &quot;${params.cfn_template_vars}&quot;
+                            cfyCloudFormation accessKeyIdStr: &quot;${params.aws_access_key_id}&quot;,
+                                deploymentId: &quot;${params.environment_id}_cfn&quot;,
+                                echoEnvData: true,
+                                envDataLocation: &apos;env-data-cfn.json&apos;,
+                                parameters: cfn_template_vars_map,
+                                secretAccessKeyStr: &quot;${params.aws_secret_access_key}&quot;,
+                                stackName: &quot;${params.cfn_stack_name}&quot;,
+                                templateUrl: &quot;${params.cfn_template_url}&quot;
+                        }
+                    }
+                }
+            }
+        }
+        stage(&apos;Wait for Input&apos;) {
+            steps {
+                input message: &apos;Proceed?&apos;
+            }
+        }
+        stage(&apos;Destroy Cloudify Environments&apos;) {
+            parallel {
+                stage(&apos;Destroy Terraform environment&apos;) {
+                    steps {
+                        deleteCloudifyEnv deleteBlueprintIfLast: true,
+                            deploymentId: &quot;${params.environment_id}_tf&quot;,
+                            ignoreFailure: true
+                    }
+                }
+                stage(&apos;Destroy CloudFormation environment&apos;) {
+                    steps {
+                        deleteCloudifyEnv deleteBlueprintIfLast: true,
+                            deploymentId: &quot;${params.environment_id}_cfn&quot;,
+                            ignoreFailure: true
+                    }
+                }
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

@@ -142,7 +142,7 @@ public class ARMBuildStep extends IntegrationBuildStep {
         String subscriptionId = CloudifyPluginUtilities.expandString(envVars, this.subscriptionId);
         String tenantId = CloudifyPluginUtilities.expandString(envVars, this.tenantId);
         String clientId = CloudifyPluginUtilities.expandString(envVars, this.clientId);
-        String clientSecret = CloudifyPluginUtilities.expandString(envVars, this.clientSecret.getPlainText());
+        String clientSecret = CloudifyPluginUtilities.expandString(envVars, this.clientSecret);
         String clientSecretParameter = CloudifyPluginUtilities.expandString(envVars, this.clientSecretParameter);
         String location = CloudifyPluginUtilities.expandString(envVars, this.location);
         String resourceGroupName = CloudifyPluginUtilities.expandString(envVars, this.resourceGroupName);

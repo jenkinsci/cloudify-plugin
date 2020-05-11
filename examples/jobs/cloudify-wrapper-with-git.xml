@@ -1,0 +1,65 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Shows basic usage of the Cloudify Build Wrapper.&#xd;
+&#xd;
+*NOTE*: this example requires that the &quot;jq&quot; utility is installed on the Jenkins machine that runs this job.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@4.2.2">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://github.com/cloudify-community/blueprint-examples.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+        <relativeTargetDir>repo</relativeTargetDir>
+      </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>endpoint=$(jq  -r &apos;.capabilities.endpoint&apos; outputs.json)
+
+echo &quot;Endpoint: ${endpoint}&quot;
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <co.cloudify.jenkins.plugin.CloudifyBuildWrapper plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <blueprintId>blueprint-${BUILD_ID}</blueprintId>
+      <blueprintRootDirectory>repo/virtual-machine</blueprintRootDirectory>
+      <blueprintMainFile>openstack.yaml</blueprintMainFile>
+      <deploymentId>deployment-${BUILD_ID}</deploymentId>
+      <inputs></inputs>
+      <inputsLocation></inputsLocation>
+      <outputsLocation>outputs.json</outputsLocation>
+      <ignoreFailureOnTeardown>false</ignoreFailureOnTeardown>
+      <echoInputs>true</echoInputs>
+      <echoOutputs>true</echoOutputs>
+      <debugOutput>false</debugOutput>
+    </co.cloudify.jenkins.plugin.CloudifyBuildWrapper>
+  </buildWrappers>
+</project>

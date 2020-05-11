@@ -43,12 +43,12 @@
         <hudson.model.PasswordParameterDefinition>
           <name>aws_access_key_id</name>
           <description>AWS access key ID</description>
-          <defaultValue>{AQAAABAAAAAQL2PAdMKVSNv4xo+9JngHhemCXAo5h1WOCY7NFhR6cug=}</defaultValue>
+          <defaultValue>{AQAAABAAAAAQktzUO0akdATbYpsNNvead1epny7Aa2k3FnvOnkyTTsI=}</defaultValue>
         </hudson.model.PasswordParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
           <name>aws_secret_access_key</name>
           <description>AWS secret access key</description>
-          <defaultValue>{AQAAABAAAAAQBOW0It/tblLxKcPkWB4UncITJIeO6l4UZV+RPYqdBIo=}</defaultValue>
+          <defaultValue>{AQAAABAAAAAQxsrBfevN/fHHxILFGVL9vtU6FWtgYd/a8ev381TNQwY=}</defaultValue>
         </hudson.model.PasswordParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -79,6 +79,18 @@
                         templateUrl: &quot;${params.template_url}&quot;,
                         variables: template_vars_map
                 }
+            }
+        }
+        stage(&apos;Wait for Input&apos;) {
+            steps {
+                input message: &apos;Proceed?&apos;
+            }
+        }
+        stage(&apos;Destroy Cloudify Environment&apos;) {
+            steps {
+                deleteCloudifyEnv deleteBlueprintIfLast: true,
+                    deploymentId: &quot;${params.environment_id}&quot;,
+                    ignoreFailure: true
             }
         }
     }

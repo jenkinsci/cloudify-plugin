@@ -7,6 +7,9 @@
     <f:entry title="${%Blueprint Root}" field="blueprintRootDirectory">
         <f:textbox />
     </f:entry>
+    <f:entry title="${%Blueprint Archive URL}" field="blueprintArchiveUrl">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%Blueprint Main File}" field="blueprintMainFile">
         <f:textbox />
     </f:entry>

@@ -111,16 +111,6 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
                 blueprint.getId(), deploymentId, operationInputs, envDataLocation,
                 echoInputs, echoEnvData, debugOutput);
         JsonObject dataJsonObject = envData.toJson();
-        if (echoEnvData) {
-            logger.println(String.format("Environment data: %s",
-                    CloudifyPluginUtilities.toString(dataJsonObject)));
-        }
-        if (envDataLocation != null) {
-            FilePath outputFilePath = workspace.child(envDataLocation);
-            logger.println(String.format(
-                    "Writing environment data to %s", outputFilePath));
-            CloudifyPluginUtilities.writeJson(dataJsonObject, outputFilePath);
-        }
     }
 
     protected void putIfNonNullValue(final Map<String, Object> map, final String key, final String value) {

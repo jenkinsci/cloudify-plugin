@@ -6,11 +6,13 @@
 		"cloudformation-build-step",
 		"cloudify-environment-as-a-service",
 		"cloudify-environment-as-a-service-sdlc-type",
-		"cloudify-wrapper",
+		"cloudify-wrapper-with-git",
+		"cloudify-wrapper-with-url",
 		"create-environment",
 		"delete-blueprint",
 		"delete-environment",
 		"execute-workflow",
+		"mixed-pipeline",
 		"parameter-types",
 		"terraform-build-step",
 		"terraform-pipeline",
@@ -20,6 +22,8 @@
 		"ansible",
 		"arm",
 		"cloudformation",
-		"terraform"
+		"mixed",
+		"terraform",
+		"wrapper"
 	]
 }
