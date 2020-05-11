@@ -23,16 +23,6 @@
           <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>access_key_id</name>
-          <description></description>
-          <defaultValue>{AQAAABAAAAAQHXsHA/7qmAFjJ/7HvOD96ii0pPyof9buPfcGDV53Px4=}</defaultValue>
-        </hudson.model.PasswordParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>secret_access_key</name>
-          <description>Secret access key to use</description>
-          <defaultValue>{AQAAABAAAAAQf5i1JOE60WoNChb1zv1WeO29GVpY4SpN0e70DakYqec=}</defaultValue>
-        </hudson.model.PasswordParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>stack_name</name>
           <description>Name of the new stack</description>
@@ -46,11 +36,18 @@
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
-          <name>parameters</name>
+          <name>template_parameters</name>
           <description>Template parameters (in YAML/JSON format)</description>
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+          <name>aws_credentials</name>
+          <description>AWS credentials to use</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -69,16 +66,24 @@
       <debugOutput>false</debugOutput>
       <envDataLocation>env-data.json</envDataLocation>
       <operationInputs class="linked-hash-map"/>
-      <accessKeyId>{AQAAABAAAAAQrKikPebmlRs2Z5elWbQquSWq3avwEyPNEVphVLE4o4E=}</accessKeyId>
-      <accessKeyIdParameter>access_key_id</accessKeyIdParameter>
-      <secretAccessKey>{AQAAABAAAAAQQxdtmE4yvnj0uETsvvWs49gDfjNJEnBLEOW6O3wSOx8=}</secretAccessKey>
-      <secretAccessKeyParameter>secret_access_key</secretAccessKeyParameter>
+      <accessKeyIdAsString>${AWS_ACCESS_KEY_ID}</accessKeyIdAsString>
+      <secretAccessKeyAsString>${AWS_SECRET_ACCESS_KEY}</secretAccessKeyAsString>
       <regionName>${region_name}</regionName>
       <stackName>${stack_name}</stackName>
-      <parameters>${parameters}</parameters>
+      <parametersAsString>${template_parameters}</parametersAsString>
       <templateUrl>${template_url}</templateUrl>
     </co.cloudify.jenkins.plugin.integrations.CloudFormationBuildStep>
   </builders>
   <publishers/>
-  <buildWrappers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.21">
+      <bindings>
+        <com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding plugin="aws-credentials@1.28">
+          <credentialsId>${aws_credentials}</credentialsId>
+          <accessKeyVariable>AWS_ACCESS_KEY_ID</accessKeyVariable>
+          <secretKeyVariable>AWS_SECRET_ACCESS_KEY</secretKeyVariable>
+        </com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding>
+      </bindings>
+    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+  </buildWrappers>
 </project>

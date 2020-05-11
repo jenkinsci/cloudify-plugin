@@ -18,29 +18,6 @@
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>subscription_id</name>
-          <description>Azure subscription ID</description>
-          <defaultValue></defaultValue>
-          <trim>true</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>tenant_id</name>
-          <description>Azure tenant ID</description>
-          <defaultValue></defaultValue>
-          <trim>true</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>client_id</name>
-          <description>Azure client ID</description>
-          <defaultValue></defaultValue>
-          <trim>true</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>client_secret</name>
-          <description>Azure client secret</description>
-          <defaultValue>{AQAAABAAAAAQ7qsq9thNJJbCpJXBIxbl4AjmmRnptXZ774qODPIMWMU=}</defaultValue>
-        </hudson.model.PasswordParameterDefinition>
-        <hudson.model.StringParameterDefinition>
           <name>location</name>
           <description>Azure location</description>
           <defaultValue></defaultValue>
@@ -64,6 +41,13 @@
           <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+          <name>azure_creds</name>
+          <description></description>
+          <defaultValue>my-azure-credentials</defaultValue>
+          <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -77,15 +61,15 @@
   <builders>
     <co.cloudify.jenkins.plugin.integrations.ARMBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <deploymentId>${environment_id}</deploymentId>
-      <echoInputs>false</echoInputs>
+      <echoInputs>true</echoInputs>
       <echoEnvData>true</echoEnvData>
       <debugOutput>false</debugOutput>
       <envDataLocation>env-data.json</envDataLocation>
       <operationInputs class="linked-hash-map"/>
-      <subscriptionId>${subscription_id}</subscriptionId>
-      <tenantId>${tenant_id}</tenantId>
-      <clientId>${client_id}</clientId>
-      <clientSecretAsString>${client_secret}</clientSecretAsString>
+      <subscriptionId>${AZURE_SUBSCRIPTION_ID}</subscriptionId>
+      <tenantId>${AZURE_TENANT_ID}</tenantId>
+      <clientId>${AZURE_CLIENT_ID}</clientId>
+      <clientSecretAsString>${AZURE_CLIENT_SECRET}</clientSecretAsString>
       <location>${location}</location>
       <resourceGroupName>${resource_group_name}</resourceGroupName>
       <parameters>${parameters}</parameters>
@@ -93,5 +77,17 @@
     </co.cloudify.jenkins.plugin.integrations.ARMBuildStep>
   </builders>
   <publishers/>
-  <buildWrappers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.21">
+      <bindings>
+        <com.microsoft.azure.util.AzureCredentialsBinding plugin="azure-credentials@4.0.2">
+          <credentialsId>${azure_creds}</credentialsId>
+          <subscriptionIdVariable>AZURE_SUBSCRIPTION_ID</subscriptionIdVariable>
+          <clientIdVariable>AZURE_CLIENT_ID</clientIdVariable>
+          <clientSecretVariable>AZURE_CLIENT_SECRET</clientSecretVariable>
+          <tenantIdVariable>AZURE_TENANT_ID</tenantIdVariable>
+        </com.microsoft.azure.util.AzureCredentialsBinding>
+      </bindings>
+    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+  </buildWrappers>
 </project>
