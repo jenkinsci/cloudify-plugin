@@ -55,7 +55,7 @@ public class DeploymentSelectorParameterDefinition extends ParameterDefinition {
 
     @Exported
     public List<String> getChoices() {
-        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
+        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient(null, null);
         ListResponse<Deployment> deployments = cloudifyClient.getDeploymentsClient().list();
         Predicate<Deployment> predicate = StringUtils.isNotBlank(blueprintId)
                 ? x -> x.getBlueprintId().equals(blueprintId)

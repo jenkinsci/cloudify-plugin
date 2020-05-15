@@ -45,8 +45,8 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener)
             throws InterruptedException, IOException {
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
         EnvVars envVars = CloudifyPluginUtilities.getEnvironment(run, listener);
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars);
 
         try {
             performImpl(run, launcher, listener, workspace, envVars, client);
@@ -66,8 +66,8 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
         listener.started(Arrays.asList(new Cause.UserIdCause()));
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
         EnvVars envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars);
 
         try {
             performImpl(build, launcher, listener, build.getWorkspace(), envVars, client);

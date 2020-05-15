@@ -185,7 +185,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         CloudifyDisposer disposer = new CloudifyDisposer(debugOutput);
         context.setDisposer(disposer);
 
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(initialEnvironment);
         BlueprintsClient blueprintsClient = client.getBlueprintsClient();
         PrintStream logger = listener.getLogger();
 
@@ -250,7 +250,8 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         @Override
         public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
                 throws IOException, InterruptedException {
-            CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+            EnvVars envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
+            CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars);
             PrintStream logger = listener.getLogger();
 
             if (deployment != null) {

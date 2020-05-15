@@ -59,7 +59,7 @@ public class WorkflowSelectorParameterDefinition extends ParameterDefinition {
 
     @Exported
     public List<String> getChoices() {
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(null, null);
         Deployment deployment = client.getDeploymentsClient().get(deploymentId);
         List<Workflow> workflows = deployment.getWorkflows();
         return workflows

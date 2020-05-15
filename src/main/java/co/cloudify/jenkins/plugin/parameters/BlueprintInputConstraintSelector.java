@@ -71,7 +71,7 @@ public class BlueprintInputConstraintSelector extends ParameterDefinition {
     @Exported
     public List<String> getChoices() {
         try {
-            CloudifyClient client = CloudifyConfiguration.getCloudifyClient();
+            CloudifyClient client = CloudifyConfiguration.getCloudifyClient(null, null);
             Blueprint blueprint = client.getBlueprintsClient().get(blueprintId);
             Map<String, BlueprintInput> inputs = blueprint.getPlan().getInputs();
             BlueprintInput bpInput = inputs.get(inputName);

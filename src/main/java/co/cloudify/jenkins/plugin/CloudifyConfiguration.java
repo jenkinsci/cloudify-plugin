@@ -5,11 +5,13 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.ws.rs.WebApplicationException;
 
+import org.apache.commons.lang3.Validate;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
@@ -23,8 +25,6 @@ import jenkins.model.GlobalConfiguration;
 @Extension
 public class CloudifyConfiguration extends GlobalConfiguration {
     private String host;
-    private String username;
-    private Secret password;
     private Boolean secured = Boolean.FALSE;
     private String tenant;
 
@@ -41,26 +41,6 @@ public class CloudifyConfiguration extends GlobalConfiguration {
     @DataBoundSetter
     public void setHost(String host) {
         this.host = host;
-        save();
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    @DataBoundSetter
-    public void setUsername(String username) {
-        this.username = username;
-        save();
-    }
-
-    public Secret getPassword() {
-        return password;
-    }
-
-    @DataBoundSetter
-    public void setPassword(Secret password) {
-        this.password = password;
         save();
     }
 
@@ -123,15 +103,24 @@ public class CloudifyConfiguration extends GlobalConfiguration {
         }
     }
 
-    /**
-     * @return A {@link CloudifyClient} instance pointing at the Cloudify Manager
-     *         installation according to the configuration.
-     */
-    public static CloudifyClient getCloudifyClient() {
-        CloudifyConfiguration config = CloudifyConfiguration.get();
+    public static CloudifyClient getCloudifyClient(final EnvVars envVars) {
+        String cfyUsername = envVars.get(CloudifyPluginUtilities.ENVVAR_CFY_USERNAME, null);
+        String cfyPassword = envVars.get(CloudifyPluginUtilities.ENVVAR_CFY_PASSWORD, null);
+
+        return getCloudifyClient(cfyUsername, cfyPassword);
+    }
+
+    public static CloudifyClient getCloudifyClient(final String username, final String password) {
+        return getCloudifyClient(CloudifyConfiguration.get(), username, password);
+    }
+
+    public static CloudifyClient getCloudifyClient(final CloudifyConfiguration config, final String username,
+            final String password) {
+        Validate.notBlank(username);
+        Validate.notBlank(password);
         return CloudifyClient.create(
-                config.getHost(), config.getUsername(),
-                config.getPassword().getPlainText(),
+                config.getHost(), username,
+                password,
                 config.isSecured(), config.getTenant())
                 .withToken();
     }

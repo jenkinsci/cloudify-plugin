@@ -78,7 +78,7 @@ public class BlueprintSelectorParameterDefinition extends ParameterDefinition {
     @Exported
     public List<String> getChoices() {
         String effectiveFilter = StringUtils.trimToNull(filter);
-        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient();
+        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient(null, null);
         ListResponse<Blueprint> blueprints = cloudifyClient.getBlueprintsClient().list(
                 effectiveFilter, sortKey, descending);
         return blueprints

@@ -55,6 +55,9 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class CloudifyPluginUtilities {
+    public static final String ENVVAR_CFY_USERNAME = "CFY_USERNAME";
+    public static final String ENVVAR_CFY_PASSWORD = "CFY_PASSWORD";
+
     public static EnvVars getEnvironment(final AbstractBuild build, final TaskListener listener)
             throws InterruptedException, IOException {
         EnvVars environment = build.getEnvironment(listener);
