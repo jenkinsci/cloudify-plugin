@@ -5,13 +5,25 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+          <name>cfy_credentials</name>
+          <description></description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>false</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
-          <description>ID of deployment to delete.</description>
-          <blueprintId></blueprintId>
-        </co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition>
+          <description>ID of environment to delete</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -25,11 +37,21 @@
   <builders>
     <co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <deploymentId>${deployment_id}</deploymentId>
-      <deleteBlueprintIfLast>true</deleteBlueprintIfLast>
+      <deleteBlueprintIfLast>false</deleteBlueprintIfLast>
       <ignoreFailure>true</ignoreFailure>
       <debugOutput>false</debugOutput>
     </co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep>
   </builders>
   <publishers/>
-  <buildWrappers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.21">
+      <bindings>
+        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+          <credentialsId>${cfy_credentials}</credentialsId>
+          <usernameVariable>CFY_USERNAME</usernameVariable>
+          <passwordVariable>CFY_PASSWORD</passwordVariable>
+        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+      </bindings>
+    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+  </buildWrappers>
 </project>

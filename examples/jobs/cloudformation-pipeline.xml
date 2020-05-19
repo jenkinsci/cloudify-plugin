@@ -6,9 +6,10 @@
       <jobProperties/>
       <triggers/>
       <parameters>
-        <string>template_url</string>
         <string>environment_id</string>
-        <string>template_vars</string>
+        <string>cfn_template_url</string>
+        <string>cfn_template_vars</string>
+        <string>cfn_stack_name</string>
       </parameters>
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
@@ -26,30 +27,39 @@
         <hudson.model.StringParameterDefinition>
           <name>environment_id</name>
           <description>Environment identifier (translates to Cloudify deployment ID)</description>
+          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>template_url</name>
-          <description>URL of the Terraform template archive</description>
+          <name>cfn_stack_name</name>
+          <description>CloudFormation stack name to create</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cfn_template_url</name>
+          <description>URL of the CloudFormation template</description>
+          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
-          <name>template_vars</name>
-          <description>Template variables (as YAML or JSON)</description>
+          <name>cfn_template_vars</name>
+          <description>CloudFormation template variables (as YAML or JSON)</description>
+          <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>aws_credentials</name>
+          <description>Credentials for AWS</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
           <description></description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
-          <required>true</required>
-        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
-          <name>aws_credentials</name>
-          <description></description>
-          <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
@@ -61,37 +71,38 @@
     
     parameters {
         string(name: &apos;environment_id&apos;, description: &apos;Environment identifier (translates to Cloudify deployment ID)&apos;, trim: true)
-        string(name: &apos;template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
-        text(name: &apos;template_vars&apos;, description: &apos;Template variables (as YAML or JSON)&apos;)
+        string(name: &apos;cfn_stack_name&apos;, description: &apos;CloudFormation stack name to create&apos;, trim: true)
+        string(name: &apos;cfn_template_url&apos;, description: &apos;URL of the CloudFormation template&apos;, trim: true)
+        text(name: &apos;cfn_template_vars&apos;, description: &apos;CloudFormation template variables (as YAML or JSON)&apos;)
     }
 
     stages {
-        stage(&apos;Build Cloudify Environment&apos;) {
+        stage(&apos;AWS using Cloudformation&apos;) {
             steps {
                 script {
-                    def template_vars_map = readYaml text: &quot;${params.template_vars}&quot;
-                    
+                    def cfn_template_vars_map = readYaml text: &quot;${params.cfn_template_vars}&quot;
+
                     withCredentials([[
                         $class: &apos;AmazonWebServicesCredentialsBinding&apos;,
-                        credentialsId: &quot;${params.aws_credentials}&quot;,
                         accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
+                        credentialsId: &quot;${params.aws_credentials}&quot;,
                         secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
-
-                        template_vars_map[&apos;access_key&apos;] = &quot;${AWS_ACCESS_KEY_ID}&quot;
-                        template_vars_map[&apos;secret_key&apos;] = &quot;${AWS_SECRET_ACCESS_KEY}&quot;
 
                         withCredentials([usernamePassword(
                             credentialsId: &quot;${params.cfy_credentials}&quot;,
                             passwordVariable: &apos;CFY_PASSWORD&apos;,
                             usernameVariable: &apos;CFY_USERNAME&apos;)]) {
-                                cfyTerraform deploymentId: &quot;${params.environment_id}&quot;,
-                                    username: &quot;${CFY_USERNAME}&quot;,
-                                    password: &quot;${CFY_PASSWORD}&quot;,
-                                    echoInputs: false,
-                                    echoEnvData: true,
-                                    envDataLocation: &apos;env-data.json&apos;,
-                                    templateUrl: &quot;${params.template_url}&quot;,
-                                    variables: template_vars_map
+
+                            cfyCloudFormation username: &quot;${CFY_USERNAME}&quot;,
+                                password: &quot;${CFY_PASSWORD}&quot;,
+                                accessKeyIdAsString: &quot;${AWS_ACCESS_KEY_ID}&quot;,
+                                deploymentId: &quot;${params.environment_id}&quot;,
+                                echoEnvData: true,
+                                envDataLocation: &apos;env-data.json&apos;,
+                                parameters: cfn_template_vars_map,
+                                secretAccessKeyAsString: &quot;${AWS_SECRET_ACCESS_KEY}&quot;,
+                                stackName: &quot;${params.cfn_stack_name}&quot;,
+                                templateUrl: &quot;${params.cfn_template_url}&quot;
                         }
                     }
                 }
@@ -102,17 +113,18 @@
                 input message: &apos;Proceed?&apos;
             }
         }
-        stage(&apos;Destroy Cloudify Environment&apos;) {
+        stage(&apos;Destroy CloudFormation environment&apos;) {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: &quot;${params.cfy_credentials}&quot;,
                     passwordVariable: &apos;CFY_PASSWORD&apos;,
                     usernameVariable: &apos;CFY_USERNAME&apos;)]) {
-                    deleteCloudifyEnv deleteBlueprintIfLast: true,
-                        username: &quot;${CFY_USERNAME}&quot;,
+                        
+                    deleteCloudifyEnv username: &quot;${CFY_USERNAME}&quot;,
                         password: &quot;${CFY_PASSWORD}&quot;,
+                        deleteBlueprintIfLast: false,
                         deploymentId: &quot;${params.environment_id}&quot;,
-                        ignoreFailure: true
+                        ignoreFailure: false
                 }
             }
         }

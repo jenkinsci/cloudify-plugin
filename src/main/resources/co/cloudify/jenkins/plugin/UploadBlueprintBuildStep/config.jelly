@@ -11,10 +11,10 @@
         <f:textbox />
     </f:entry>
     <f:entry title="${%Archive Path}" field="archivePath">
-        <f:textarea />
+        <f:textbox />
     </f:entry>
     <f:entry title="${%Root Directory}" field="rootDirectory">
-        <f:textarea />
+        <f:textbox />
     </f:entry>
     <f:entry title="${%Main File Name}" field="mainFileName">
         <f:textbox />

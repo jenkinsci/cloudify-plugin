@@ -6,11 +6,9 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -99,21 +97,19 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
         PrintStream logger = listener.getLogger();
 
         String blueprintId = generateBlueprintId();
+        String deploymentId = CloudifyPluginUtilities.expandString(envVars, this.deploymentId);
+
         BlueprintsClient blueprintsClient = cloudifyClient.getBlueprintsClient();
         Blueprint blueprint;
-
         try {
             logger.println(String.format("Loading blueprint: %s", blueprintId));
             blueprint = blueprintsClient.get(blueprintId);
         } catch (BlueprintNotFoundException ex) {
-            logger.println(String.format("Blueprint '%s' doesn't exist; will uploading it", blueprintId));
+            logger.println(String.format("Blueprint '%s' doesn't exist; uploading it...", blueprintId));
             BlueprintUploadSpec uploadSpec = getBlueprintUploadSpec();
             blueprint = uploadSpec.upload(blueprintsClient, blueprintId);
         }
 
-        if (StringUtils.isBlank(deploymentId)) {
-            deploymentId = generateDeploymentId(blueprintId);
-        }
         String envDataLocation = CloudifyPluginUtilities.expandString(envVars, this.envDataLocation);
         CloudifyPluginUtilities.createEnvironment(
                 listener, workspace, cloudifyClient,
@@ -135,14 +131,7 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
      * @return A generated blueprint ID. May be overridden by subclasses for specialized implementations.
      */
     protected String generateBlueprintId() {
-        return String.format("%s-%s", getIntegrationName(), getIntegrationVersion());
-    }
-
-    /**
-     * @return A generated deployment ID. May be overridden by subclasses for specialized implementations.
-     */
-    protected String generateDeploymentId(final String blueprintId) {
-        return String.format("%s-%s", blueprintId, Long.toHexString(new Date().getTime()));
+        return String.format("cfy-jenkins-%s-%s", getIntegrationName(), getIntegrationVersion());
     }
 
     @Override

@@ -17,6 +17,13 @@
           <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description></description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>template_url</name>
           <description>URL of Terraform template</description>
@@ -29,7 +36,7 @@
           <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>aws_credentials</name>
           <description>AWS credentials to use</description>
           <defaultValue></defaultValue>
@@ -49,7 +56,7 @@
   <builders>
     <co.cloudify.jenkins.plugin.integrations.TerraformBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <deploymentId>${environment_id}</deploymentId>
-      <echoInputs>false</echoInputs>
+      <echoInputs>true</echoInputs>
       <echoEnvData>true</echoEnvData>
       <debugOutput>false</debugOutput>
       <envDataLocation>env-data.json</envDataLocation>
@@ -63,8 +70,13 @@ ${variables}</variablesAsString>
   </builders>
   <publishers/>
   <buildWrappers>
-    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.21">
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.23">
       <bindings>
+        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+          <credentialsId>${cfy_credentials}</credentialsId>
+          <usernameVariable>CFY_USERNAME</usernameVariable>
+          <passwordVariable>CFY_PASSWORD</passwordVariable>
+        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
         <com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding plugin="aws-credentials@1.28">
           <credentialsId>${aws_credentials}</credentialsId>
           <accessKeyVariable>AWS_ACCESS_KEY_ID</accessKeyVariable>

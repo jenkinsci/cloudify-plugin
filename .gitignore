@@ -7,3 +7,4 @@ target/
 # Jenkins work directory
 work/
 .pydevproject
+/jenkins-cli.jar

@@ -6,9 +6,10 @@
       <jobProperties/>
       <triggers/>
       <parameters>
-        <string>template_url</string>
+        <string>arm_resource_group</string>
         <string>environment_id</string>
-        <string>template_vars</string>
+        <string>arm_template_url</string>
+        <string>arm_template_vars</string>
       </parameters>
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
@@ -29,27 +30,32 @@
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>template_url</name>
-          <description>URL of the Terraform template archive</description>
+          <name>arm_template_url</name>
+          <description>URL of the ARM template</description>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
-          <name>template_vars</name>
-          <description>Template variables (as YAML or JSON)</description>
+          <name>arm_template_vars</name>
+          <description>ARM template variables (as YAML or JSON)</description>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>arm_resource_group</name>
+          <description>Resource group to create on Azure</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
-          <name>cfy_credentials</name>
-          <description></description>
+          <name>azure_credentials</name>
+          <description>Credentials for Azure</description>
           <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
-          <name>aws_credentials</name>
-          <description></description>
+          <name>cfy_credentials</name>
+          <description>Credentials for Cloudify</description>
           <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
@@ -61,37 +67,36 @@
     
     parameters {
         string(name: &apos;environment_id&apos;, description: &apos;Environment identifier (translates to Cloudify deployment ID)&apos;, trim: true)
-        string(name: &apos;template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
-        text(name: &apos;template_vars&apos;, description: &apos;Template variables (as YAML or JSON)&apos;)
+        string(name: &apos;arm_template_url&apos;, description: &apos;URL of the ARM template&apos;, trim: true)
+        text(name: &apos;arm_template_vars&apos;, description: &apos;ARM template variables (as YAML or JSON)&apos;)
+        string(name: &apos;arm_resource_group&apos;, description: &apos;Resource group to create on Azure&apos;, trim: true)
     }
 
     stages {
-        stage(&apos;Build Cloudify Environment&apos;) {
+        stage(&apos;Azure using ARM&apos;) {
             steps {
                 script {
-                    def template_vars_map = readYaml text: &quot;${params.template_vars}&quot;
-                    
-                    withCredentials([[
-                        $class: &apos;AmazonWebServicesCredentialsBinding&apos;,
-                        credentialsId: &quot;${params.aws_credentials}&quot;,
-                        accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
-                        secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
+                    def arm_template_vars_map = readYaml text: &quot;${params.arm_template_vars}&quot;
 
-                        template_vars_map[&apos;access_key&apos;] = &quot;${AWS_ACCESS_KEY_ID}&quot;
-                        template_vars_map[&apos;secret_key&apos;] = &quot;${AWS_SECRET_ACCESS_KEY}&quot;
-
+                    withCredentials([azureServicePrincipal(&quot;${params.azure_credentials}&quot;)]) {
+    
                         withCredentials([usernamePassword(
                             credentialsId: &quot;${params.cfy_credentials}&quot;,
                             passwordVariable: &apos;CFY_PASSWORD&apos;,
                             usernameVariable: &apos;CFY_USERNAME&apos;)]) {
-                                cfyTerraform deploymentId: &quot;${params.environment_id}&quot;,
-                                    username: &quot;${CFY_USERNAME}&quot;,
+                                
+                                cfyAzureArm username: &quot;${CFY_USERNAME}&quot;,
                                     password: &quot;${CFY_PASSWORD}&quot;,
-                                    echoInputs: false,
+                                    clientId: &quot;${AZURE_CLIENT_ID}&quot;,
+                                    clientSecretAsString: &quot;${AZURE_CLIENT_SECRET}&quot;,
+                                    deploymentId: &quot;${params.environment_id}&quot;,
                                     echoEnvData: true,
-                                    envDataLocation: &apos;env-data.json&apos;,
-                                    templateUrl: &quot;${params.template_url}&quot;,
-                                    variables: template_vars_map
+                                    envDataLocation: &apos;env-arm.json&apos;,
+                                    parameters: arm_template_vars_map,
+                                    resourceGroupName: &quot;${params.arm_resource_group}&quot;,
+                                    subscriptionId: &quot;${AZURE_SUBSCRIPTION_ID}&quot;,
+                                    templateFile: &quot;${params.arm_template_url}&quot;,
+                                    tenantId: &quot;${AZURE_TENANT_ID}&quot;
                         }
                     }
                 }
@@ -102,17 +107,18 @@
                 input message: &apos;Proceed?&apos;
             }
         }
-        stage(&apos;Destroy Cloudify Environment&apos;) {
+        stage(&apos;Destroy Azure ARM environment&apos;) {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: &quot;${params.cfy_credentials}&quot;,
                     passwordVariable: &apos;CFY_PASSWORD&apos;,
                     usernameVariable: &apos;CFY_USERNAME&apos;)]) {
-                    deleteCloudifyEnv deleteBlueprintIfLast: true,
-                        username: &quot;${CFY_USERNAME}&quot;,
+
+                    deleteCloudifyEnv username: &quot;${CFY_USERNAME}&quot;,
                         password: &quot;${CFY_PASSWORD}&quot;,
+                        deleteBlueprintIfLast: false,
                         deploymentId: &quot;${params.environment_id}&quot;,
-                        ignoreFailure: true
+                        ignoreFailure: false
                 }
             }
         }

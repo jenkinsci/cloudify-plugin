@@ -8,6 +8,7 @@
       <parameters>
         <string>infra_type</string>
         <string>deployment_id</string>
+        <string>tenant</string>
       </parameters>
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
@@ -16,19 +17,41 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+        <hudson.model.StringParameterDefinition>
+          <name>tenant</name>
+          <description>Cloudify tenant to use (empty for default)</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
           <name>infra_type</name>
           <description>Type of environment to create</description>
-          <filter>infra</filter>
-          <descending>false</descending>
-        </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
+          <choices>
+            <string>aws-using-terraform</string>
+            <string>aws</string>
+            <string>azure</string>
+            <string>azure-arm</string>
+            <string>gcp</string>
+            <string>openstack</string>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>Name of environment to create</description>
-          <trim>false</trim>
+          <trim>true</trim>
         </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+          <name>cfy_credentials</name>
+          <description>Cloudify credentials to use</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -37,16 +60,44 @@
     agent any
     
     parameters {
-        cloudifyBlueprintParam(name: &apos;infra_type&apos;, description: &apos;Type of environment to create&apos;, filter: &apos;infra&apos;)
-        string(name: &apos;deployment_id&apos;, description: &apos;Name of environment to create&apos;)
+        string(name: &apos;tenant&apos;, description: &apos;Cloudify tenant to use (empty for default)&apos;, trim: true)
+        choice(name: &apos;infra_type&apos;, description: &apos;Type of environment to create&apos;, choices: [
+            &apos;aws-using-terraform&apos;,
+            &apos;aws&apos;,
+            &apos;azure&apos;,
+            &apos;azure-arm&apos;,
+            &apos;gcp&apos;,
+            &apos;openstack&apos;
+            ])
+        string(name: &apos;deployment_id&apos;, description: &apos;Name of environment to create&apos;, trim: true)
     }
     stages {
         stage(&apos;Build Cloudify Environment&apos;) {
             steps {
-                createCloudifyEnv blueprintId: &quot;${params.infra_type}&quot;,
-                    deploymentId: &quot;${params.deployment_id}&quot;,
-                    echoOutputs: true,
-                    outputFile: &apos;outputs.json&apos;
+                script {
+                    def mapping = [
+                        &apos;aws-using-terraform&apos;: &apos;infra-aws-terraform&apos;,
+                        &apos;aws&apos;: &apos;infra-aws&apos;,
+                        &apos;azure&apos;: &apos;infra-azure&apos;,
+                        &apos;azure-arm&apos;: &apos;infra-azure-arm&apos;,
+                        &apos;gcp&apos;: &apos;infra-gcp&apos;,
+                        &apos;openstack&apos;: &apos;infra-openstack&apos;
+                        ]
+                    infra_blueprint = mapping[&quot;${params.infra_type}&quot;]
+                }
+                
+                withCredentials([usernamePassword(
+                    credentialsId: &quot;${params.cfy_credentials}&quot;,
+                    passwordVariable: &apos;CFY_PASSWORD&apos;,
+                    usernameVariable: &apos;CFY_USERNAME&apos;)]) {
+                        createCloudifyEnv tenant: &quot;${params.tenant}&quot;,
+                            username: &quot;${CFY_USERNAME}&quot;,
+                            password: &quot;${CFY_PASSWORD}&quot;,
+                            blueprintId: &quot;${infra_blueprint}&quot;,
+                            deploymentId: &quot;${params.deployment_id}&quot;,
+                            echoOutputs: true,
+                            outputFile: &apos;outputs.json&apos;
+                    }
             }
         }
         stage(&apos;Wait for Input&apos;) {
@@ -56,7 +107,15 @@
         }
         stage(&apos;Delete Cloudify Environment&apos;) {
             steps {
-                deleteCloudifyEnv deploymentId: &quot;${params.deployment_id}&quot;
+                withCredentials([usernamePassword(
+                    credentialsId: &quot;${params.cfy_credentials}&quot;,
+                    passwordVariable: &apos;CFY_PASSWORD&apos;,
+                    usernameVariable: &apos;CFY_USERNAME&apos;)]) {
+                    deleteCloudifyEnv tenant: &quot;${params.tenant}&quot;,
+                        username: &quot;${CFY_USERNAME}&quot;,
+                        password: &quot;${CFY_PASSWORD}&quot;,
+                        deploymentId: &quot;${params.deployment_id}&quot;
+                }
             }
         }
     }

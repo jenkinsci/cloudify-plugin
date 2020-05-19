@@ -1,0 +1,197 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.37">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.6.0"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.6.0">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>arm_resource_group</string>
+        <string>environment_prefix</string>
+        <string>cfn_template_url</string>
+        <string>tf_template_url</string>
+        <string>cfn_template_vars</string>
+        <string>cfn_stack_name</string>
+        <string>tf_template_vars</string>
+        <string>arm_template_url</string>
+        <string>arm_template_vars</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>environment_prefix</name>
+          <description>Environment identifier prefix</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>tf_template_url</name>
+          <description>URL of the Terraform template archive</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>tf_template_vars</name>
+          <description>Terraform template variables (as YAML or JSON)</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cfn_stack_name</name>
+          <description>CloudFormation stack name to create</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>cfn_template_url</name>
+          <description>URL of the CloudFormation template</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>cfn_template_vars</name>
+          <description>CloudFormation template variables (as YAML or JSON)</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>arm_template_url</name>
+          <description>URL of the ARM template</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>arm_template_vars</name>
+          <description>ARM template variables (as YAML or JSON)</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>arm_resource_group</name>
+          <description>Resource group to create on Azure</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>aws_credentials</name>
+          <description>Credentials for AWS</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>azure_credentials</name>
+          <description>Credentials for Azure</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description>Credentials for Cloudify</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.80">
+    <script>pipeline {
+    agent any
+    
+    parameters {
+        string(name: &apos;environment_prefix&apos;, description: &apos;Environment identifier prefix&apos;, trim: true)
+        string(name: &apos;tf_template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
+        text(name: &apos;tf_template_vars&apos;, description: &apos;Terraform template variables (as YAML or JSON)&apos;)
+        string(name: &apos;cfn_stack_name&apos;, description: &apos;CloudFormation stack name to create&apos;, trim: true)
+        string(name: &apos;cfn_template_url&apos;, description: &apos;URL of the CloudFormation template&apos;, trim: true)
+        text(name: &apos;cfn_template_vars&apos;, description: &apos;CloudFormation template variables (as YAML or JSON)&apos;)
+        string(name: &apos;arm_template_url&apos;, description: &apos;URL of the ARM template&apos;, trim: true)
+        text(name: &apos;arm_template_vars&apos;, description: &apos;ARM template variables (as YAML or JSON)&apos;)
+        string(name: &apos;arm_resource_group&apos;, description: &apos;Resource group to create on Azure&apos;, trim: true)
+    }
+
+    stages {
+        stage(&apos;Build Cloudify Environments&apos;) {
+            parallel {
+                stage(&apos;AWS using Terraform&apos;) {
+                    steps {
+                        build job: &apos;terraform-build-step&apos;, parameters: [
+                            string(name: &apos;environment_id&apos;, value: &quot;${params.environment_prefix}_tf&quot;),
+                            string(name: &apos;template_url&apos;, value: &quot;${params.tf_template_url}&quot;),
+                            text(name: &apos;variables&apos;, value: &quot;${params.tf_template_vars}&quot;),
+                            credentials(name: &apos;cfy_credentials&apos;, value: &quot;${params.cfy_credentials}&quot;),
+                            credentials(name: &apos;aws_credentials&apos;, value: &quot;${params.aws_credentials}&quot;)
+                            ]
+                    }
+                }
+                stage(&apos;AWS using CloudFormation&apos;) {
+                    steps {
+                        build job: &apos;cloudformation-build-step&apos;, parameters: [
+                            string(name: &apos;environment_id&apos;, value: &quot;${params.environment_prefix}_cfn&quot;),
+                            string(name: &apos;stack_name&apos;, value: &quot;${params.cfn_stack_name}&quot;),
+                            string(name: &apos;template_url&apos;, value: &quot;${params.cfn_template_url}&quot;),
+                            text(name: &apos;template_parameters&apos;, value: &quot;${params.cfn_template_vars}&quot;),
+                            credentials(name: &apos;cfy_credentials&apos;, value: &quot;${params.cfy_credentials}&quot;),
+                            credentials(name: &apos;aws_credentials&apos;, value: &quot;${params.aws_credentials}&quot;)
+                            ]
+                    }
+                }
+                stage(&apos;Azure using ARM&apos;) {
+                    steps {
+                        build job: &apos;arm-build-step&apos;, parameters: [
+                            string(name: &apos;environment_id&apos;, value: &quot;${params.environment_prefix}_arm&quot;),
+                            string(name: &apos;resource_group_name&apos;, value: &quot;${params.arm_resource_group}&quot;),
+                            string(name: &apos;template_file&apos;, value: &quot;${params.arm_template_url}&quot;),
+                            text(name: &apos;parameters&apos;, value: &quot;${params.arm_template_vars}&quot;),
+                            credentials(name: &apos;cfy_credentials&apos;, value: &quot;${params.cfy_credentials}&quot;),
+                            credentials(name: &apos;azure_credentials&apos;, value: &quot;${params.azure_credentials}&quot;)
+                            ]
+                    }
+                }
+            }
+        }
+        stage(&apos;Wait for Input&apos;) {
+            steps {
+                input message: &apos;Proceed?&apos;
+            }
+        }
+        stage(&apos;Destroy Cloudify Environments&apos;) {
+            parallel {
+                stage(&apos;Destroy Terraform environment&apos;) {
+                    steps {
+                        build job: &apos;delete-environment&apos;, parameters: [
+                            credentials(name: &apos;cfy_credentials&apos;, value: &quot;${params.cfy_credentials}&quot;),
+                            string(name: &apos;deployment_id&apos;, value: &quot;${params.environment_prefix}_tf&quot;)
+                            ]
+                    }
+                }
+                stage(&apos;Destroy CloudFormation environment&apos;) {
+                    steps {
+                        build job: &apos;delete-environment&apos;, parameters: [
+                            credentials(name: &apos;cfy_credentials&apos;, value: &quot;${params.cfy_credentials}&quot;),
+                            string(name: &apos;deployment_id&apos;, value: &quot;${params.environment_prefix}_cfn&quot;)
+                            ]
+                    }
+                }
+                stage(&apos;Destroy Azure ARM environment&apos;) {
+                    steps {
+                        build job: &apos;delete-environment&apos;, parameters: [
+                            credentials(name: &apos;cfy_credentials&apos;, value: &quot;${params.cfy_credentials}&quot;),
+                            string(name: &apos;deployment_id&apos;, value: &quot;${params.environment_prefix}_arm&quot;)
+                            ]
+                    }
+                }
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

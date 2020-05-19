@@ -83,18 +83,25 @@
           <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>aws_credentials</name>
           <description>Credentials for AWS</description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>azure_credentials</name>
           <description>Credentials for Azure</description>
           <defaultValue></defaultValue>
           <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description>Credentials for Cloudify</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
@@ -129,15 +136,25 @@
                                 accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
                                 credentialsId: &quot;${params.aws_credentials}&quot;,
                                 secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
-                                    template_vars_map[&apos;access_key&apos;] = &quot;${AWS_ACCESS_KEY_ID}&quot;
-                                    template_vars_map[&apos;secret_key&apos;] = &quot;${AWS_SECRET_ACCESS_KEY}&quot;
-                                    cfyTerraform deploymentId: &quot;${params.environment_prefix}_tf&quot;,
+                                    
+                                template_vars_map[&apos;access_key&apos;] = &quot;${AWS_ACCESS_KEY_ID}&quot;
+                                template_vars_map[&apos;secret_key&apos;] = &quot;${AWS_SECRET_ACCESS_KEY}&quot;
+                                
+                                withCredentials([usernamePassword(
+                                    credentialsId: &quot;${params.cfy_credentials}&quot;,
+                                    passwordVariable: &apos;CFY_PASSWORD&apos;,
+                                    usernameVariable: &apos;CFY_USERNAME&apos;)]) {
+                                        
+                                    cfyTerraform username: &quot;${CFY_USERNAME}&quot;,
+                                        password: &quot;${CFY_PASSWORD}&quot;,
+                                        deploymentId: &quot;${params.environment_prefix}_tf&quot;,
                                         echoInputs: false,
                                         echoEnvData: true,
                                         envDataLocation: &apos;env-data-tf.json&apos;,
                                         templateUrl: &quot;${params.tf_template_url}&quot;,
                                         variables: template_vars_map
                                 }
+                            }
                         }
                     }
                 }
@@ -151,7 +168,15 @@
                                 accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
                                 credentialsId: &quot;${params.aws_credentials}&quot;,
                                 secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
-                                    cfyCloudFormation accessKeyIdAsString: &quot;${AWS_ACCESS_KEY_ID}&quot;,
+                                    
+                                withCredentials([usernamePassword(
+                                    credentialsId: &quot;${params.cfy_credentials}&quot;,
+                                    passwordVariable: &apos;CFY_PASSWORD&apos;,
+                                    usernameVariable: &apos;CFY_USERNAME&apos;)]) {
+                                        
+                                    cfyCloudFormation username: &quot;${CFY_USERNAME}&quot;,
+                                        password: &quot;${CFY_PASSWORD}&quot;,
+                                        accessKeyIdAsString: &quot;${AWS_ACCESS_KEY_ID}&quot;,
                                         deploymentId: &quot;${params.environment_prefix}_cfn&quot;,
                                         echoEnvData: true,
                                         envDataLocation: &apos;env-data-cfn.json&apos;,
@@ -160,6 +185,7 @@
                                         stackName: &quot;${params.cfn_stack_name}&quot;,
                                         templateUrl: &quot;${params.cfn_template_url}&quot;
                                 }
+                            }
                         }
                     }
                 }
@@ -169,17 +195,26 @@
                             def arm_template_vars_map = readYaml text: &quot;${params.arm_template_vars}&quot;
 
                             withCredentials([azureServicePrincipal(&quot;${params.azure_credentials}&quot;)]) {
-                                    cfyAzureArm clientId: &quot;${AZURE_CLIENT_ID}&quot;,
-                                    clientSecretAsString: &quot;${AZURE_CLIENT_SECRET}&quot;,
-                                    deploymentId: &quot;${params.environment_prefix}_arm&quot;,
-                                    echoEnvData: true,
-                                    envDataLocation: &apos;env-arm.json&apos;,
-                                    parameters: arm_template_vars_map,
-                                    resourceGroupName: &quot;${params.arm_resource_group}&quot;,
-                                    subscriptionId: &quot;${AZURE_SUBSCRIPTION_ID}&quot;,
-                                    templateFile: &quot;${params.arm_template_url}&quot;,
-                                    tenantId: &quot;${AZURE_TENANT_ID}&quot;
+
+                                withCredentials([usernamePassword(
+                                    credentialsId: &quot;${params.cfy_credentials}&quot;,
+                                    passwordVariable: &apos;CFY_PASSWORD&apos;,
+                                    usernameVariable: &apos;CFY_USERNAME&apos;)]) {
+                                        
+                                    cfyAzureArm username: &quot;${CFY_USERNAME}&quot;,
+                                        password: &quot;${CFY_PASSWORD}&quot;,
+                                        clientId: &quot;${AZURE_CLIENT_ID}&quot;,
+                                        clientSecretAsString: &quot;${AZURE_CLIENT_SECRET}&quot;,
+                                        deploymentId: &quot;${params.environment_prefix}_arm&quot;,
+                                        echoEnvData: true,
+                                        envDataLocation: &apos;env-arm.json&apos;,
+                                        parameters: arm_template_vars_map,
+                                        resourceGroupName: &quot;${params.arm_resource_group}&quot;,
+                                        subscriptionId: &quot;${AZURE_SUBSCRIPTION_ID}&quot;,
+                                        templateFile: &quot;${params.arm_template_url}&quot;,
+                                        tenantId: &quot;${AZURE_TENANT_ID}&quot;
                                 }
+                            }
                         }
                     }
                 }
@@ -194,23 +229,47 @@
             parallel {
                 stage(&apos;Destroy Terraform environment&apos;) {
                     steps {
-                        deleteCloudifyEnv deleteBlueprintIfLast: false,
-                            deploymentId: &quot;${params.environment_prefix}_tf&quot;,
-                            ignoreFailure: false
+                        withCredentials([usernamePassword(
+                            credentialsId: &quot;${params.cfy_credentials}&quot;,
+                            passwordVariable: &apos;CFY_PASSWORD&apos;,
+                            usernameVariable: &apos;CFY_USERNAME&apos;)]) {
+                                
+                            deleteCloudifyEnv username: &quot;${CFY_USERNAME}&quot;,
+                                password: &quot;${CFY_PASSWORD}&quot;,
+                                deleteBlueprintIfLast: false,
+                                deploymentId: &quot;${params.environment_prefix}_tf&quot;,
+                                ignoreFailure: false
+                        }
                     }
                 }
                 stage(&apos;Destroy CloudFormation environment&apos;) {
                     steps {
-                        deleteCloudifyEnv deleteBlueprintIfLast: false,
-                            deploymentId: &quot;${params.environment_prefix}_cfn&quot;,
-                            ignoreFailure: false
+                        withCredentials([usernamePassword(
+                            credentialsId: &quot;${params.cfy_credentials}&quot;,
+                            passwordVariable: &apos;CFY_PASSWORD&apos;,
+                            usernameVariable: &apos;CFY_USERNAME&apos;)]) {
+                                
+                            deleteCloudifyEnv username: &quot;${CFY_USERNAME}&quot;,
+                                password: &quot;${CFY_PASSWORD}&quot;,
+                                deleteBlueprintIfLast: false,
+                                deploymentId: &quot;${params.environment_prefix}_cfn&quot;,
+                                ignoreFailure: false
+                        }
                     }
                 }
                 stage(&apos;Destroy Azure ARM environment&apos;) {
                     steps {
-                        deleteCloudifyEnv deleteBlueprintIfLast: false,
-                            deploymentId: &quot;${params.environment_prefix}_arm&quot;,
-                            ignoreFailure: false
+                        withCredentials([usernamePassword(
+                            credentialsId: &quot;${params.cfy_credentials}&quot;,
+                            passwordVariable: &apos;CFY_PASSWORD&apos;,
+                            usernameVariable: &apos;CFY_USERNAME&apos;)]) {
+                                
+                            deleteCloudifyEnv username: &quot;${CFY_USERNAME}&quot;,
+                                password: &quot;${CFY_PASSWORD}&quot;,
+                                deleteBlueprintIfLast: false,
+                                deploymentId: &quot;${params.environment_prefix}_arm&quot;,
+                                ignoreFailure: false
+                        }
                     }
                 }
             }
