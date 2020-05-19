@@ -5,19 +5,17 @@
         <f:entry field="host" title="${%Host}">
             <f:textbox />
         </f:entry>
-        <f:entry field="username" title="${%Username}">
-            <f:textbox />
-        </f:entry>
-        <f:entry field="password" title="${%Password}">
-            <f:password />
-        </f:entry>
-        <f:entry field="tenant" title="${%Tenant}">
+        <f:entry field="defaultTenant" title="${%Default tenant}">
             <f:textbox />
         </f:entry>
         <f:entry field="secured" title="${%Use SSL}">
             <f:checkbox />
         </f:entry>
+        <!--
+        May be resurrected in the future.
+        
         <f:validateButton title="${%Test Connection}" progress="${%Testing...}" method="testConnection"
             with="host,username,password,tenant,secured" />
+        -->
     </f:section>
 </j:jelly>

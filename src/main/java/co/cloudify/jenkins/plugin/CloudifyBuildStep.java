@@ -3,6 +3,10 @@ package co.cloudify.jenkins.plugin;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.kohsuke.stapler.DataBoundSetter;
+
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -23,6 +27,33 @@ import jenkins.tasks.SimpleBuildStep;
  * @author Isaac Shabtay
  */
 public abstract class CloudifyBuildStep extends Builder implements SimpleBuildStep {
+    private String username;
+    private String password;
+    private String tenant;
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    @DataBoundSetter
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
+
+    // No getter for this, as we only expect this to be used in
+    // workflow runs.
+    @DataBoundSetter
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    // No getter for this, as we only expect this to be used in
+    // workflow runs.
+    @DataBoundSetter
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     /**
      * This should be the main, "real" implementation of
      * {@link #perform(AbstractBuild, Launcher, BuildListener)}. Implementations
@@ -45,11 +76,12 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener)
             throws InterruptedException, IOException {
-        EnvVars envVars = CloudifyPluginUtilities.getEnvironment(run, listener);
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars);
-
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(
+                StringUtils.trimToNull(username),
+                StringUtils.trimToNull(password),
+                StringUtils.trimToNull(tenant));
         try {
-            performImpl(run, launcher, listener, workspace, envVars, client);
+            performImpl(run, launcher, listener, workspace, run.getEnvironment(listener), client);
         } catch (IOException | InterruptedException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -67,7 +99,8 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
             throws InterruptedException, IOException {
         listener.started(Arrays.asList(new Cause.UserIdCause()));
         EnvVars envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars);
+        String tenant = CloudifyPluginUtilities.expandString(envVars, this.tenant);
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars, StringUtils.trimToNull(tenant));
 
         try {
             performImpl(build, launcher, listener, build.getWorkspace(), envVars, client);
@@ -83,5 +116,12 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
             listener.finished(Result.FAILURE);
             throw new AbortException(String.format("Unexpected exception was raised: [%s]", ex));
         }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("tenant", tenant)
+                .toString();
     }
 }

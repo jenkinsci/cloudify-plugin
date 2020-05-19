@@ -35,6 +35,7 @@ import jenkins.tasks.SimpleBuildWrapper;
  * @author Isaac Shabtay
  */
 public class CloudifyBuildWrapper extends SimpleBuildWrapper {
+    private String tenant;
     private String blueprintId;
     private String blueprintRootDirectory;
     private String blueprintArchiveUrl;
@@ -51,6 +52,15 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     @DataBoundConstructor
     public CloudifyBuildWrapper() {
         super();
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    @DataBoundSetter
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 
     public String getBlueprintId() {
@@ -168,6 +178,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
             EnvVars initialEnvironment) throws IOException, InterruptedException {
+        String tenant = expand(initialEnvironment, this.tenant);
         String blueprintId = expand(initialEnvironment, this.blueprintId);
         String blueprintRootDirectory = expand(initialEnvironment, this.blueprintRootDirectory);
         String blueprintArchiveUrl = expand(initialEnvironment, this.blueprintArchiveUrl);
@@ -182,10 +193,10 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         action.setDeploymentId(deploymentId);
         build.addOrReplaceAction(action);
 
-        CloudifyDisposer disposer = new CloudifyDisposer(debugOutput);
+        CloudifyDisposer disposer = new CloudifyDisposer(tenant, debugOutput);
         context.setDisposer(disposer);
 
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(initialEnvironment);
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(initialEnvironment, tenant);
         BlueprintsClient blueprintsClient = client.getBlueprintsClient();
         PrintStream logger = listener.getLogger();
 
@@ -228,13 +239,15 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         /** Serialization UID. */
         private static final long serialVersionUID = 1L;
 
+        private String tenant;
         private Blueprint blueprint;
         private Deployment deployment;
         private Boolean ignoreFailure;
         private boolean debugOutput;
 
-        public CloudifyDisposer(boolean debugOutput) {
+        public CloudifyDisposer(String tenant, boolean debugOutput) {
             super();
+            this.tenant = tenant;
             this.debugOutput = debugOutput;
         }
 
@@ -251,7 +264,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
                 throws IOException, InterruptedException {
             EnvVars envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
-            CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars);
+            CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars, tenant);
             PrintStream logger = listener.getLogger();
 
             if (deployment != null) {
@@ -324,6 +337,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
+                .append("tenant", tenant)
                 .append("blueprintId", blueprintId)
                 .append("blueprintMainFile", blueprintMainFile)
                 .append("blueprintRootDirectory", blueprintRootDirectory)

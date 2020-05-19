@@ -49,7 +49,7 @@ public class TenantsListParameterDefinition extends ParameterDefinition {
 
     @Exported
     public List<String> getChoices() {
-        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient(null, null);
+        CloudifyClient cloudifyClient = CloudifyConfiguration.getCloudifyClient(null, null, null);
         ListResponse<Tenant> tenants = cloudifyClient.getTenantsClient().list();
         return tenants
                 .stream()
