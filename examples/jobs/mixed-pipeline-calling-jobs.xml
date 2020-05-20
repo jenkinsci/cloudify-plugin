@@ -154,7 +154,7 @@
                 }
             }
         }
-        stage(&apos;Wait for Input&apos;) {
+        stage(&apos;Run tests&apos;) {
             steps {
                 input message: &apos;Proceed?&apos;
             }
