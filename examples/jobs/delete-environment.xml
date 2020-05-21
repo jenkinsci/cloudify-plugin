@@ -11,12 +11,12 @@
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
-          <description></description>
+          <description>Cloudify credentials</description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
-          <required>false</required>
+          <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
@@ -36,6 +36,8 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
+      <tenant></tenant>
       <deploymentId>${deployment_id}</deploymentId>
       <deleteBlueprintIfLast>false</deleteBlueprintIfLast>
       <ignoreFailure>true</ignoreFailure>
@@ -43,15 +45,5 @@
     </co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep>
   </builders>
   <publishers/>
-  <buildWrappers>
-    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.21">
-      <bindings>
-        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
-          <credentialsId>${cfy_credentials}</credentialsId>
-          <usernameVariable>CFY_USERNAME</usernameVariable>
-          <passwordVariable>CFY_PASSWORD</passwordVariable>
-        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
-      </bindings>
-    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
-  </buildWrappers>
+  <buildWrappers/>
 </project>

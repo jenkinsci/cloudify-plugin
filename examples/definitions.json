@@ -3,9 +3,7 @@
 		"ansible-build-step",
 		"app-pipeline",
 		"arm-build-step",
-		"arm-pipeline",
 		"cloudformation-build-step",
-		"cloudformation-pipeline",
 		"cloudify-environment-as-a-service",
 		"cloudify-environment-as-a-service-sdlc-type",
 		"cloudify-wrapper-with-git",
@@ -16,9 +14,7 @@
 		"execute-workflow",
 		"mixed-pipeline",
 		"mixed-pipeline-calling-jobs",
-		"parameter-types",
 		"terraform-build-step",
-		"terraform-pipeline",
 		"upload-blueprint"
 	],
 	"views": [

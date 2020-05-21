@@ -11,6 +11,13 @@
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description>Cloudify credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>environment_id</name>
           <description>ID of environment to create (optional; automatically generated if not provided)</description>
@@ -48,13 +55,6 @@
           <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
-          <name>cfy_credentials</name>
-          <description>Cloudify credentials to use</description>
-          <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
-          <required>true</required>
-        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -67,6 +67,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <co.cloudify.jenkins.plugin.integrations.CloudFormationBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
       <deploymentId>${environment_id}</deploymentId>
       <echoInputs>true</echoInputs>
       <echoEnvData>true</echoEnvData>
@@ -90,11 +91,6 @@
           <accessKeyVariable>AWS_ACCESS_KEY_ID</accessKeyVariable>
           <secretKeyVariable>AWS_SECRET_ACCESS_KEY</secretKeyVariable>
         </com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding>
-        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
-          <credentialsId>${cfy_credentials}</credentialsId>
-          <usernameVariable>CFY_USERNAME</usernameVariable>
-          <passwordVariable>CFY_PASSWORD</passwordVariable>
-        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
       </bindings>
     </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
   </buildWrappers>

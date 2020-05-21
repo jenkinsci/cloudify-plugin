@@ -1,6 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <j:set var="escapeEntryTitleAndDescription" value="false" />
+    <f:entry title="${%Credentials ID}" field="credentialsId">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%Tenant}" field="tenant">
         <f:textbox />
     </f:entry>

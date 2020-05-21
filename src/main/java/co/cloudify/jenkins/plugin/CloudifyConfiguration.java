@@ -6,8 +6,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+
 import co.cloudify.rest.client.CloudifyClient;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
@@ -103,11 +104,9 @@ public class CloudifyConfiguration extends GlobalConfiguration {
 //        }
 //    }
 
-    public static CloudifyClient getCloudifyClient(final EnvVars envVars, final String tenant) {
-        String cfyUsername = envVars.get(CloudifyPluginUtilities.ENVVAR_CFY_USERNAME, null);
-        String cfyPassword = envVars.get(CloudifyPluginUtilities.ENVVAR_CFY_PASSWORD, null);
-
-        return getCloudifyClient(cfyUsername, cfyPassword, tenant);
+    public static CloudifyClient getCloudifyClient(final StandardUsernamePasswordCredentials creds,
+            final String tenant) {
+        return getCloudifyClient(creds.getUsername(), creds.getPassword().getPlainText(), tenant);
     }
 
     public static CloudifyClient getCloudifyClient(final String username, final String password,

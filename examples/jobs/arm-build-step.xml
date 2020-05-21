@@ -11,6 +11,13 @@
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description>Credentials for Cloudify</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>environment_id</name>
           <description>ID of environment to create (optional; automatically generated if not provided)</description>
@@ -29,30 +36,23 @@
           <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.TextParameterDefinition>
-          <name>parameters</name>
-          <description>Template parameters (in YAML/JSON format)</description>
-          <defaultValue></defaultValue>
-          <trim>false</trim>
-        </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>template_file</name>
           <description>Path or URL to template</description>
           <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>parameters</name>
+          <description>Template parameters (in YAML/JSON format)</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>azure_credentials</name>
           <description>Credentials for Azure</description>
           <defaultValue>my-azure-credentials</defaultValue>
           <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
-          <required>true</required>
-        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
-          <name>cfy_credentials</name>
-          <description>Credentials for Cloudify</description>
-          <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
@@ -67,6 +67,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <co.cloudify.jenkins.plugin.integrations.ARMBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
       <deploymentId>${environment_id}</deploymentId>
       <echoInputs>true</echoInputs>
       <echoEnvData>true</echoEnvData>
@@ -94,11 +95,6 @@
           <clientSecretVariable>AZURE_CLIENT_SECRET</clientSecretVariable>
           <tenantIdVariable>AZURE_TENANT_ID</tenantIdVariable>
         </com.microsoft.azure.util.AzureCredentialsBinding>
-        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
-          <credentialsId>${cfy_credentials}</credentialsId>
-          <usernameVariable>CFY_USERNAME</usernameVariable>
-          <passwordVariable>CFY_PASSWORD</passwordVariable>
-        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
       </bindings>
     </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
   </buildWrappers>

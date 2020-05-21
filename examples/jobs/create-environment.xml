@@ -5,15 +5,25 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description>Cloudify credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>blueprint_id</name>
-          <description>ID of blueprint to create an environment from.</description>
-          <filter></filter>
-          <sortKey>id</sortKey>
-          <descending>false</descending>
-        </co.cloudify.jenkins.plugin.parameters.BlueprintSelectorParameterDefinition>
+          <description>Blueprint to create a deployment of</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>ID of deployment to create.</description>
@@ -48,6 +58,8 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <co.cloudify.jenkins.plugin.CreateEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
+      <tenant></tenant>
       <blueprintId>${blueprint_id}</blueprintId>
       <deploymentId>${deployment_id}</deploymentId>
       <inputs>${inputs}</inputs>
@@ -55,6 +67,7 @@
       <mapping></mapping>
       <mappingFile></mappingFile>
       <outputFile>${outputs_file}</outputFile>
+      <echoInputs>false</echoInputs>
       <echoOutputs>true</echoOutputs>
       <debugOutput>false</debugOutput>
     </co.cloudify.jenkins.plugin.CreateEnvironmentBuildStep>

@@ -21,6 +21,9 @@ import javax.json.stream.JsonGenerator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -55,8 +58,13 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class CloudifyPluginUtilities {
-    public static final String ENVVAR_CFY_USERNAME = "CFY_USERNAME";
-    public static final String ENVVAR_CFY_PASSWORD = "CFY_PASSWORD";
+    public static StandardUsernamePasswordCredentials getCredentials(final String credentialsId, final Run<?, ?> run) {
+        return CredentialsProvider.findCredentialById(
+                credentialsId,
+                StandardUsernamePasswordCredentials.class,
+                run,
+                URIRequirementBuilder.fromUri("cloudify").build());
+    }
 
     public static EnvVars getEnvironment(final AbstractBuild build, final TaskListener listener)
             throws InterruptedException, IOException {

@@ -1,14 +1,46 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
-  <description/>
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description>Cloudify credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
-          <description/>
-          <blueprintId/>
-        </co.cloudify.jenkins.plugin.parameters.DeploymentSelectorParameterDefinition>
+          <description>Deployment to delete</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>workflow_id</name>
+          <description>Workflow to execute</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>validate_agents</string>
+              <string>heal</string>
+              <string>scale</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>workflow_parameters</name>
+          <description>YAML/JSON of workflow parameters</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -21,9 +53,11 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <co.cloudify.jenkins.plugin.ExecuteWorkflowBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
+      <tenant></tenant>
       <deploymentId>${deployment_id}</deploymentId>
-      <workflowId>validate_agents</workflowId>
-      <executionParameters/>
+      <workflowId>${workflow_id}</workflowId>
+      <executionParameters>${workflow_parameters}</executionParameters>
       <waitForCompletion>true</waitForCompletion>
       <printLogs>true</printLogs>
       <debugOutput>false</debugOutput>

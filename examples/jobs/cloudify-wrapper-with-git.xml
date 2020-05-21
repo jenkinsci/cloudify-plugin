@@ -13,7 +13,7 @@
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.4">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
           <description>Cloudify credentials</description>
           <defaultValue></defaultValue>
@@ -59,16 +59,9 @@ echo &quot;Endpoint: ${endpoint}&quot;
   </builders>
   <publishers/>
   <buildWrappers>
-    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.21">
-      <bindings>
-        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
-          <credentialsId>${cfy_credentials}</credentialsId>
-          <usernameVariable>CFY_USERNAME</usernameVariable>
-          <passwordVariable>CFY_PASSWORD</passwordVariable>
-        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
-      </bindings>
-    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
     <co.cloudify.jenkins.plugin.CloudifyBuildWrapper plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
+      <tenant></tenant>
       <blueprintId>blueprint-${BUILD_ID}</blueprintId>
       <blueprintRootDirectory>repo/virtual-machine</blueprintRootDirectory>
       <blueprintArchiveUrl></blueprintArchiveUrl>

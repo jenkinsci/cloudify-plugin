@@ -25,6 +25,11 @@ import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
+/**
+ * This is a base class for integration points into the Cloudify Jenkins plugin.
+ * 
+ * @author Isaac Shabtay
+ */
 public abstract class IntegrationBuildStep extends CloudifyBuildStep {
     private String deploymentId;
     private boolean echoInputs;
@@ -142,8 +147,8 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
                 .append("debugOutput", debugOutput)
                 .append("echoInputs", echoInputs)
                 .append("echoEnvData", echoEnvData)
-                .append("inputs", operationInputs)
-                .append("outputsLocation", envDataLocation)
+                .append("operationInputs", operationInputs)
+                .append("envDataLocation", envDataLocation)
                 .toString();
     }
 }

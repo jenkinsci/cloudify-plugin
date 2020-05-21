@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.kohsuke.stapler.DataBoundSetter;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -27,8 +29,7 @@ import jenkins.tasks.SimpleBuildStep;
  * @author Isaac Shabtay
  */
 public abstract class CloudifyBuildStep extends Builder implements SimpleBuildStep {
-    private String username;
-    private String password;
+    private String credentialsId;
     private String tenant;
 
     public String getTenant() {
@@ -40,18 +41,13 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
         this.tenant = tenant;
     }
 
-    // No getter for this, as we only expect this to be used in
-    // workflow runs.
-    @DataBoundSetter
-    public void setUsername(String username) {
-        this.username = username;
+    public String getCredentialsId() {
+        return credentialsId;
     }
 
-    // No getter for this, as we only expect this to be used in
-    // workflow runs.
     @DataBoundSetter
-    public void setPassword(String password) {
-        this.password = password;
+    public void setCredentialsId(String credentialsId) {
+        this.credentialsId = credentialsId;
     }
 
     /**
@@ -73,13 +69,22 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     protected abstract void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener,
             FilePath workspace, EnvVars envVars, CloudifyClient cloudifyClient) throws Exception;
 
+    private CloudifyClient getCloudifyClient(final Run<?, ?> run) throws AbortException {
+        if (StringUtils.isBlank(credentialsId)) {
+            throw new AbortException("Credentials were not provided");
+        }
+
+        StandardUsernamePasswordCredentials creds = CloudifyPluginUtilities.getCredentials(credentialsId, run);
+        return CloudifyConfiguration.getCloudifyClient(
+                StringUtils.trimToNull(creds.getUsername()),
+                StringUtils.trimToNull(creds.getPassword().getPlainText()),
+                StringUtils.trimToNull(tenant));
+    }
+
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener)
             throws InterruptedException, IOException {
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(
-                StringUtils.trimToNull(username),
-                StringUtils.trimToNull(password),
-                StringUtils.trimToNull(tenant));
+        CloudifyClient client = getCloudifyClient(run);
         try {
             performImpl(run, launcher, listener, workspace, run.getEnvironment(listener), client);
         } catch (IOException | InterruptedException ex) {
@@ -98,9 +103,8 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
         listener.started(Arrays.asList(new Cause.UserIdCause()));
+        CloudifyClient client = getCloudifyClient(build);
         EnvVars envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
-        String tenant = CloudifyPluginUtilities.expandString(envVars, this.tenant);
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars, StringUtils.trimToNull(tenant));
 
         try {
             performImpl(build, launcher, listener, build.getWorkspace(), envVars, client);
@@ -121,6 +125,7 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     @Override
     public String toString() {
         return new ToStringBuilder(this)
+                .append("credentialsId", credentialsId)
                 .append("tenant", tenant)
                 .toString();
     }

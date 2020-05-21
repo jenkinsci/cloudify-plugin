@@ -10,6 +10,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+
 import co.cloudify.jenkins.plugin.actions.EnvironmentBuildAction;
 import co.cloudify.jenkins.plugin.callables.BlueprintUploadDirFileCallable;
 import co.cloudify.rest.client.BlueprintsClient;
@@ -35,6 +37,7 @@ import jenkins.tasks.SimpleBuildWrapper;
  * @author Isaac Shabtay
  */
 public class CloudifyBuildWrapper extends SimpleBuildWrapper {
+    private String credentialsId;
     private String tenant;
     private String blueprintId;
     private String blueprintRootDirectory;
@@ -52,6 +55,15 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     @DataBoundConstructor
     public CloudifyBuildWrapper() {
         super();
+    }
+
+    public String getCredentialsId() {
+        return credentialsId;
+    }
+
+    @DataBoundSetter
+    public void setCredentialsId(String credentialsId) {
+        this.credentialsId = credentialsId;
     }
 
     public String getTenant() {
@@ -193,10 +205,11 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         action.setDeploymentId(deploymentId);
         build.addOrReplaceAction(action);
 
-        CloudifyDisposer disposer = new CloudifyDisposer(tenant, debugOutput);
+        CloudifyDisposer disposer = new CloudifyDisposer(credentialsId, tenant, debugOutput);
         context.setDisposer(disposer);
 
-        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(initialEnvironment, tenant);
+        StandardUsernamePasswordCredentials creds = CloudifyPluginUtilities.getCredentials(credentialsId, build);
+        CloudifyClient client = CloudifyConfiguration.getCloudifyClient(creds, tenant);
         BlueprintsClient blueprintsClient = client.getBlueprintsClient();
         PrintStream logger = listener.getLogger();
 
@@ -239,14 +252,16 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         /** Serialization UID. */
         private static final long serialVersionUID = 1L;
 
+        private String credentialsId;
         private String tenant;
         private Blueprint blueprint;
         private Deployment deployment;
         private Boolean ignoreFailure;
         private boolean debugOutput;
 
-        public CloudifyDisposer(String tenant, boolean debugOutput) {
+        public CloudifyDisposer(String credentialsId, String tenant, boolean debugOutput) {
             super();
+            this.credentialsId = credentialsId;
             this.tenant = tenant;
             this.debugOutput = debugOutput;
         }
@@ -263,8 +278,8 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
         @Override
         public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
                 throws IOException, InterruptedException {
-            EnvVars envVars = CloudifyPluginUtilities.getEnvironment(build, listener);
-            CloudifyClient client = CloudifyConfiguration.getCloudifyClient(envVars, tenant);
+            StandardUsernamePasswordCredentials creds = CloudifyPluginUtilities.getCredentials(credentialsId, build);
+            CloudifyClient client = CloudifyConfiguration.getCloudifyClient(creds, tenant);
             PrintStream logger = listener.getLogger();
 
             if (deployment != null) {
@@ -337,6 +352,7 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
+                .append("credentialsId", credentialsId)
                 .append("tenant", tenant)
                 .append("blueprintId", blueprintId)
                 .append("blueprintMainFile", blueprintMainFile)

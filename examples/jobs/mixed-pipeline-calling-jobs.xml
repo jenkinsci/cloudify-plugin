@@ -92,7 +92,7 @@
           <name>cfy_credentials</name>
           <description>Credentials for Cloudify</description>
           <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>

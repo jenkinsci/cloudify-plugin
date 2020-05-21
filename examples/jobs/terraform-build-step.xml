@@ -13,7 +13,7 @@
       <parameterDefinitions>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
-          <description></description>
+          <description>Cloudify credentials</description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
@@ -55,6 +55,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <co.cloudify.jenkins.plugin.integrations.TerraformBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
       <deploymentId>${environment_id}</deploymentId>
       <echoInputs>true</echoInputs>
       <echoEnvData>true</echoEnvData>
@@ -72,11 +73,6 @@ ${variables}</variablesAsString>
   <buildWrappers>
     <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.23">
       <bindings>
-        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
-          <credentialsId>${cfy_credentials}</credentialsId>
-          <usernameVariable>CFY_USERNAME</usernameVariable>
-          <passwordVariable>CFY_PASSWORD</passwordVariable>
-        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
         <com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding plugin="aws-credentials@1.28">
           <credentialsId>${aws_credentials}</credentialsId>
           <accessKeyVariable>AWS_ACCESS_KEY_ID</accessKeyVariable>
