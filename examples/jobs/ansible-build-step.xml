@@ -1,0 +1,60 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description>Cloudify credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <co.cloudify.jenkins.plugin.integrations.AnsibleBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
+      <deploymentId></deploymentId>
+      <echoInputs>false</echoInputs>
+      <echoEnvData>false</echoEnvData>
+      <debugOutput>false</debugOutput>
+      <envDataLocation></envDataLocation>
+      <operationInputs class="linked-hash-map"/>
+      <sourcePath></sourcePath>
+      <playbookPath></playbookPath>
+      <savePlaybook>false</savePlaybook>
+      <remergeSources>false</remergeSources>
+      <sources></sources>
+      <runData></runData>
+      <sensitiveKeys></sensitiveKeys>
+      <optionsConfig></optionsConfig>
+      <ansibleEnvVars></ansibleEnvVars>
+      <debugLevel>1</debugLevel>
+      <additionalArgs></additionalArgs>
+      <startAtTask></startAtTask>
+      <scpExtraArgs></scpExtraArgs>
+      <sftpExtraArgs></sftpExtraArgs>
+      <sshCommonArgs></sshCommonArgs>
+      <sshExtraArgs></sshExtraArgs>
+    </co.cloudify.jenkins.plugin.integrations.AnsibleBuildStep>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

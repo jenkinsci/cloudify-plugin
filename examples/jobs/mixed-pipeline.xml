@@ -32,55 +32,46 @@
         <hudson.model.StringParameterDefinition>
           <name>environment_prefix</name>
           <description>Environment identifier prefix</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>tf_template_url</name>
           <description>URL of the Terraform template archive</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>tf_template_vars</name>
           <description>Terraform template variables (as YAML or JSON)</description>
-          <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>cfn_stack_name</name>
           <description>CloudFormation stack name to create</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>cfn_template_url</name>
           <description>URL of the CloudFormation template</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>cfn_template_vars</name>
           <description>CloudFormation template variables (as YAML or JSON)</description>
-          <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>arm_template_url</name>
           <description>URL of the ARM template</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>arm_template_vars</name>
           <description>ARM template variables (as YAML or JSON)</description>
-          <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>arm_resource_group</name>
           <description>Resource group to create on Azure</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
