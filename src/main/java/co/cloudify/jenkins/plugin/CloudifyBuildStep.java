@@ -29,7 +29,15 @@ import jenkins.tasks.SimpleBuildStep;
  * @author Isaac Shabtay
  */
 public abstract class CloudifyBuildStep extends Builder implements SimpleBuildStep {
+    // We accept either the credentials ID, or a username/password pair.
+    // While using a credentials ID would be easier in most cases, I found at
+    // least one case when this doesn't work: using user-scoped credentials within
+    // pipelines. Apparently, findCredentialsById won't work for these (but it works
+    // for freestyle jobs).
+    // Therefore, we allow both forms, so users can pick what works best for them.
     private String credentialsId;
+    private String username;
+    private String password;
     private String tenant;
 
     public String getTenant() {
@@ -48,6 +56,16 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     @DataBoundSetter
     public void setCredentialsId(String credentialsId) {
         this.credentialsId = credentialsId;
+    }
+
+    @DataBoundSetter
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @DataBoundSetter
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     /**
@@ -70,14 +88,21 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
             FilePath workspace, EnvVars envVars, CloudifyClient cloudifyClient) throws Exception;
 
     private CloudifyClient getCloudifyClient(final Run<?, ?> run) throws AbortException {
-        if (StringUtils.isBlank(credentialsId)) {
-            throw new AbortException("Credentials were not provided");
+        String username, password;
+        if (StringUtils.isNotBlank(this.username)) {
+            username = this.username;
+            password = this.password;
+        } else if (StringUtils.isNotBlank(credentialsId)) {
+            StandardUsernamePasswordCredentials creds = CloudifyPluginUtilities.getCredentials(credentialsId, run);
+            username = creds.getUsername();
+            password = creds.getPassword().getPlainText();
+        } else {
+            throw new AbortException("Neither credentialsId nor username/password were provided");
         }
 
-        StandardUsernamePasswordCredentials creds = CloudifyPluginUtilities.getCredentials(credentialsId, run);
         return CloudifyConfiguration.getCloudifyClient(
-                StringUtils.trimToNull(creds.getUsername()),
-                StringUtils.trimToNull(creds.getPassword().getPlainText()),
+                StringUtils.trimToNull(username),
+                StringUtils.trimToNull(password),
                 StringUtils.trimToNull(tenant));
     }
 
