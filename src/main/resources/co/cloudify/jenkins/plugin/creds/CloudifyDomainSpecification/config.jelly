@@ -1,5 +1,0 @@
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
-    <f:entry title="${%Test server}" field="test">
-        <f:checkbox />
-    </f:entry>
-</j:jelly>
