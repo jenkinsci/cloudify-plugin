@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
-import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -63,7 +62,7 @@ public class CloudifyPluginUtilities {
                 credentialsId,
                 StandardUsernamePasswordCredentials.class,
                 run,
-                URIRequirementBuilder.fromUri("cloudify").build());
+                Collections.EMPTY_LIST);
     }
 
     public static EnvVars getEnvironment(final AbstractBuild build, final TaskListener listener)
