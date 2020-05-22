@@ -1,5 +1,11 @@
 package co.cloudify.jenkins.plugin;
 
+import java.io.IOException;
+import java.util.Arrays;
+
+import javax.servlet.ServletException;
+import javax.ws.rs.WebApplicationException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -11,6 +17,7 @@ import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredenti
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.Extension;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import jenkins.model.GlobalConfiguration;
 
 /**
@@ -64,18 +71,6 @@ public class CloudifyConfiguration extends GlobalConfiguration {
         return FormValidation.validateRequired(value);
     }
 
-    public FormValidation doCheckUsername(@QueryParameter String value) {
-        return FormValidation.validateRequired(value);
-    }
-
-    public FormValidation doCheckPassword(@QueryParameter String value) {
-        return FormValidation.validateRequired(value);
-    }
-
-    public FormValidation doCheckTenant(@QueryParameter String value) {
-        return FormValidation.validateRequired(value);
-    }
-
     /**
      * @return The {@link CloudifyConfiguration} instance for this Jenkins
      *         installation.
@@ -84,25 +79,29 @@ public class CloudifyConfiguration extends GlobalConfiguration {
         return GlobalConfiguration.all().get(CloudifyConfiguration.class);
     }
 
-    /*
-     * Commented out for now, as we don't get username/password as inputs here
-     * anymore. We may resurrect this in the future and ask for username/password
-     * just for the purpose of testing the connection.
-     */
-//    public FormValidation doTestConnection(
-//            @QueryParameter final String host,
-//            @QueryParameter final String username,
-//            @QueryParameter final Secret password,
-//            @QueryParameter final String tenant,
-//            @QueryParameter final boolean secured) throws IOException, ServletException {
-//        try {
-//            CloudifyClient client = CloudifyClient.create(host, username, password.getPlainText(), secured, tenant);
-//            client.getManagerClient().getVersion();
-//            return FormValidation.ok("Connection successful");
-//        } catch (WebApplicationException ex) {
-//            return FormValidation.error(ex, "Connection error");
-//        }
-//    }
+    public FormValidation doTestConnection(
+            @QueryParameter final String host,
+            @QueryParameter final String username,
+            @QueryParameter final Secret password,
+            @QueryParameter final String tenant,
+            @QueryParameter final boolean secured) throws IOException, ServletException {
+        if (Arrays.asList(host, username, password.getPlainText()).stream().anyMatch(x -> StringUtils.isBlank(x))) {
+            return FormValidation.error(
+                    "To validate, please provide the Cloudify Manager host, username, and password to authenticate with");
+        }
+
+        try {
+            CloudifyClient client = CloudifyClient.create(
+                    StringUtils.trim(host),
+                    StringUtils.trim(username),
+                    StringUtils.trim(password.getPlainText()),
+                    secured, StringUtils.defaultString(tenant, defaultTenant));
+            client.getManagerClient().getVersion();
+            return FormValidation.ok("Connection successful");
+        } catch (WebApplicationException ex) {
+            return FormValidation.error(ex, "Connection error");
+        }
+    }
 
     public static CloudifyClient getCloudifyClient(final StandardUsernamePasswordCredentials creds,
             final String tenant) {

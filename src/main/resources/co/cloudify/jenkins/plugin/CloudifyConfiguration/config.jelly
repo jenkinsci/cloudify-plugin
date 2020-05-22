@@ -11,11 +11,19 @@
         <f:entry field="secured" title="${%Use SSL}">
             <f:checkbox />
         </f:entry>
-        <!--
-        May be resurrected in the future.
-        
+    </f:section>
+    <f:section title="${%Test connection}">
+        <p><b>Note:</b>The values below are only used for testing connection to Cloudify Manager. They will not be stored.</p>
+        <f:entry field="username" title="${%Username}">
+            <f:textbox />
+        </f:entry>
+        <f:entry field="password" title="${%Password}">
+            <f:password />
+        </f:entry>
+        <f:entry field="tenant" title="${%Tenant}">
+            <f:textbox />
+        </f:entry>
         <f:validateButton title="${%Test Connection}" progress="${%Testing...}" method="testConnection"
-            with="host,username,password,tenant,secured" />
-        -->
+            with="host,username,password,tenant,defaultTenant,secured" />
     </f:section>
 </j:jelly>
