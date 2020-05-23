@@ -58,11 +58,15 @@ import net.sf.json.JSONObject;
  */
 public class CloudifyPluginUtilities {
     public static StandardUsernamePasswordCredentials getCredentials(final String credentialsId, final Run<?, ?> run) {
-        return CredentialsProvider.findCredentialById(
+        StandardUsernamePasswordCredentials creds = CredentialsProvider.findCredentialById(
                 credentialsId,
                 StandardUsernamePasswordCredentials.class,
                 run,
                 Collections.EMPTY_LIST);
+        if (creds == null) {
+            throw new IllegalArgumentException(String.format("Couldn't find credentials by ID: '%s'", credentialsId));
+        }
+        return creds;
     }
 
     public static EnvVars getEnvironment(final AbstractBuild build, final TaskListener listener)
@@ -72,14 +76,6 @@ public class CloudifyPluginUtilities {
         // causing them to not be expanded at all ("${inputs}" will be returned as is).
 //        environment.overrideAll(build.getBuildVariables());
         return environment;
-    }
-
-    public static EnvVars getEnvironment(final Run run, final TaskListener listener)
-            throws InterruptedException, IOException {
-        if (run instanceof AbstractBuild) {
-            return getEnvironment((AbstractBuild) run, listener);
-        }
-        return null;
     }
 
     public static Map<String, Object> getMapFromMapOrString(final String str, final Map<String, ?> map) {

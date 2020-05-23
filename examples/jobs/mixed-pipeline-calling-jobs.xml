@@ -10,10 +10,13 @@
         <string>environment_prefix</string>
         <string>cfn_template_url</string>
         <string>tf_template_url</string>
+        <string>aws_credentials</string>
         <string>cfn_template_vars</string>
         <string>cfn_stack_name</string>
         <string>tf_template_vars</string>
         <string>arm_template_url</string>
+        <string>cfy_credentials</string>
+        <string>azure_credentials</string>
         <string>arm_template_vars</string>
       </parameters>
       <options/>
@@ -29,6 +32,27 @@
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>cfy_credentials</name>
+          <description>Cloudify credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>aws_credentials</name>
+          <description>AWS credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
+          <name>azure_credentials</name>
+          <description>Azure credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>environment_prefix</name>
           <description>Environment identifier prefix</description>
@@ -74,27 +98,6 @@
           <description>Resource group to create on Azure</description>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
-          <name>aws_credentials</name>
-          <description>Credentials for AWS</description>
-          <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
-          <required>true</required>
-        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
-          <name>azure_credentials</name>
-          <description>Credentials for Azure</description>
-          <defaultValue></defaultValue>
-          <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
-          <required>true</required>
-        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
-          <name>cfy_credentials</name>
-          <description>Credentials for Cloudify</description>
-          <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
-          <required>true</required>
-        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
@@ -103,6 +106,24 @@
     agent any
     
     parameters {
+        credentials(
+            credentialType: &apos;com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl&apos;,
+            defaultValue: &apos;&apos;,
+            description: &apos;Cloudify credentials&apos;,
+            name: &apos;cfy_credentials&apos;,
+            required: true)
+        credentials(
+            credentialType: &apos;com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl&apos;,
+            defaultValue: &apos;&apos;,
+            description: &apos;AWS credentials&apos;,
+            name: &apos;aws_credentials&apos;,
+            required: true)
+        credentials(
+            credentialType: &apos;com.microsoft.azure.util.AzureCredentials&apos;,
+            defaultValue: &apos;&apos;, 
+            description: &apos;Azure credentials&apos;,
+            name: &apos;azure_credentials&apos;,
+            required: true)
         string(name: &apos;environment_prefix&apos;, description: &apos;Environment identifier prefix&apos;, trim: true)
         string(name: &apos;tf_template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
         text(name: &apos;tf_template_vars&apos;, description: &apos;Terraform template variables (as YAML or JSON)&apos;)

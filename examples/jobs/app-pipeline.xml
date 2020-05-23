@@ -34,27 +34,23 @@
         <hudson.model.StringParameterDefinition>
           <name>tenant</name>
           <description>Cloudify tenant to use (empty for default)</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.ChoiceParameterDefinition>
           <name>infra_type</name>
           <description>Type of environment to create</description>
-          <choices class="java.util.Arrays$ArrayList">
-            <a class="string-array">
-              <string>aws-using-terraform</string>
-              <string>aws</string>
-              <string>azure</string>
-              <string>azure-arm</string>
-              <string>gcp</string>
-              <string>openstack</string>
-            </a>
+          <choices>
+            <string>aws-using-terraform</string>
+            <string>aws</string>
+            <string>azure</string>
+            <string>azure-arm</string>
+            <string>gcp</string>
+            <string>openstack</string>
           </choices>
         </hudson.model.ChoiceParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>Name of environment to create</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
@@ -65,7 +61,9 @@
     agent any
     
     parameters {
-        credentials(name: &apos;cfy_credentials&apos;, description: &apos;Cloudify credentials&apos;, defaultValue: &apos;&apos;, credentialType: &quot;Username with password&quot;)
+        credentials(name: &apos;cfy_credentials&apos;, description: &apos;Cloudify credentials&apos;, defaultValue: &apos;&apos;,
+            credentialType: &quot;com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl&quot;,
+            required: true)
         string(name: &apos;tenant&apos;, description: &apos;Cloudify tenant to use (empty for default)&apos;, trim: true)
         choice(name: &apos;infra_type&apos;, description: &apos;Type of environment to create&apos;, choices: [
             &apos;aws-using-terraform&apos;,
@@ -113,8 +111,7 @@
             }
         }
     }
-}
-</script>
+}</script>
     <sandbox>true</sandbox>
   </definition>
   <triggers/>
