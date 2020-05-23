@@ -12,7 +12,7 @@
 		"delete-blueprint",
 		"delete-environment",
 		"execute-workflow",
-		"mixed-pipeline",
+		"mixed-pipeline-calling-steps",
 		"mixed-pipeline-calling-jobs",
 		"terraform-build-step",
 		"upload-blueprint"

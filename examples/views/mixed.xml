@@ -6,7 +6,7 @@
   <properties class="hudson.model.View$PropertyList"/>
   <jobNames>
     <comparator class="hudson.util.CaseInsensitiveComparator"/>
-    <string>mixed-pipeline</string>
+    <string>mixed-pipeline-calling-steps</string>
   </jobNames>
   <jobFilters/>
   <columns>
