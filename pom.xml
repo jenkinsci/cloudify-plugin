@@ -12,13 +12,11 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
-        <jenkins.version>2.60.2</jenkins.version>
+        <jenkins.version>2.222.3</jenkins.version>
         <java.level>8</java.level>
-		<!-- Needs to be called this way... it's used by the parent project -->
         <slf4jVersion>1.7.30</slf4jVersion>
-        <jersey.version>2.28</jersey.version>
-        <jackson.version>2.10.3</jackson.version>
-        <git.version>3.9.4</git.version>
+        <jersey.version>2.31</jersey.version>
+        <jackson.version>2.11.0</jackson.version>
         <credentials.version>2.3.7</credentials.version>
     </properties>
     <name>Cloudify Plugin for Jenkins</name>
@@ -52,53 +50,25 @@
 		include these libs like this.
 		-->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>jackson2-api</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>${jackson.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.xml.bind</groupId>
-                    <artifactId>jakarta.xml.bind-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+		<!-- Needed for YAML serialization. -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-		<!--
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>jackson2-api</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		-->
-		<!-- Needed for YAML serialization. -->
-		<!--
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>${jackson.dataformat.yaml.version}</version>
-		</dependency>
-		-->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials</artifactId>
             <version>${credentials.version}</version>
         </dependency>
-		<!-- Runtime dependencies. We ship with the latest version of Jersey that 
-			is supported by Jenkins' POM. -->
+		<!--
+        Runtime dependencies. We ship with the latest version of Jersey that 
+		supported by Jenkins' POM.
+        -->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
@@ -156,6 +126,15 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.11.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
         <pluginManagement>
             <plugins>
@@ -234,10 +213,13 @@
             <properties>
                 <azure-credentials.version>4.0.2</azure-credentials.version>
                 <azure-commons.version>1.0.4</azure-commons.version>
+                <git.version>3.9.4</git.version>
             </properties>
             <dependencies>
-				<!-- In development mode, include some convenience plugins. These aren't 
-					mandatory for release. -->
+				<!--
+                In development mode, include some convenience plugins. These aren't 
+				mandatory for release.
+                -->
                 <dependency>
                     <groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
                     <artifactId>rebuild</artifactId>
@@ -273,74 +255,69 @@
                     <artifactId>aws-credentials</artifactId>
                     <version>1.28</version>
                 </dependency>
-                <!--
-                Pin these versions, to make the plugins above work nicely together.
-                -->
-                <dependency>
-                    <groupId>org.jenkins-ci.plugins</groupId>
-                    <artifactId>junit</artifactId>
-                    <version>1.20</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.jenkins-ci</groupId>
-                    <artifactId>annotation-indexer</artifactId>
-                    <version>1.12</version>
-                </dependency>
-                <dependency>
-                    <groupId>joda-time</groupId>
-                    <artifactId>joda-time</artifactId>
-                    <version>2.9.9</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.jcraft</groupId>
-                    <artifactId>jsch</artifactId>
-                    <version>0.1.54</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpcore</artifactId>
-                    <version>4.4.6</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.squareup.retrofit2</groupId>
-                    <artifactId>retrofit</artifactId>
-                    <version>2.6.2</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.squareup.okhttp3</groupId>
-                    <artifactId>okhttp</artifactId>
-                    <version>3.12.6</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.jenkins-ci.plugins</groupId>
-                    <artifactId>script-security</artifactId>
-                    <version>1.53</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.jenkins-ci.plugins</groupId>
-                    <artifactId>structs</artifactId>
-                    <version>1.17</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.jenkins-ci.plugins</groupId>
-                    <artifactId>credentials</artifactId>
-                    <version>2.1.18</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.jenkins-ci.plugins</groupId>
-                    <artifactId>credentials-binding</artifactId>
-                    <version>1.16</version>
-                </dependency>
             </dependencies>
-        </profile>
-        <profile>
-            <id>latest</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <jenkins.version>2.222.3</jenkins.version>
-            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <!--
+                    Pin these versions, to make the plugins above work nicely together.
+                    -->
+                    <dependency>
+                        <groupId>org.jenkins-ci.plugins</groupId>
+                        <artifactId>junit</artifactId>
+                        <version>1.20</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jenkins-ci</groupId>
+                        <artifactId>annotation-indexer</artifactId>
+                        <version>1.12</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>joda-time</groupId>
+                        <artifactId>joda-time</artifactId>
+                        <version>2.9.9</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.jcraft</groupId>
+                        <artifactId>jsch</artifactId>
+                        <version>0.1.54</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.httpcomponents</groupId>
+                        <artifactId>httpcore</artifactId>
+                        <version>4.4.6</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.squareup.retrofit2</groupId>
+                        <artifactId>retrofit</artifactId>
+                        <version>2.6.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.squareup.okhttp3</groupId>
+                        <artifactId>okhttp</artifactId>
+                        <version>3.12.6</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jenkins-ci.plugins</groupId>
+                        <artifactId>script-security</artifactId>
+                        <version>1.53</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jenkins-ci.plugins</groupId>
+                        <artifactId>structs</artifactId>
+                        <version>1.20</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jenkins-ci.plugins</groupId>
+                        <artifactId>credentials</artifactId>
+                        <version>2.1.18</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jenkins-ci.plugins</groupId>
+                        <artifactId>credentials-binding</artifactId>
+                        <version>1.16</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
         </profile>
     </profiles>
 </project>
