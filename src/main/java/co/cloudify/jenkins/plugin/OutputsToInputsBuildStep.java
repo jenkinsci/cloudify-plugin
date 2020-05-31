@@ -97,8 +97,8 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
         FilePath inputsFile = workspace.child(inputsLocation);
         FilePath outputsFile = workspace.child(outputsLocation);
 
-        Map<String, Map<String, String>> mappingAsMap = CloudifyPluginUtilities.readYamlOrJson(workspace, mapping,
-                mappingLocation);
+        Map<String, Map<String, String>> mappingAsMap = CloudifyPluginUtilities.readYamlOrJson(workspace,
+                mappingLocation, mapping);
         Map<String, Object> results = new HashMap<String, Object>();
         CloudifyPluginUtilities.transformOutputsFile(outputsFile, mappingAsMap, results);
         inputsFile.act(new JsonFileWriterFileCallable(CloudifyPluginUtilities.jsonFromMap(results)));

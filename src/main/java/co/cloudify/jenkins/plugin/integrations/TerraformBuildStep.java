@@ -35,7 +35,9 @@ public class TerraformBuildStep extends IntegrationBuildStep {
     private String variablesAsString;
     private Map<String, Object> variables;
     private String environmentVariablesAsString;
+    private String variablesFile;
     private Map<String, String> environmentVariables;
+    private String environmentVariablesFile;
 
     @DataBoundConstructor
     public TerraformBuildStep() {
@@ -58,6 +60,15 @@ public class TerraformBuildStep extends IntegrationBuildStep {
     @DataBoundSetter
     public void setVariablesAsString(String parameters) {
         this.variablesAsString = parameters;
+    }
+
+    public String getVariablesFile() {
+        return variablesFile;
+    }
+
+    @DataBoundSetter
+    public void setVariablesFile(String variablesFile) {
+        this.variablesFile = variablesFile;
     }
 
     public Map<String, Object> getVariables() {
@@ -87,6 +98,15 @@ public class TerraformBuildStep extends IntegrationBuildStep {
         this.environmentVariables = environmentVariables;
     }
 
+    public String getEnvironmentVariablesFile() {
+        return environmentVariablesFile;
+    }
+
+    @DataBoundSetter
+    public void setEnvironmentVariablesFile(String environmentVariablesFile) {
+        this.environmentVariablesFile = environmentVariablesFile;
+    }
+
     @Override
     protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
             final FilePath workspace,
@@ -94,13 +114,17 @@ public class TerraformBuildStep extends IntegrationBuildStep {
             final CloudifyClient cloudifyClient) throws Exception {
         String templateUrl = CloudifyPluginUtilities.expandString(envVars, this.templateUrl);
         String variablesAsString = CloudifyPluginUtilities.expandString(envVars, this.variablesAsString);
+        String variablesFile = CloudifyPluginUtilities.expandString(envVars, this.variablesFile);
         String environmentVariablesAsString = CloudifyPluginUtilities.expandString(envVars,
                 this.environmentVariablesAsString);
+        String environmentVariablesFile = CloudifyPluginUtilities.expandString(envVars, this.environmentVariablesFile);
 
-        Map<String, Object> variablesMap = CloudifyPluginUtilities.getMapFromMapOrString(variablesAsString,
+        Map<String, Object> variablesMap = CloudifyPluginUtilities.getCombinedMap(workspace, variablesFile,
+                variablesAsString,
                 this.variables);
         Map<String, String> envVariablesMap = CloudifyPluginUtilities
-                .getMapFromMapOrString(environmentVariablesAsString, this.environmentVariables)
+                .getCombinedMap(workspace, environmentVariablesFile, environmentVariablesAsString,
+                        this.environmentVariables)
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
@@ -151,9 +175,11 @@ public class TerraformBuildStep extends IntegrationBuildStep {
                 .appendSuper(super.toString())
                 .append("templateUrl", templateUrl)
                 .append("variablesAsString", variablesAsString)
+                .append("variablesFile", variablesFile)
                 .append("variables", variables)
                 .append("environmentVariablesAsString", environmentVariablesAsString)
                 .append("environmentVariables", environmentVariables)
+                .append("environmentVariablesFile", environmentVariablesFile)
                 .toString();
     }
 }

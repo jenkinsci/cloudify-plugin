@@ -43,6 +43,7 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
     private String stackName;
     private Map<String, Object> parameters;
     private String parametersAsString;
+    private String parametersFile;
     private String templateUrl;
 
     @DataBoundConstructor
@@ -122,6 +123,15 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         this.parameters = parameters;
     }
 
+    public String getParametersFile() {
+        return parametersFile;
+    }
+
+    @DataBoundSetter
+    public void setParametersFile(String parametersFile) {
+        this.parametersFile = parametersFile;
+    }
+
     public String getTemplateUrl() {
         return templateUrl;
     }
@@ -141,13 +151,15 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         String regionName = CloudifyPluginUtilities.expandString(envVars, this.regionName);
         String stackName = CloudifyPluginUtilities.expandString(envVars, this.stackName);
         String parametersAsString = CloudifyPluginUtilities.expandString(envVars, this.parametersAsString);
+        String parametersFile = CloudifyPluginUtilities.expandString(envVars, this.parametersFile);
         String templateUrl = CloudifyPluginUtilities.expandString(envVars, this.templateUrl);
 
         String effectiveAccessKeyId = CloudifyPluginUtilities.getPassword(this.accessKeyId, accessKeyIdAsString);
         String effectiveSecretAccessKey = CloudifyPluginUtilities.getPassword(this.secretAccessKey,
                 secretAccessKeyAsString);
 
-        Map<String, Object> parametersMap = CloudifyPluginUtilities.getMapFromMapOrString(parametersAsString,
+        Map<String, Object> parametersMap = CloudifyPluginUtilities.getCombinedMap(workspace, parametersFile,
+                parametersAsString,
                 this.parameters);
 
         // As of AWS plugin 2.3.2, we need to convert the parameters to a list.
@@ -215,6 +227,7 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
                 .append("templateUrl", templateUrl)
                 .append("parametersAsString", parametersAsString)
                 .append("parameters", parameters)
+                .append("parametersFile", parametersFile)
                 .toString();
     }
 }

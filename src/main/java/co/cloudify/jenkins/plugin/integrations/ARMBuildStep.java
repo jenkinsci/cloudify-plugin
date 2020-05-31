@@ -38,6 +38,7 @@ public class ARMBuildStep extends IntegrationBuildStep {
     private String resourceGroupName;
     private Map<String, Object> parameters;
     private String parametersAsString;
+    private String parametersFile;
     private String templateFile;
 
     @DataBoundConstructor
@@ -126,6 +127,15 @@ public class ARMBuildStep extends IntegrationBuildStep {
         this.parametersAsString = parametersAsString;
     }
 
+    public String getParametersFile() {
+        return parametersFile;
+    }
+
+    @DataBoundSetter
+    public void setParametersFile(String parametersFile) {
+        this.parametersFile = parametersFile;
+    }
+
     public String getTemplateFile() {
         return templateFile;
     }
@@ -147,9 +157,11 @@ public class ARMBuildStep extends IntegrationBuildStep {
         String location = CloudifyPluginUtilities.expandString(envVars, this.location);
         String resourceGroupName = CloudifyPluginUtilities.expandString(envVars, this.resourceGroupName);
         String parametersAsString = CloudifyPluginUtilities.expandString(envVars, this.parametersAsString);
+        String parametersFile = CloudifyPluginUtilities.expandString(envVars, this.parametersFile);
         String templateFile = CloudifyPluginUtilities.expandString(envVars, this.templateFile);
 
-        Map<String, Object> variablesMap = CloudifyPluginUtilities.getMapFromMapOrString(parametersAsString,
+        Map<String, Object> variablesMap = CloudifyPluginUtilities.getCombinedMap(workspace, parametersFile,
+                parametersAsString,
                 this.parameters);
 
         String effectiveClientSecret = CloudifyPluginUtilities.getPassword(this.clientSecret, clientSecretAsString);
@@ -206,6 +218,7 @@ public class ARMBuildStep extends IntegrationBuildStep {
                 .append("resourceGroupName", resourceGroupName)
                 .append("parameters", parameters)
                 .append("parametersAsString", parametersAsString)
+                .append("parametersFile", parametersFile)
                 .append("templateFile", templateFile)
                 .toString();
     }

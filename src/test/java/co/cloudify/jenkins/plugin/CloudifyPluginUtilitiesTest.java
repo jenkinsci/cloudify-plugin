@@ -27,23 +27,23 @@ public class CloudifyPluginUtilitiesTest {
     public static File tempDir;
 
     @Test
-    public void testGetMapFromMapOrStringJsonString() {
+    public void testGetCombinedMapJsonString() throws Exception {
         String jsonAsString = "{\"key\": \"value\"}";
-        Map<String, Object> result = CloudifyPluginUtilities.getMapFromMapOrString(jsonAsString, null);
+        Map<String, Object> result = CloudifyPluginUtilities.getCombinedMap(null, null, jsonAsString, null);
         assertEquals(Collections.singletonMap("key", "value"), result);
     }
 
     @Test
-    public void testGetMapFromMapOrStringYamlString() {
+    public void testGetCombinedMapYamlString() throws Exception {
         String yamlAsString = "key: value";
-        Map<String, Object> result = CloudifyPluginUtilities.getMapFromMapOrString(yamlAsString, null);
+        Map<String, Object> result = CloudifyPluginUtilities.getCombinedMap(null, null, yamlAsString, null);
         assertEquals(Collections.singletonMap("key", "value"), result);
     }
 
     @Test
-    public void testGetMapFromMapOrStringMap() {
+    public void testGetCombinedMapFromMap() throws Exception {
         Map<String, Object> input = Collections.singletonMap("key", "value");
-        Map<String, Object> result = CloudifyPluginUtilities.getMapFromMapOrString(null, input);
+        Map<String, Object> result = CloudifyPluginUtilities.getCombinedMap(null, null, null, input);
         assertEquals(input, result);
     }
 
@@ -91,15 +91,15 @@ public class CloudifyPluginUtilitiesTest {
         FilePath workspacePath = new FilePath(tempDir);
         String fileLocation = "testCreateMappingFromFileOnly.yaml";
         FileUtils.write(new File(tempDir, fileLocation), "key: value", StandardCharsets.UTF_8);
-        Map<String, Map<String, String>> result = CloudifyPluginUtilities.readYamlOrJson(workspacePath, null,
-                fileLocation);
+        Map<String, Map<String, String>> result = CloudifyPluginUtilities.readYamlOrJson(workspacePath, fileLocation,
+                null);
         assertEquals(Collections.singletonMap("key", "value"), result);
     }
 
     @Test
     public void testReadYamlOrJsonFromStringOnly() throws Exception {
         assertEquals(Collections.singletonMap("key", "value"),
-                CloudifyPluginUtilities.readYamlOrJson(null, "key: value", null));
+                CloudifyPluginUtilities.readYamlOrJson(null, null, "key: value"));
     }
 
     @Test
@@ -107,8 +107,8 @@ public class CloudifyPluginUtilitiesTest {
         FilePath workspacePath = new FilePath(tempDir);
         String fileLocation = "testCreateMappingFromFileOnly.yaml";
         FileUtils.write(new File(tempDir, fileLocation), "key1: value1", StandardCharsets.UTF_8);
-        Map<String, Map<String, String>> result = CloudifyPluginUtilities.readYamlOrJson(workspacePath, "key2: value2",
-                fileLocation);
+        Map<String, Map<String, String>> result = CloudifyPluginUtilities.readYamlOrJson(workspacePath,
+                fileLocation, "key2: value2");
         Map<String, Object> expectedResult = new LinkedHashMap<>();
         expectedResult.put("key1", "value1");
         expectedResult.put("key2", "value2");

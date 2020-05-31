@@ -31,6 +31,9 @@
     <f:entry title="${%Parameters}" field="parametersAsString">
         <f:textarea />
     </f:entry>
+    <f:entry title="${%Parameters File}" field="parametersFile">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%Print environment inputs}" field="echoInputs">
         <f:checkbox />
     </f:entry>

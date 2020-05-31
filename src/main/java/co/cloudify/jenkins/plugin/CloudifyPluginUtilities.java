@@ -20,6 +20,7 @@ import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
@@ -79,21 +80,12 @@ public class CloudifyPluginUtilities {
     }
 
     /**
-     * Given a string and a map, returns a map according to these rules:
-     * 
-     * If the string is not empty, it is parsed as YAML/JSON and the result is returned.
-     * Otherwise, a {@link Map} equivalent to the one provided, is returned.
-     * 
-     * @param str
-     * @param map
-     * 
-     * @return A {@link Map} according to the rules set out in the description.
+     * Returns a combined map from file contents, string contents and an actual {@link Map}.
      */
-    public static Map<String, Object> getMapFromMapOrString(final String str, final Map<String, ?> map) {
-        Map<String, Object> m = new LinkedHashMap<>();
-        if (StringUtils.isNotBlank(str)) {
-            m.putAll(readYamlOrJson(str));
-        } else if (map != null) {
+    public static Map<String, Object> getCombinedMap(final FilePath workspace, final String filename, final String str,
+            final Map<String, ?> map) throws IOException, InterruptedException {
+        Map<String, Object> m = readYamlOrJson(workspace, filename, str);
+        if (map != null) {
             m.putAll(map);
         }
         return m;
@@ -227,12 +219,13 @@ public class CloudifyPluginUtilities {
      * @throws IOException          Thrown by underlying code.
      * @throws InterruptedException Thrown by underlying code.
      */
-    public static <T> Map<String, T> readYamlOrJson(final FilePath workspace, final String contents,
-            final String contentsFile) throws IOException, InterruptedException {
+    public static <T> Map<String, T> readYamlOrJson(final FilePath workspace, final String contentsFile,
+            final String contents) throws IOException, InterruptedException {
         Map mapping = new LinkedHashMap<>();
         if (contentsFile != null) {
-            FilePath mappingFile = workspace.child(contentsFile);
-            mapping.putAll(readYamlOrJson(mappingFile));
+            Validate.notNull(workspace, "'contentsFile' was provided, but workspace location is null");
+            FilePath contentsFilePath = workspace.child(contentsFile);
+            mapping.putAll(readYamlOrJson(contentsFilePath));
         }
         if (contents != null) {
             mapping.putAll(readYamlOrJson(contents));
@@ -293,7 +286,7 @@ public class CloudifyPluginUtilities {
             FilePath expectedLocation = workspace.child(inputsFile);
             if (expectedLocation.exists()) {
                 jenkinsLog.println(String.format("Reading inputs from %s", expectedLocation));
-                Map<String, Map<String, String>> mappingJson = readYamlOrJson(workspace, mapping, mappingFile);
+                Map<String, Map<String, String>> mappingJson = readYamlOrJson(workspace, mappingFile, mapping);
                 if (mappingJson != null) {
                     transformOutputsFile(expectedLocation, mappingJson, inputsMap);
                 }

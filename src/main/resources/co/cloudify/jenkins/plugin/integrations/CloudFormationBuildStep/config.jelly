@@ -13,6 +13,9 @@
     <f:entry title="${%Template parameters}" field="parametersAsString">
         <f:textarea />
     </f:entry>
+    <f:entry title="${%Parameters File}" field="parametersFile">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%Access key ID}" field="accessKeyIdAsString">
         <f:textbox />
     </f:entry>
