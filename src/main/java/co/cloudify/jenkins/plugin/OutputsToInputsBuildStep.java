@@ -76,6 +76,14 @@ public class OutputsToInputsBuildStep extends CloudifyBuildStep {
         this.inputsLocation = inputsLocation;
     }
 
+    /**
+     * This step doesn't use Cloudify at all, so no client is needed.
+     */
+    @Override
+    protected boolean isCloudifyClientRequired() {
+        return false;
+    }
+
     @Override
     protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
             final FilePath workspace,

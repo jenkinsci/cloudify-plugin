@@ -69,6 +69,17 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
     }
 
     /**
+     * By default, a Cloudifys step requires a {@link CloudifyClient} instance to operate.
+     * Otherwise, the step should override this method to return <code>false</code>.
+     * 
+     * @return <code>true</code> If a {@link CloudifyClient} instance should
+     *         be prepared and passed to the actual step.
+     */
+    protected boolean isCloudifyClientRequired() {
+        return true;
+    }
+
+    /**
      * This should be the main, "real" implementation of
      * {@link #perform(AbstractBuild, Launcher, BuildListener)}. Implementations
      * need not worry about using the listener, or handle top-level exceptions; this
@@ -88,6 +99,10 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
             FilePath workspace, EnvVars envVars, CloudifyClient cloudifyClient) throws Exception;
 
     private CloudifyClient getCloudifyClient(final Run<?, ?> run) throws AbortException {
+        if (!isCloudifyClientRequired()) {
+            return null;
+        }
+
         String username, password;
         if (StringUtils.isNotBlank(this.username)) {
             username = this.username;
