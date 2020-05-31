@@ -1,11 +1,6 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -85,17 +80,6 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
 
     protected abstract BlueprintUploadSpec getBlueprintUploadSpec() throws Exception;
 
-    protected File prepareBlueprintDirectory(final String blueprintResourceName) throws IOException {
-        Path tempBlueprintDir = Files.createTempDirectory("cfy");
-        Path blueprintPath = tempBlueprintDir.resolve("blueprint.yaml");
-        ClassLoader classLoader = getClass().getClassLoader();
-        try (InputStream resourceAsStream = classLoader.getResourceAsStream(blueprintResourceName)) {
-            Files.copy(resourceAsStream, blueprintPath);
-        }
-
-        return blueprintPath.toFile();
-    }
-
     @Override
     protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
             EnvVars envVars, CloudifyClient cloudifyClient) throws Exception {
@@ -111,8 +95,9 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
             blueprint = blueprintsClient.get(blueprintId);
         } catch (BlueprintNotFoundException ex) {
             logger.println(String.format("Blueprint '%s' doesn't exist; uploading it...", blueprintId));
-            BlueprintUploadSpec uploadSpec = getBlueprintUploadSpec();
-            blueprint = uploadSpec.upload(blueprintsClient, blueprintId);
+            try (BlueprintUploadSpec uploadSpec = getBlueprintUploadSpec()) {
+                blueprint = uploadSpec.upload(blueprintsClient, blueprintId);
+            }
         }
 
         String envDataLocation = CloudifyPluginUtilities.expandString(envVars, this.envDataLocation);

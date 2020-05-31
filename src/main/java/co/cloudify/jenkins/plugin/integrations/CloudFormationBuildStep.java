@@ -192,7 +192,7 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
 
     @Override
     protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
-        return new BlueprintUploadSpec(prepareBlueprintDirectory("/blueprints/cfn/blueprint.yaml"));
+        return new BlueprintUploadSpec("/blueprints/cfn/blueprint.yaml");
     }
 
     @Symbol("cfyCloudFormation")

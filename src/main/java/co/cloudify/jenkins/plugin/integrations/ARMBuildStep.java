@@ -189,7 +189,7 @@ public class ARMBuildStep extends IntegrationBuildStep {
 
     @Override
     protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
-        return new BlueprintUploadSpec(prepareBlueprintDirectory("/blueprints/arm/blueprint.yaml"));
+        return new BlueprintUploadSpec("/blueprints/arm/blueprint.yaml");
     }
 
     @Symbol("cfyAzureArm")

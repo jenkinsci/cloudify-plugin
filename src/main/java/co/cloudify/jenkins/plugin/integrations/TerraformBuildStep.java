@@ -184,7 +184,7 @@ public class TerraformBuildStep extends IntegrationBuildStep {
 
     @Override
     protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
-        return new BlueprintUploadSpec(prepareBlueprintDirectory("/blueprints/terraform/blueprint.yaml"));
+        return new BlueprintUploadSpec("/blueprints/terraform/blueprint.yaml");
     }
 
     @Symbol("cfyTerraform")

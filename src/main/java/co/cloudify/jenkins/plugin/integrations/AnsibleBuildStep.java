@@ -268,7 +268,7 @@ public class AnsibleBuildStep extends IntegrationBuildStep {
 
     @Override
     protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
-        return new BlueprintUploadSpec(prepareBlueprintDirectory("/blueprints/ansible/blueprint.yaml"));
+        return new BlueprintUploadSpec("/blueprints/ansible/blueprint.yaml");
     }
 
     @Symbol("cfyAnsible")
