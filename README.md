@@ -12,10 +12,6 @@ For a walk-through, refer to the following demo: https://drive.google.com/open?i
     * [Inputs Mapping File](#inputs-mapping-file)
 * [Installation](#installation)
 * [Configuration](#configuration)
-* [Parameter Types](#parameter-types)
-    * [Cloudify Blueprint Selector](#cloudify-blueprint-selector)
-    * [Cloudify Deployment Selector](#cloudify-deployment-selector)
-    * [Cloudify Constrained Input Value Selector](#cloudify-constrained-input-value-selector)
 * [Available Build Steps](#available-build-steps)
     * [Upload Cloudify Plugin](#upload-cloudify-plugin)
     * [Upload Cloudify Blueprint](#upload-cloudify-blueprint)
@@ -147,39 +143,6 @@ via Jenkins' "Advanced" panel in the "Manage Plugins" section.
 
 You should define the Cloudify Manager endpoint and credentials in Jenkins' console ("Manage Jenkins" ->
 "Configure System", look for "Cloudify Manager").
-
-## Parameter Types
-
-Jenkins provides the capability of parameterized builds. Users can configure jobs and pipelines to
-accept parameters prior to execution.
-
-Cloudify's plugin for Jenkins provides a few parameter types, which can simplify the definition of
-jobs and pipelines.
-
-The following parameter types are available:
-
-### Cloudify Blueprint Selector
-
-During job definition, the job admin provides a parameter name (in the "Name" field),
-as well as an optional filter.
-
-When running the job with parameters, the user will be shown a dropdown box, containing a list of
-blueprints from Cloudify Manager. If a filter was provided, then the list will only contain
-blueprints with ID's containing the filter string.
-
-### Cloudify Deployment Selector
-
-Similar to the Blueprint Selector, however this parameter type displays a dropdown box containing
-existing deployment ID's.
-
-### Cloudify Constrained Input Value Selector
-
-Given (during job definition) a blueprint ID and an input name, this parameter type
-will render a dropdown box containing all allowed values for the input.
-
-For this to work, the input must be defined in the blueprint so it has exactly
-one constraint of type `valid_values` (it may have other constraints, but exactly one of them
-must be of type `valid_values`).
 
 ## Available Build Steps
 
