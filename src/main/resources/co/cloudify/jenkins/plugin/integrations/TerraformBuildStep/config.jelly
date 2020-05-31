@@ -7,6 +7,21 @@
     <f:entry title="${%Environment ID}" field="deploymentId">
         <f:textbox />
     </f:entry>
+    <f:block>
+        <table>
+            <f:optionalBlock title="Customize Terraform's Paths">
+                <f:entry title="${%Terraform Executable}" field="executable">
+                    <f:textbox />
+                </f:entry>
+                <f:entry title="${%Terraform Plugins Directory}" field="pluginsDirectory">
+                    <f:textbox />
+                </f:entry>
+                <f:entry title="${%Terraform Storage Directory}" field="storageDirectory">
+                    <f:textbox />
+                </f:entry>
+            </f:optionalBlock>
+        </table>
+    </f:block>
     <f:entry title="${%Template URL}" field="templateUrl">
         <f:textbox />
     </f:entry>

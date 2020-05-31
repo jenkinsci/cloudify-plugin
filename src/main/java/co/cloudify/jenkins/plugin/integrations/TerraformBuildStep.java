@@ -31,6 +31,9 @@ import hudson.util.FormValidation;
  * @author Isaac Shabtay
  */
 public class TerraformBuildStep extends IntegrationBuildStep {
+    private String executable;
+    private String pluginsDirectory;
+    private String storageDirectory;
     private String templateUrl;
     private String variablesAsString;
     private Map<String, Object> variables;
@@ -42,6 +45,33 @@ public class TerraformBuildStep extends IntegrationBuildStep {
     @DataBoundConstructor
     public TerraformBuildStep() {
         super();
+    }
+
+    public String getExecutable() {
+        return executable;
+    }
+
+    @DataBoundSetter
+    public void setExecutable(String executable) {
+        this.executable = executable;
+    }
+
+    public String getPluginsDirectory() {
+        return pluginsDirectory;
+    }
+
+    @DataBoundSetter
+    public void setPluginsDirectory(String pluginsDirectory) {
+        this.pluginsDirectory = pluginsDirectory;
+    }
+
+    public String getStorageDirectory() {
+        return storageDirectory;
+    }
+
+    @DataBoundSetter
+    public void setStorageDirectory(String storageDirectory) {
+        this.storageDirectory = storageDirectory;
     }
 
     public String getTemplateUrl() {
@@ -112,6 +142,9 @@ public class TerraformBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
+        String executable = CloudifyPluginUtilities.expandString(envVars, this.executable);
+        String pluginsDirectory = CloudifyPluginUtilities.expandString(envVars, this.pluginsDirectory);
+        String storageDirectory = CloudifyPluginUtilities.expandString(envVars, this.storageDirectory);
         String templateUrl = CloudifyPluginUtilities.expandString(envVars, this.templateUrl);
         String variablesAsString = CloudifyPluginUtilities.expandString(envVars, this.variablesAsString);
         String variablesFile = CloudifyPluginUtilities.expandString(envVars, this.variablesFile);
@@ -130,6 +163,9 @@ public class TerraformBuildStep extends IntegrationBuildStep {
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         entry -> (entry.getValue() != null ? entry.getValue().toString() : null)));
 
+        putIfNonNullValue(operationInputs, "terraform_executable", executable);
+        putIfNonNullValue(operationInputs, "terraform_plugins_dir", pluginsDirectory);
+        putIfNonNullValue(operationInputs, "terraform_storage_dir", storageDirectory);
         operationInputs.put("module_source", templateUrl);
         operationInputs.put("variables", variablesMap);
         operationInputs.put("environment_variables", envVariablesMap);
@@ -173,6 +209,9 @@ public class TerraformBuildStep extends IntegrationBuildStep {
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
+                .append("executable", executable)
+                .append("pluginsDirectory", pluginsDirectory)
+                .append("storageDirectory", storageDirectory)
                 .append("templateUrl", templateUrl)
                 .append("variablesAsString", variablesAsString)
                 .append("variablesFile", variablesFile)
