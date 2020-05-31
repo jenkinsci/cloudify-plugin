@@ -10,6 +10,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.client.DeploymentsClient;
+import co.cloudify.rest.helpers.DeploymentsHelper;
 import co.cloudify.rest.model.Deployment;
 import co.cloudify.rest.model.ListResponse;
 import hudson.EnvVars;
@@ -84,7 +85,8 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
         String deploymentId = CloudifyPluginUtilities.expandString(envVars, this.deploymentId);
         DeploymentsClient deploymentsClient = cloudifyClient.getDeploymentsClient();
         Deployment deployment = deploymentsClient.get(deploymentId);
-        CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId, ignoreFailure, debugOutput);
+        CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId,
+                DeploymentsHelper.DEFAULT_POLLING_INTERVAL, ignoreFailure, debugOutput);
 
         if (deleteBlueprintIfLast) {
             String blueprintId = deployment.getBlueprintId();

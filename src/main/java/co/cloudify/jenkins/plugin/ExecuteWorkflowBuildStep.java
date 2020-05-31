@@ -10,6 +10,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.rest.client.CloudifyClient;
+import co.cloudify.rest.client.ExecutionsClient;
 import co.cloudify.rest.helpers.ExecutionFollowCallback;
 import co.cloudify.rest.helpers.ExecutionsHelper;
 import co.cloudify.rest.model.Execution;
@@ -112,7 +113,8 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
             executionParametersAsMap = CloudifyPluginUtilities.readYamlOrJson(executionParameters);
         }
 
-        Execution execution = cloudifyClient.getExecutionsClient().start(deploymentId, workflowId,
+        ExecutionsClient executionsClient = cloudifyClient.getExecutionsClient();
+        Execution execution = executionsClient.start(deploymentId, workflowId,
                 executionParametersAsMap);
         jenkinsLog.println(String.format("Execution started; id=%s", execution.getId()));
 
@@ -120,8 +122,9 @@ public class ExecuteWorkflowBuildStep extends CloudifyBuildStep {
             jenkinsLog.println("Waiting for execution to end...");
             ExecutionFollowCallback callback = CloudifyPluginUtilities.getExecutionFollowCallback(printLogs,
                     debugOutput, cloudifyClient, jenkinsLog);
-            execution = ExecutionsHelper.followExecution(cloudifyClient, execution, callback);
-            ExecutionsHelper.validate(execution, "Execution did not end successfully");
+            execution = ExecutionsHelper.followExecution(executionsClient, execution, callback,
+                    ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
+            ExecutionsHelper.validateCompleted(execution, "Execution did not end successfully");
             jenkinsLog.println("Execution ended successfully");
         }
     }

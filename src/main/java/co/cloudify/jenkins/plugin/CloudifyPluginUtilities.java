@@ -78,6 +78,17 @@ public class CloudifyPluginUtilities {
         return environment;
     }
 
+    /**
+     * Given a string and a map, returns a map according to these rules:
+     * 
+     * If the string is not empty, it is parsed as YAML/JSON and the result is returned.
+     * Otherwise, a {@link Map} equivalent to the one provided, is returned.
+     * 
+     * @param str
+     * @param map
+     * 
+     * @return A {@link Map} according to the rules set out in the description.
+     */
     public static Map<String, Object> getMapFromMapOrString(final String str, final Map<String, ?> map) {
         Map<String, Object> m = new LinkedHashMap<>();
         if (StringUtils.isNotBlank(str)) {
@@ -217,19 +228,21 @@ public class CloudifyPluginUtilities {
      * @throws IOException          Thrown by underlying code.
      * @throws InterruptedException Thrown by underlying code.
      */
-    public static Map<String, Map<String, String>> createMapping(final FilePath workspace, final String mappingString,
+    public static <T> Map<String, T> readYamlOrJson(final FilePath workspace, final String mappingString,
             final String mappingLocation) throws IOException, InterruptedException {
-        Map<String, Map<String, String>> mapping = null;
+        Map mapping = new LinkedHashMap<>();
         if (mappingLocation != null) {
             FilePath mappingFile = workspace.child(mappingLocation);
-            mapping = (Map) readYamlOrJson(mappingFile);
-        } else if (mappingString != null) {
-            mapping = (Map) readYamlOrJson(mappingString);
+            mapping.putAll(readYamlOrJson(mappingFile));
+        }
+        if (mappingString != null) {
+            mapping.putAll(readYamlOrJson(mappingString));
         }
         return mapping;
     }
 
-    private static void transform(Map<String, String> mapping, Map<String, Object> result, Map<String, Object> source) {
+    protected static void transform(Map<String, String> mapping, Map<String, Object> result,
+            Map<String, Object> source) {
         for (Map.Entry<String, String> entry : mapping.entrySet()) {
             String from = entry.getKey();
             String to = entry.getValue();
@@ -281,7 +294,7 @@ public class CloudifyPluginUtilities {
             FilePath expectedLocation = workspace.child(inputsFile);
             if (expectedLocation.exists()) {
                 jenkinsLog.println(String.format("Reading inputs from %s", expectedLocation));
-                Map<String, Map<String, String>> mappingJson = createMapping(workspace, mapping, mappingFile);
+                Map<String, Map<String, String>> mappingJson = readYamlOrJson(workspace, mapping, mappingFile);
                 if (mappingJson != null) {
                     transformOutputsFile(expectedLocation, mappingJson, inputsMap);
                 }
@@ -316,9 +329,10 @@ public class CloudifyPluginUtilities {
                                     "Creating deployment '%s' from blueprint '%s'",
                                     deploymentId, blueprintId));
             Deployment deployment = DeploymentsHelper.createDeploymentAndWait(client, deploymentId, blueprintId,
-                    inputs, follower);
-            Execution execution = ExecutionsHelper.install(client, deployment.getId(), follower);
-            ExecutionsHelper.validate(execution, "Environment setup failed");
+                    inputs, follower, ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
+            Execution execution = ExecutionsHelper.install(client, deployment.getId(), follower,
+                    ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
+            ExecutionsHelper.validateCompleted(execution, "Environment setup failed");
 
             DeploymentsClient deploymentsClient = client.getDeploymentsClient();
             Map<String, Object> outputs = deploymentsClient.getOutputs(deployment);
@@ -406,6 +420,7 @@ public class CloudifyPluginUtilities {
             final TaskListener listener,
             final CloudifyClient client,
             final String deploymentId,
+            final long pollingInterval,
             final Boolean ignoreFailure,
             final boolean debugOutput) throws IOException, InterruptedException {
         PrintStream logger = listener.getLogger();
@@ -413,10 +428,11 @@ public class CloudifyPluginUtilities {
                 debugOutput, client, logger);
         try {
             logger.println(String.format("Uninstalling Cloudify environment; deployment ID: %s", deploymentId));
-            Execution execution = ExecutionsHelper.uninstall(client, deploymentId, ignoreFailure, follower);
-            ExecutionsHelper.validate(execution, "Failed tearing down environment");
+            Execution execution = ExecutionsHelper.uninstall(client, deploymentId, ignoreFailure, follower,
+                    ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
+            ExecutionsHelper.validateCompleted(execution, "Failed tearing down environment");
             logger.println(String.format("Deleting deployment: %s", deploymentId));
-            DeploymentsHelper.deleteDeploymentAndWait(client, deploymentId);
+            DeploymentsHelper.deleteDeploymentAndWait(client, deploymentId, pollingInterval);
         } catch (Exception ex) {
             // Print the stack trace, as AbortException doesn't support
             // root causes and we don't want to lose the root cause.

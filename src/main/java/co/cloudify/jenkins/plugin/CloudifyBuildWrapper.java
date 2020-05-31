@@ -16,6 +16,7 @@ import co.cloudify.jenkins.plugin.actions.EnvironmentBuildAction;
 import co.cloudify.jenkins.plugin.callables.BlueprintUploadDirFileCallable;
 import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
+import co.cloudify.rest.helpers.DeploymentsHelper;
 import co.cloudify.rest.model.Blueprint;
 import co.cloudify.rest.model.Deployment;
 import hudson.EnvVars;
@@ -283,7 +284,9 @@ public class CloudifyBuildWrapper extends SimpleBuildWrapper {
             PrintStream logger = listener.getLogger();
 
             if (deployment != null) {
-                CloudifyPluginUtilities.deleteEnvironment(listener, client, deployment.getId(), ignoreFailure,
+                CloudifyPluginUtilities.deleteEnvironment(listener, client, deployment.getId(),
+                        DeploymentsHelper.DEFAULT_POLLING_INTERVAL,
+                        ignoreFailure,
                         debugOutput);
             }
 
