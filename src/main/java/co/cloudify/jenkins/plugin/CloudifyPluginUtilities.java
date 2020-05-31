@@ -215,28 +215,27 @@ public class CloudifyPluginUtilities {
     }
 
     /**
-     * Creates a combined outputs file mapping, from a mapping file and a
-     * mapping string.
+     * Creates a {@link Map} from a combination of a file and string contents.
      * 
-     * @param workspace       build's workspace root
-     * @param mappingString   mapping, as a string (may be <code>null</code>)
-     * @param mappingLocation workspace location of a mapping file (may be <code>null</code>,
-     *                        may not exist)
+     * @param workspace    build's workspace root
+     * @param contents     YAML/JSON contents, as a string (may be <code>null</code>)
+     * @param contentsFile workspace location of a YAML/JSON file (may be <code>null</code>,
+     *                     may not exist)
      * 
-     * @return Combined mapping.
+     * @return Combined {@link Map}.
      * 
      * @throws IOException          Thrown by underlying code.
      * @throws InterruptedException Thrown by underlying code.
      */
-    public static <T> Map<String, T> readYamlOrJson(final FilePath workspace, final String mappingString,
-            final String mappingLocation) throws IOException, InterruptedException {
+    public static <T> Map<String, T> readYamlOrJson(final FilePath workspace, final String contents,
+            final String contentsFile) throws IOException, InterruptedException {
         Map mapping = new LinkedHashMap<>();
-        if (mappingLocation != null) {
-            FilePath mappingFile = workspace.child(mappingLocation);
+        if (contentsFile != null) {
+            FilePath mappingFile = workspace.child(contentsFile);
             mapping.putAll(readYamlOrJson(mappingFile));
         }
-        if (mappingString != null) {
-            mapping.putAll(readYamlOrJson(mappingString));
+        if (contents != null) {
+            mapping.putAll(readYamlOrJson(contents));
         }
         return mapping;
     }
