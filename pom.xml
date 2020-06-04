@@ -7,8 +7,7 @@
         <artifactId>plugin</artifactId>
         <version>3.57</version>
     </parent>
-    <groupId>co.cloudify.plugins</groupId>
-    <artifactId>cloudify-jenkins-plugin</artifactId>
+    <artifactId>cloudify</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
@@ -19,7 +18,7 @@
         <jackson.version>2.11.0</jackson.version>
         <credentials.version>2.3.7</credentials.version>
     </properties>
-    <name>Cloudify Plugin for Jenkins</name>
+    <name>Cloudify</name>
     <licenses>
         <license>
             <name>MIT License</name>
