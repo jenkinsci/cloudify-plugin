@@ -11,6 +11,7 @@ import org.apache.commons.lang3.Validate;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 
@@ -79,6 +80,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
         return GlobalConfiguration.all().get(CloudifyConfiguration.class);
     }
 
+    @POST
     public FormValidation doTestConnection(
             @QueryParameter final String host,
             @QueryParameter final String username,
@@ -95,7 +97,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
                     StringUtils.trim(host),
                     StringUtils.trim(username),
                     StringUtils.trim(password.getPlainText()),
-                    secured, StringUtils.defaultString(tenant, defaultTenant));
+                    secured, StringUtils.trimToNull(StringUtils.defaultString(tenant, defaultTenant)));
             client.getManagerClient().getVersion();
             return FormValidation.ok("Connection successful");
         } catch (WebApplicationException ex) {
