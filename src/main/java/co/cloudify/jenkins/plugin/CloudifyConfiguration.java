@@ -20,6 +20,7 @@ import hudson.Extension;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 
 /**
  * Configuration object for Cloudify.
@@ -87,6 +88,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
             @QueryParameter final Secret password,
             @QueryParameter final String tenant,
             @QueryParameter final boolean secured) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (Arrays.asList(host, username, password.getPlainText()).stream().anyMatch(x -> StringUtils.isBlank(x))) {
             return FormValidation.error(
                     "To validate, please provide the Cloudify Manager host, username, and password to authenticate with");
