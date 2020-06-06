@@ -44,11 +44,9 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
-import hudson.util.Secret;
 import hudson.util.VariableResolver;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -74,15 +72,6 @@ public class CloudifyPluginUtilities {
             throw new IllegalArgumentException(String.format("Couldn't find credentials by ID: '%s'", credentialsId));
         }
         return creds;
-    }
-
-    public static EnvVars getEnvironment(final AbstractBuild build, final TaskListener listener)
-            throws InterruptedException, IOException {
-        EnvVars environment = build.getEnvironment(listener);
-        // This results in empty variables to disappear from the environment,
-        // causing them to not be expanded at all ("${inputs}" will be returned as is).
-//        environment.overrideAll(build.getBuildVariables());
-        return environment;
     }
 
     /**
@@ -202,7 +191,7 @@ public class CloudifyPluginUtilities {
      */
     public static Map<String, Object> readYamlOrJson(final String str) {
         if (StringUtils.isBlank(str)) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -480,13 +469,6 @@ public class CloudifyPluginUtilities {
             gen.write(json);
         }
         return sw.toString();
-    }
-
-    public static String getPassword(final Secret secret, final String s) {
-        if (secret != null) {
-            return secret.getPlainText();
-        }
-        return s;
     }
 
     /**
