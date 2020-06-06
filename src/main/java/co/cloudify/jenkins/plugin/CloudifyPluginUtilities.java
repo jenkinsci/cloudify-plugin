@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.IdCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -59,9 +60,14 @@ import net.sf.json.JSONObject;
  */
 public class CloudifyPluginUtilities {
     public static StandardUsernamePasswordCredentials getCredentials(final String credentialsId, final Run<?, ?> run) {
-        StandardUsernamePasswordCredentials creds = CredentialsProvider.findCredentialById(
+        return getCredentials(credentialsId, StandardUsernamePasswordCredentials.class, run);
+    }
+
+    public static <T extends IdCredentials> T getCredentials(final String credentialsId,
+            final Class<T> credentialsClass, final Run<?, ?> run) {
+        T creds = (T) CredentialsProvider.findCredentialById(
                 credentialsId,
-                StandardUsernamePasswordCredentials.class,
+                credentialsClass,
                 run,
                 Collections.EMPTY_LIST);
         if (creds == null) {

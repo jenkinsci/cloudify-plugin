@@ -4,6 +4,9 @@
     <f:entry title="${%Credentials ID}" field="credentialsId">
         <f:textbox />
     </f:entry>
+    <f:entry title="${%AWS Credentials ID}" field="awsCredentialsId">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%Environment ID}" field="deploymentId">
         <f:textbox />
     </f:entry>
@@ -14,12 +17,6 @@
         <f:textarea />
     </f:entry>
     <f:entry title="${%Parameters File}" field="parametersFile">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Access key ID}" field="accessKeyIdAsString">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Secret access key}" field="secretAccessKeyAsString">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Region name}" field="regionName">

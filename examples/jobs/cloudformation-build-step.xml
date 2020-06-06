@@ -66,7 +66,7 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <co.cloudify.jenkins.plugin.integrations.CloudFormationBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+    <co.cloudify.jenkins.plugin.integrations.CloudFormationBuildStep plugin="cloudify@1.0-SNAPSHOT">
       <credentialsId>${cfy_credentials}</credentialsId>
       <deploymentId>${environment_id}</deploymentId>
       <echoInputs>true</echoInputs>
@@ -74,24 +74,14 @@
       <debugOutput>false</debugOutput>
       <envDataLocation>env-data.json</envDataLocation>
       <operationInputs class="linked-hash-map"/>
-      <accessKeyIdAsString>${AWS_ACCESS_KEY_ID}</accessKeyIdAsString>
-      <secretAccessKeyAsString>${AWS_SECRET_ACCESS_KEY}</secretAccessKeyAsString>
+      <awsCredentialsId>${aws_credentials}</awsCredentialsId>
       <regionName>${region_name}</regionName>
       <stackName>${stack_name}</stackName>
       <parametersAsString>${template_parameters}</parametersAsString>
+      <parametersFile></parametersFile>
       <templateUrl>${template_url}</templateUrl>
     </co.cloudify.jenkins.plugin.integrations.CloudFormationBuildStep>
   </builders>
   <publishers/>
-  <buildWrappers>
-    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.23">
-      <bindings>
-        <com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding plugin="aws-credentials@1.28">
-          <credentialsId>${aws_credentials}</credentialsId>
-          <accessKeyVariable>AWS_ACCESS_KEY_ID</accessKeyVariable>
-          <secretKeyVariable>AWS_SECRET_ACCESS_KEY</secretKeyVariable>
-        </com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding>
-      </bindings>
-    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
-  </buildWrappers>
+  <buildWrappers/>
 </project>

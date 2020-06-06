@@ -51,7 +51,7 @@
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>azure_credentials</name>
           <description>Credentials for Azure</description>
-          <defaultValue>my-azure-credentials</defaultValue>
+          <defaultValue></defaultValue>
           <credentialType>com.microsoft.azure.util.AzureCredentials</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
@@ -66,7 +66,7 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <co.cloudify.jenkins.plugin.integrations.ARMBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+    <co.cloudify.jenkins.plugin.integrations.ARMBuildStep plugin="cloudify@1.0-SNAPSHOT">
       <credentialsId>${cfy_credentials}</credentialsId>
       <deploymentId>${environment_id}</deploymentId>
       <echoInputs>true</echoInputs>
@@ -74,28 +74,14 @@
       <debugOutput>false</debugOutput>
       <envDataLocation>env-data.json</envDataLocation>
       <operationInputs class="linked-hash-map"/>
-      <subscriptionId>${AZURE_SUBSCRIPTION_ID}</subscriptionId>
-      <tenantId>${AZURE_TENANT_ID}</tenantId>
-      <clientId>${AZURE_CLIENT_ID}</clientId>
-      <clientSecretAsString>${AZURE_CLIENT_SECRET}</clientSecretAsString>
+      <azureCredentialsId>${azure_credentials}</azureCredentialsId>
       <location>${location}</location>
       <resourceGroupName>${resource_group_name}</resourceGroupName>
       <parametersAsString>${parameters}</parametersAsString>
+      <parametersFile></parametersFile>
       <templateFile>${template_file}</templateFile>
     </co.cloudify.jenkins.plugin.integrations.ARMBuildStep>
   </builders>
   <publishers/>
-  <buildWrappers>
-    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.23">
-      <bindings>
-        <com.microsoft.azure.util.AzureCredentialsBinding plugin="azure-credentials@4.0.2">
-          <credentialsId>${azure_credentials}</credentialsId>
-          <subscriptionIdVariable>AZURE_SUBSCRIPTION_ID</subscriptionIdVariable>
-          <clientIdVariable>AZURE_CLIENT_ID</clientIdVariable>
-          <clientSecretVariable>AZURE_CLIENT_SECRET</clientSecretVariable>
-          <tenantIdVariable>AZURE_TENANT_ID</tenantIdVariable>
-        </com.microsoft.azure.util.AzureCredentialsBinding>
-      </bindings>
-    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
-  </buildWrappers>
+  <buildWrappers/>
 </project>

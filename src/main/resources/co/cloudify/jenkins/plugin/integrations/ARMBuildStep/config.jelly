@@ -1,22 +1,13 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <j:set var="escapeEntryTitleAndDescription" value="false" />
-    <f:entry title="${%Credentials ID}" field="credentialsId">
+    <f:entry title="${%Cloudify Credentials ID}" field="credentialsId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Azure Credentials ID}" field="azureCredentialsId">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Environment ID}" field="deploymentId">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Subscription ID}" field="subscriptionId">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Tenant ID}" field="tenantId">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Client ID}" field="clientId">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Client Secret}" field="clientSecretAsString">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Location}" field="location">

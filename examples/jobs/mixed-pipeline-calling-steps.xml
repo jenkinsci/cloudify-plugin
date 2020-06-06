@@ -168,22 +168,14 @@
                         script {
                             def cfn_template_vars_map = readYaml text: &quot;${params.cfn_template_vars}&quot;
 
-                            withCredentials([[
-                                $class: &apos;AmazonWebServicesCredentialsBinding&apos;,
-                                accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
-                                credentialsId: &quot;${params.aws_credentials}&quot;,
-                                secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
-                                    
-                                cfyCloudFormation credentialsId: &quot;${params.cfy_credentials}&quot;,
-                                    accessKeyIdAsString: &quot;${AWS_ACCESS_KEY_ID}&quot;,
-                                    deploymentId: &quot;${params.environment_prefix}_cfn&quot;,
-                                    echoEnvData: true,
-                                    envDataLocation: &apos;env-data-cfn.json&apos;,
-                                    parameters: cfn_template_vars_map,
-                                    secretAccessKeyAsString: &quot;${AWS_SECRET_ACCESS_KEY}&quot;,
-                                    stackName: &quot;${params.cfn_stack_name}&quot;,
-                                    templateUrl: &quot;${params.cfn_template_url}&quot;
-                            }
+                            cfyCloudFormation credentialsId: &quot;${params.cfy_credentials}&quot;,
+                                awsCredentialsId: &quot;${params.aws_credentials}&quot;,
+                                deploymentId: &quot;${params.environment_prefix}_cfn&quot;,
+                                echoEnvData: true,
+                                envDataLocation: &apos;env-data-cfn.json&apos;,
+                                parameters: cfn_template_vars_map,
+                                stackName: &quot;${params.cfn_stack_name}&quot;,
+                                templateUrl: &quot;${params.cfn_template_url}&quot;
                         }
                     }
                 }
@@ -192,20 +184,14 @@
                         script {
                             def arm_template_vars_map = readYaml text: &quot;${params.arm_template_vars}&quot;
 
-                            withCredentials([azureServicePrincipal(&quot;${params.azure_credentials}&quot;)]) {
-
-                                cfyAzureArm credentialsId: &quot;${params.cfy_credentials}&quot;,
-                                    clientId: &quot;${AZURE_CLIENT_ID}&quot;,
-                                    clientSecretAsString: &quot;${AZURE_CLIENT_SECRET}&quot;,
-                                    deploymentId: &quot;${params.environment_prefix}_arm&quot;,
-                                    echoEnvData: true,
-                                    envDataLocation: &apos;env-arm.json&apos;,
-                                    parameters: arm_template_vars_map,
-                                    resourceGroupName: &quot;${params.arm_resource_group}&quot;,
-                                    subscriptionId: &quot;${AZURE_SUBSCRIPTION_ID}&quot;,
-                                    templateFile: &quot;${params.arm_template_url}&quot;,
-                                    tenantId: &quot;${AZURE_TENANT_ID}&quot;
-                            }
+                            cfyAzureArm credentialsId: &quot;${params.cfy_credentials}&quot;,
+                                azureCredentialsId: &quot;${params.azure_credentials}&quot;,
+                                deploymentId: &quot;${params.environment_prefix}_arm&quot;,
+                                echoEnvData: true,
+                                envDataLocation: &apos;env-arm.json&apos;,
+                                parameters: arm_template_vars_map,
+                                resourceGroupName: &quot;${params.arm_resource_group}&quot;,
+                                templateFile: &quot;${params.arm_template_url}&quot;
                         }
                     }
                 }

@@ -13,6 +13,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
+
 import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
@@ -27,7 +30,6 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-import hudson.util.Secret;
 
 /**
  * A build step for applying a CloudFormation stack.
@@ -35,10 +37,7 @@ import hudson.util.Secret;
  * @author Isaac Shabtay
  */
 public class CloudFormationBuildStep extends IntegrationBuildStep {
-    private Secret accessKeyId;
-    private String accessKeyIdAsString;
-    private Secret secretAccessKey;
-    private String secretAccessKeyAsString;
+    private String awsCredentialsId;
     private String regionName;
     private String stackName;
     private Map<String, Object> parameters;
@@ -51,40 +50,13 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         super();
     }
 
-    public Secret getAccessKeyId() {
-        return accessKeyId;
+    public String getAwsCredentialsId() {
+        return awsCredentialsId;
     }
 
     @DataBoundSetter
-    public void setAccessKeyId(Secret accessKeyId) {
-        this.accessKeyId = accessKeyId;
-    }
-
-    public String getAccessKeyIdAsString() {
-        return accessKeyIdAsString;
-    }
-
-    @DataBoundSetter
-    public void setAccessKeyIdAsString(String accessKeyIdAsString) {
-        this.accessKeyIdAsString = accessKeyIdAsString;
-    }
-
-    public Secret getSecretAccessKey() {
-        return secretAccessKey;
-    }
-
-    @DataBoundSetter
-    public void setSecretAccessKey(Secret secretAccessKey) {
-        this.secretAccessKey = secretAccessKey;
-    }
-
-    public String getSecretAccessKeyAsString() {
-        return secretAccessKeyAsString;
-    }
-
-    @DataBoundSetter
-    public void setSecretAccessKeyAsString(String secretAccessKeyAsString) {
-        this.secretAccessKeyAsString = secretAccessKeyAsString;
+    public void setAwsCredentialsId(String awsCredentialsId) {
+        this.awsCredentialsId = awsCredentialsId;
     }
 
     public String getRegionName() {
@@ -146,17 +118,12 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        String accessKeyIdAsString = CloudifyPluginUtilities.expandString(envVars, this.accessKeyIdAsString);
-        String secretAccessKeyAsString = CloudifyPluginUtilities.expandString(envVars, this.secretAccessKeyAsString);
+        String awsCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.awsCredentialsId);
         String regionName = CloudifyPluginUtilities.expandString(envVars, this.regionName);
         String stackName = CloudifyPluginUtilities.expandString(envVars, this.stackName);
         String parametersAsString = CloudifyPluginUtilities.expandString(envVars, this.parametersAsString);
         String parametersFile = CloudifyPluginUtilities.expandString(envVars, this.parametersFile);
         String templateUrl = CloudifyPluginUtilities.expandString(envVars, this.templateUrl);
-
-        String effectiveAccessKeyId = CloudifyPluginUtilities.getPassword(this.accessKeyId, accessKeyIdAsString);
-        String effectiveSecretAccessKey = CloudifyPluginUtilities.getPassword(this.secretAccessKey,
-                secretAccessKeyAsString);
 
         Map<String, Object> parametersMap = CloudifyPluginUtilities.getCombinedMap(workspace, parametersFile,
                 parametersAsString,
@@ -171,8 +138,12 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
                         { "ParameterValue", entry.getValue() }
                 })).collect(Collectors.toList());
 
-        putIfNonNullValue(operationInputs, "aws_access_key_id", effectiveAccessKeyId);
-        putIfNonNullValue(operationInputs, "aws_secret_access_key", effectiveSecretAccessKey);
+        AmazonWebServicesCredentials awsCredentials = CloudifyPluginUtilities.getCredentials(awsCredentialsId,
+                AmazonWebServicesCredentials.class, run);
+        AWSCredentials awsCreds = awsCredentials.getCredentials();
+
+        putIfNonNullValue(operationInputs, "aws_access_key_id", awsCreds.getAWSAccessKeyId());
+        putIfNonNullValue(operationInputs, "aws_secret_access_key", awsCreds.getAWSSecretKey());
         putIfNonNullValue(operationInputs, "aws_region_name", regionName);
         operationInputs.put("stack_name", stackName);
         operationInputs.put("parameters", parametersAsList);
@@ -221,7 +192,7 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
-                // Omit confidential info (access key, etc)
+                .append("awsCredentialsId", awsCredentialsId)
                 .append("regionName", regionName)
                 .append("stackName", stackName)
                 .append("templateUrl", templateUrl)

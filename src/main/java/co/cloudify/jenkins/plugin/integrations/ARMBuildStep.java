@@ -8,6 +8,8 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
+import com.microsoft.azure.util.AzureCredentials;
+
 import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
@@ -21,7 +23,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.Secret;
 
 /**
  * A build step for applying an Azure ARM template.
@@ -29,11 +30,7 @@ import hudson.util.Secret;
  * @author Isaac Shabtay
  */
 public class ARMBuildStep extends IntegrationBuildStep {
-    private String subscriptionId;
-    private String tenantId;
-    private String clientId;
-    private Secret clientSecret;
-    private String clientSecretAsString;
+    private String azureCredentialsId;
     private String location;
     private String resourceGroupName;
     private Map<String, Object> parameters;
@@ -46,49 +43,13 @@ public class ARMBuildStep extends IntegrationBuildStep {
         super();
     }
 
-    public String getSubscriptionId() {
-        return subscriptionId;
+    public String getAzureCredentialsId() {
+        return azureCredentialsId;
     }
 
     @DataBoundSetter
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    @DataBoundSetter
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    @DataBoundSetter
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public Secret getClientSecret() {
-        return clientSecret;
-    }
-
-    @DataBoundSetter
-    public void setClientSecret(Secret clientSecret) {
-        this.clientSecret = clientSecret;
-    }
-
-    public String getClientSecretAsString() {
-        return clientSecretAsString;
-    }
-
-    @DataBoundSetter
-    public void setClientSecretAsString(String clientSecretAsString) {
-        this.clientSecretAsString = clientSecretAsString;
+    public void setAzureCredentialsId(String azureCredentialsId) {
+        this.azureCredentialsId = azureCredentialsId;
     }
 
     public String getLocation() {
@@ -150,10 +111,7 @@ public class ARMBuildStep extends IntegrationBuildStep {
             final FilePath workspace,
             final EnvVars envVars,
             final CloudifyClient cloudifyClient) throws Exception {
-        String subscriptionId = CloudifyPluginUtilities.expandString(envVars, this.subscriptionId);
-        String tenantId = CloudifyPluginUtilities.expandString(envVars, this.tenantId);
-        String clientId = CloudifyPluginUtilities.expandString(envVars, this.clientId);
-        String clientSecretAsString = CloudifyPluginUtilities.expandString(envVars, this.clientSecretAsString);
+        String azureCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.azureCredentialsId);
         String location = CloudifyPluginUtilities.expandString(envVars, this.location);
         String resourceGroupName = CloudifyPluginUtilities.expandString(envVars, this.resourceGroupName);
         String parametersAsString = CloudifyPluginUtilities.expandString(envVars, this.parametersAsString);
@@ -164,12 +122,13 @@ public class ARMBuildStep extends IntegrationBuildStep {
                 parametersAsString,
                 this.parameters);
 
-        String effectiveClientSecret = CloudifyPluginUtilities.getPassword(this.clientSecret, clientSecretAsString);
+        AzureCredentials azureCreds = CloudifyPluginUtilities.getCredentials(azureCredentialsId, AzureCredentials.class,
+                run);
 
-        putIfNonNullValue(operationInputs, "azure_subscription_id", subscriptionId);
-        putIfNonNullValue(operationInputs, "azure_tenant_id", tenantId);
-        putIfNonNullValue(operationInputs, "azure_client_id", clientId);
-        putIfNonNullValue(operationInputs, "azure_client_secret", effectiveClientSecret);
+        putIfNonNullValue(operationInputs, "azure_subscription_id", azureCreds.getSubscriptionId());
+        putIfNonNullValue(operationInputs, "azure_tenant_id", azureCreds.getTenant());
+        putIfNonNullValue(operationInputs, "azure_client_id", azureCreds.getClientId());
+        putIfNonNullValue(operationInputs, "azure_client_secret", azureCreds.getPlainClientSecret());
         putIfNonNullValue(operationInputs, "location", location);
         putIfNonNullValue(operationInputs, "resource_group_name", resourceGroupName);
         operationInputs.put("parameters", variablesMap);
@@ -210,10 +169,7 @@ public class ARMBuildStep extends IntegrationBuildStep {
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
-                .append("subscriptionId", subscriptionId)
-                .append("tenantId", tenantId)
-                .append("clientId", clientId)
-                // Skip Client Secret
+                .append("azureCredentialsId", azureCredentialsId)
                 .append("location", location)
                 .append("resourceGroupName", resourceGroupName)
                 .append("parameters", parameters)
