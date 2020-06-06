@@ -2,23 +2,30 @@ package co.cloudify.jenkins.plugin;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 import javax.servlet.ServletException;
 import javax.ws.rs.WebApplicationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 
 import co.cloudify.rest.client.CloudifyClient;
 import hudson.Extension;
+import hudson.model.Item;
+import hudson.security.ACL;
 import hudson.util.FormValidation;
-import hudson.util.Secret;
+import hudson.util.ListBoxModel;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 
@@ -30,7 +37,7 @@ import jenkins.model.Jenkins;
 @Extension
 public class CloudifyConfiguration extends GlobalConfiguration {
     private String host;
-    private Boolean secured = Boolean.FALSE;
+    private Boolean secured = Boolean.TRUE;
     private String defaultTenant;
 
     @DataBoundConstructor
@@ -73,6 +80,27 @@ public class CloudifyConfiguration extends GlobalConfiguration {
         return FormValidation.validateRequired(value);
     }
 
+    public ListBoxModel doFillCredentialsIdItems(
+            final @AncestorInPath Item item,
+            @QueryParameter String credentialsId) {
+        StandardListBoxModel result = new StandardListBoxModel();
+        Jenkins jenkins = Jenkins.get();
+        if (item == null) {
+            if (!jenkins.hasPermission(Jenkins.ADMINISTER)) {
+                return result.includeCurrentValue(credentialsId);
+            }
+        } else {
+            if (!item.hasPermission(Item.EXTENDED_READ)
+                    && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                return result.includeCurrentValue(credentialsId);
+            }
+        }
+        return result
+                .includeMatchingAs(ACL.SYSTEM, jenkins, StandardUsernamePasswordCredentials.class,
+                        Collections.emptyList(), null)
+                .includeCurrentValue(credentialsId);
+    }
+
     /**
      * @return The {@link CloudifyConfiguration} instance for this Jenkins
      *         installation.
@@ -84,21 +112,30 @@ public class CloudifyConfiguration extends GlobalConfiguration {
     @POST
     public FormValidation doTestConnection(
             @QueryParameter final String host,
-            @QueryParameter final String username,
-            @QueryParameter final Secret password,
+            @QueryParameter final String credentialsId,
             @QueryParameter final String tenant,
             @QueryParameter final boolean secured) throws IOException, ServletException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        if (Arrays.asList(host, username, password.getPlainText()).stream().anyMatch(x -> StringUtils.isBlank(x))) {
+        if (Arrays.asList(host, credentialsId).stream().anyMatch(x -> StringUtils.isBlank(x))) {
             return FormValidation.error(
-                    "To validate, please provide the Cloudify Manager host, username, and password to authenticate with");
+                    "To validate, please provide the Cloudify Manager host, and credentials to authenticate with");
+        }
+
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+        StandardUsernamePasswordCredentials credentials = CredentialsMatchers.firstOrNull(CredentialsProvider
+                .lookupCredentials(StandardUsernamePasswordCredentials.class, jenkins, ACL.SYSTEM,
+                        Collections.emptyList()),
+                CredentialsMatchers.withId(credentialsId));
+
+        if (credentials == null) {
+            return FormValidation.error("Could not find credentials: '%s'", credentialsId);
         }
 
         try {
             CloudifyClient client = CloudifyClient.create(
                     StringUtils.trim(host),
-                    StringUtils.trim(username),
-                    StringUtils.trim(password.getPlainText()),
+                    StringUtils.trim(credentials.getUsername()),
+                    StringUtils.trim(credentials.getPassword().getPlainText()),
                     secured, StringUtils.trimToNull(StringUtils.defaultString(tenant, defaultTenant)));
             client.getManagerClient().getVersion();
             return FormValidation.ok("Connection successful");
