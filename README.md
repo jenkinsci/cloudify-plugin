@@ -1,6 +1,6 @@
 # Jenkins Plugin for Cloudify
 
-This modules provides tight integration between Jenkins and Cloudify, simplifying using
+This module provides tight integration between Jenkins and Cloudify, simplifying using
 Cloudify Manager through Jenkins jobs and pipelines.
 
 For more information, refer to the following presentation and video: https://docs.google.com/presentation/d/1f4zcKQhV0Us7jA8s7z7-VarDxaTZaAQqr1sMrwABGVo
