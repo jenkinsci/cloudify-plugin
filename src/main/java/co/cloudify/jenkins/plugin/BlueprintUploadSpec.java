@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
@@ -37,7 +36,7 @@ public class BlueprintUploadSpec implements Serializable, AutoCloseable {
     private File archivePath;
     private String mainFileName;
     private String blueprintResourceName;
-    private Path tempBlueprintDir;
+    private File tempBlueprintDir;
 
     public BlueprintUploadSpec(final URL archiveUrl, final String mainFileName) {
         Validate.notNull(archiveUrl);
@@ -60,15 +59,15 @@ public class BlueprintUploadSpec implements Serializable, AutoCloseable {
 
     public Blueprint upload(final BlueprintsClient client, final String id) throws IOException {
         if (blueprintResourceName != null) {
-            tempBlueprintDir = Files.createTempDirectory("cfy");
+            tempBlueprintDir = Files.createTempDirectory("cfy").toFile();
             logger.info("Created temporary directory: {}", tempBlueprintDir);
-            Path blueprintPath = tempBlueprintDir.resolve(BLUEPRINT_FILE_NAME);
+            File blueprintPath = new File(tempBlueprintDir, BLUEPRINT_FILE_NAME);
             ClassLoader classLoader = getClass().getClassLoader();  // Thread's context classloader won't work here
             try (InputStream resourceAsStream = classLoader.getResourceAsStream(blueprintResourceName)) {
-                Files.copy(resourceAsStream, blueprintPath);
+                Files.copy(resourceAsStream, blueprintPath.toPath());
             }
 
-            return client.upload(id, tempBlueprintDir.toFile(), BLUEPRINT_FILE_NAME);
+            return client.upload(id, tempBlueprintDir, BLUEPRINT_FILE_NAME);
         }
         if (archiveUrl != null) {
             return client.upload(id, archiveUrl, mainFileName);
@@ -82,7 +81,7 @@ public class BlueprintUploadSpec implements Serializable, AutoCloseable {
             // A temporary directory was created for uploading this.
             // So delete it.
             logger.info("Deleting temporary directory: {}", tempBlueprintDir);
-            FileUtils.deleteDirectory(tempBlueprintDir.toFile());
+            FileUtils.deleteDirectory(tempBlueprintDir);
         }
     }
 

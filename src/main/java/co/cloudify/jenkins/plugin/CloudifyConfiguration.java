@@ -97,7 +97,7 @@ public class CloudifyConfiguration extends GlobalConfiguration {
         }
         return result
                 .includeMatchingAs(ACL.SYSTEM, jenkins, StandardUsernamePasswordCredentials.class,
-                        Collections.emptyList(), null)
+                        Collections.emptyList(), CredentialsMatchers.always())
                 .includeCurrentValue(credentialsId);
     }
 
