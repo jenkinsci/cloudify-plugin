@@ -6,12 +6,6 @@
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <co.cloudify.jenkins.plugin.parameters.BlueprintInputConstraintSelector plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
-          <name>environment_type</name>
-          <description>Type of environment to create</description>
-          <blueprintId>mc-jboss</blueprintId>
-          <inputName>infra_name</inputName>
-        </co.cloudify.jenkins.plugin.parameters.BlueprintInputConstraintSelector>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>Name of the new environment</description>
@@ -29,7 +23,7 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <co.cloudify.jenkins.plugin.CreateEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
+    <co.cloudify.jenkins.plugin.CreateEnvironmentBuildStep plugin="cloudify@1.0-SNAPSHOT">
       <blueprintId>mc-jboss</blueprintId>
       <deploymentId>${deployment_id}</deploymentId>
       <inputs>infra_name: ${environment_type}</inputs>
@@ -37,6 +31,7 @@
       <mapping></mapping>
       <mappingFile></mappingFile>
       <outputFile>outputs.json</outputFile>
+      <echoInputs>false</echoInputs>
       <echoOutputs>true</echoOutputs>
       <debugOutput>false</debugOutput>
     </co.cloudify.jenkins.plugin.CreateEnvironmentBuildStep>
