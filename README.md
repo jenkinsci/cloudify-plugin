@@ -311,6 +311,7 @@ Certain parameters may be omitted, in which case the value will default to Cloud
 | Terraform Executable        | `terraform_executable`       |
 | Terraform Plugins Directory | `terraform_plugins_dir`      |
 | Terraform Storage Directory | `terraform_storage_dir`      |
+
  
 ## Cloudify's Build Wrapper
 
@@ -319,3 +320,4 @@ method for creating a Cloudify environment before the build, and destroying it a
 
 The wrapper can be activated by checking the "Cloudify Environment" box under "Build Environment" during
 job definition.
+
