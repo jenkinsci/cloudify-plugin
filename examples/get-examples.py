@@ -48,8 +48,9 @@ if __name__ == '__main__':
             with open(os.path.join('jobs', '%s.xml' % definition), 'r') as input_file:
                 _run(['create-job', definition], stdin=input_file)
         for view in definitions['views']:
+            print("Uploading view: %s" % view)
             with open(os.path.join('views', '%s.xml' % view), 'r') as input_file:
-                _run(['update-view', view], stdin=input_file)
+                _run(['create-view', view], stdin=input_file)
 
     elif mode == 'delete-builds':
         for definition in definitions['definitions']:
