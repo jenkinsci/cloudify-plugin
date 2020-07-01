@@ -41,7 +41,7 @@
 		<url>https://github.com/jenkinsci/cloudify-plugin.git</url>
 		<tag>HEAD</tag>
 	</scm>
-	<url>https://github.com/jenkinsci/${project.artifactId}/tree/${project.artifactId}-${revision}</url>
+	<url>https://github.com/jenkinsci/cloudify-plugin/tree/${project.artifactId}-${project.version}</url>
 	<dependencies>
 		<dependency>
 			<groupId>co.cloudify</groupId>
