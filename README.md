@@ -1,11 +1,17 @@
 # Jenkins Plugin for Cloudify
 
-This module provides tight integration between Jenkins and Cloudify, simplifying using
-Cloudify Manager through Jenkins jobs and pipelines.
+Provides tight integration between Jenkins and Cloudify.
 
-For more information, refer to the following presentation and video: https://docs.google.com/presentation/d/1f4zcKQhV0Us7jA8s7z7-VarDxaTZaAQqr1sMrwABGVo
+The plugin integrates with popular infrastructure automation toolchains, providing a consistent way to manage all environments through a single Jenkins plugin.
+It includes build steps and examples that provide seamless integration with AWS CloudFormation, Azure ARM, Terraform, Ansible and Kubernetes (including GKE, EKS, and AKS), as well as OpenShift and KubeSpray.
 
-* [Prerequisites](#prerequisites)
+![Jenkins Plugin for Cloudify](static/jenkins-plugin.png)
+
+Cloudify users can use the plugin to call Cloudify API through fine-grained build steps, saving the need to use explicit REST calls or custom scripts to refer to Cloudify Manager,
+greatly simplifying the use of Cloudify Manager through Jenkins jobs and pipelines.
+
+For more information, as well as a live demo, see: [https://cloudify.co/Jenkins](https://cloudify.co/Jenkins)
+
 * [Examples](#examples)
 * [Terminology](#terminology)
     * [Deployment Outputs File](#deployment-outputs-file)
@@ -29,10 +35,6 @@ For more information, refer to the following presentation and video: https://doc
     * [Create CloudFormation Stack](#create-cloudformation-stack)
     * [Apply Terraform Module](#apply-terraform-module)
 * [Cloudify's Build Wrapper](#cloudify-s-build-wrapper)
-
-## Prerequisites
-
-Jenkins version: 2.204.1+
 
 ## Examples
 
@@ -320,4 +322,3 @@ method for creating a Cloudify environment before the build, and destroying it a
 
 The wrapper can be activated by checking the "Cloudify Environment" box under "Build Environment" during
 job definition.
-
