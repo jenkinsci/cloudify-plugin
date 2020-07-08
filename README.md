@@ -12,6 +12,14 @@ greatly simplifying the use of Cloudify Manager through Jenkins jobs and pipelin
 
 For more information, as well as a live demo, see: [https://cloudify.co/Jenkins](https://cloudify.co/Jenkins)
 
+To download Cloudify Community Edition (for CentOS / RHEL), refer to: [https://docs.cloudify.co/staging/dev/trial_getting_started/set_trial_manager/download_community/](https://docs.cloudify.co/staging/dev/trial_getting_started/set_trial_manager/download_community/)
+
+To download Cloudify Community Edition's Docker image: [https://hub.docker.com/r/cloudifyplatform/community](https://hub.docker.com/r/cloudifyplatform/community)
+
+To learn more about Cloudify: [https://cloudify.co](https://cloudify.co)
+
+## Table of Contents
+
 * [Examples](#examples)
 * [Terminology](#terminology)
     * [Deployment Outputs File](#deployment-outputs-file)
