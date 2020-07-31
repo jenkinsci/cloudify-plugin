@@ -1,0 +1,49 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <j:set var="escapeEntryTitleAndDescription" value="false" />
+    <f:entry title="${%Credentials ID}" field="credentialsId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Environment ID}" field="deploymentId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%GCP Credentials ID}" field="gcpCredentialsId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%GCP Credentials File}" field="gcpCredentialsFile">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Kubernetes Master}" field="k8sMaster">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Verify SSL}" field="verifySsl">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Debug K8S Output}" field="debug">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Validate Status}" field="validateStatus">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Allow Node Redefinition}" field="allowNodeRedefinition">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Resource Path}" field="resourcePath">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Variables}" field="variablesAsString">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Environment Data Output Path}" field="envDataLocation">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Print Environment Inputs}" field="echoInputs">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Print Environment Data}" field="echoEnvData">
+        <f:checkbox />
+    </f:entry>
+    <f:entry title="${%Show Debug-Level Cloudify Output}" field="debugOutput">
+        <f:checkbox />
+    </f:entry>
+</j:jelly>
