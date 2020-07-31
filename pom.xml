@@ -244,9 +244,6 @@
 			<activation>
 				<activeByDefault>false</activeByDefault>
 			</activation>
-			<properties>
-				<git.version>3.9.4</git.version>
-			</properties>
 			<dependencies>
 				<!-- In development mode, include some convenience plugins. These aren't
 					mandatory for release. -->
@@ -258,7 +255,7 @@
 				<dependency>
 					<groupId>org.jenkins-ci.plugins</groupId>
 					<artifactId>git</artifactId>
-					<version>${git.version}</version>
+					<version>3.9.4</version>
 				</dependency>
 				<dependency>
 					<groupId>org.jenkins-ci.plugins.workflow</groupId>
