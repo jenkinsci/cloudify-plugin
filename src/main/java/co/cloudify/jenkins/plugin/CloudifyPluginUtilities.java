@@ -25,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.jenkinsci.plugins.plaincredentials.FileCredentials;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.IdCredentials;
@@ -61,6 +63,8 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class CloudifyPluginUtilities {
+    private static final Logger logger = LoggerFactory.getLogger(CloudifyPluginUtilities.class);
+
     public static StandardUsernamePasswordCredentials getUsernamePasswordCredentials(final String credentialsId,
             final Run<?, ?> run) {
         return getCredentials(credentialsId, StandardUsernamePasswordCredentials.class, run);
@@ -195,6 +199,7 @@ public class CloudifyPluginUtilities {
                 return mapper.readValue(is, JSONObject.class);
             }
         } catch (IOException ex) {
+            logger.info("Failed parsing {} as YAML; will try JSON (exception message: {})", path, ex);
             try (InputStream is = path.read()) {
                 return JSONObject.fromObject(IOUtils.toString(is, StandardCharsets.UTF_8));
             }
@@ -216,6 +221,11 @@ public class CloudifyPluginUtilities {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(str, JSONObject.class);
         } catch (IOException ex) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed parsing string as YAML; will try JSON", ex);
+            } else {
+                logger.info("Failed parsing string as YAML; will try JSON (exception message: {})", ex.getMessage());
+            }
             return JSONObject.fromObject(str);
         }
     }
