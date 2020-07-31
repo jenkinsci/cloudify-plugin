@@ -89,7 +89,7 @@ public abstract class CloudifyBuildStep extends Builder implements SimpleBuildSt
 			throw new AbortException("Neither credentialsId nor username/password were provided");
 		}
 
-		StandardUsernamePasswordCredentials creds = CloudifyPluginUtilities.getCredentials(credentialsId, run);
+		StandardUsernamePasswordCredentials creds = CloudifyPluginUtilities.getUsernamePasswordCredentials(credentialsId, run);
 
 		return CloudifyConfiguration.getCloudifyClient(StringUtils.trimToNull(creds.getUsername()),
 				StringUtils.trimToNull(creds.getPassword().getPlainText()), StringUtils.trimToNull(tenant));

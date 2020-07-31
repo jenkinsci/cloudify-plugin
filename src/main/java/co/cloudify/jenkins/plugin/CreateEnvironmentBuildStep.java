@@ -26,194 +26,194 @@ import hudson.util.FormValidation;
  * @author Isaac Shabtay
  */
 public class CreateEnvironmentBuildStep extends CloudifyBuildStep {
-    private String blueprintId;
-    private String deploymentId;
-    private String inputs;
-    private String inputsFile;
-    private String mapping;
-    private String mappingFile;
-    private String outputFile;
-    private boolean echoInputs;
-    private boolean echoOutputs;
-    private boolean debugOutput;
+	private String blueprintId;
+	private String deploymentId;
+	private String inputs;
+	private String inputsFile;
+	private String mapping;
+	private String mappingFile;
+	private String outputFile;
+	private boolean skipInstall;
+	private boolean echoInputs;
+	private boolean echoOutputs;
+	private boolean debugOutput;
 
-    @DataBoundConstructor
-    public CreateEnvironmentBuildStep() {
-        super();
-    }
+	@DataBoundConstructor
+	public CreateEnvironmentBuildStep() {
+		super();
+	}
 
-    public String getBlueprintId() {
-        return blueprintId;
-    }
+	public String getBlueprintId() {
+		return blueprintId;
+	}
 
-    @DataBoundSetter
-    public void setBlueprintId(String blueprintId) {
-        this.blueprintId = blueprintId;
-    }
+	@DataBoundSetter
+	public void setBlueprintId(String blueprintId) {
+		this.blueprintId = blueprintId;
+	}
 
-    public String getDeploymentId() {
-        return deploymentId;
-    }
+	public String getDeploymentId() {
+		return deploymentId;
+	}
 
-    @DataBoundSetter
-    public void setDeploymentId(String deploymentId) {
-        this.deploymentId = deploymentId;
-    }
+	@DataBoundSetter
+	public void setDeploymentId(String deploymentId) {
+		this.deploymentId = deploymentId;
+	}
 
-    public String getInputs() {
-        return inputs;
-    }
+	public String getInputs() {
+		return inputs;
+	}
 
-    @DataBoundSetter
-    public void setInputs(String inputs) {
-        this.inputs = inputs;
-    }
+	@DataBoundSetter
+	public void setInputs(String inputs) {
+		this.inputs = inputs;
+	}
 
-    public String getInputsFile() {
-        return inputsFile;
-    }
+	public String getInputsFile() {
+		return inputsFile;
+	}
 
-    @DataBoundSetter
-    public void setInputsFile(String inputsFile) {
-        this.inputsFile = inputsFile;
-    }
+	@DataBoundSetter
+	public void setInputsFile(String inputsFile) {
+		this.inputsFile = inputsFile;
+	}
 
-    public String getMapping() {
-        return mapping;
-    }
+	public String getMapping() {
+		return mapping;
+	}
 
-    @DataBoundSetter
-    public void setMapping(String mapping) {
-        this.mapping = mapping;
-    }
+	@DataBoundSetter
+	public void setMapping(String mapping) {
+		this.mapping = mapping;
+	}
 
-    public String getMappingFile() {
-        return mappingFile;
-    }
+	public String getMappingFile() {
+		return mappingFile;
+	}
 
-    @DataBoundSetter
-    public void setMappingFile(String mappingFile) {
-        this.mappingFile = mappingFile;
-    }
+	@DataBoundSetter
+	public void setMappingFile(String mappingFile) {
+		this.mappingFile = mappingFile;
+	}
 
-    public String getOutputFile() {
-        return outputFile;
-    }
+	public String getOutputFile() {
+		return outputFile;
+	}
 
-    @DataBoundSetter
-    public void setOutputFile(String outputFile) {
-        this.outputFile = outputFile;
-    }
+	@DataBoundSetter
+	public void setOutputFile(String outputFile) {
+		this.outputFile = outputFile;
+	}
 
-    public boolean isEchoInputs() {
-        return echoInputs;
-    }
+	public boolean isSkipInstall() {
+		return skipInstall;
+	}
 
-    @DataBoundSetter
-    public void setEchoInputs(boolean echoInputs) {
-        this.echoInputs = echoInputs;
-    }
+	@DataBoundSetter
+	public void setSkipInstall(boolean skipInstall) {
+		this.skipInstall = skipInstall;
+	}
 
-    public boolean isEchoOutputs() {
-        return echoOutputs;
-    }
+	public boolean isEchoInputs() {
+		return echoInputs;
+	}
 
-    @DataBoundSetter
-    public void setEchoOutputs(boolean echoOutputs) {
-        this.echoOutputs = echoOutputs;
-    }
+	@DataBoundSetter
+	public void setEchoInputs(boolean echoInputs) {
+		this.echoInputs = echoInputs;
+	}
 
-    public boolean isDebugOutput() {
-        return debugOutput;
-    }
+	public boolean isEchoOutputs() {
+		return echoOutputs;
+	}
 
-    @DataBoundSetter
-    public void setDebugOutput(boolean debugOutput) {
-        this.debugOutput = debugOutput;
-    }
+	@DataBoundSetter
+	public void setEchoOutputs(boolean echoOutputs) {
+		this.echoOutputs = echoOutputs;
+	}
 
-    @Override
-    protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
-            final FilePath workspace,
-            final EnvVars envVars,
-            final CloudifyClient cloudifyClient) throws Exception {
-        String blueprintId = CloudifyPluginUtilities.expandString(envVars, this.blueprintId);
-        String deploymentId = CloudifyPluginUtilities.expandString(envVars, this.deploymentId);
-        String inputs = CloudifyPluginUtilities.expandString(envVars, this.inputs);
-        String inputsFile = CloudifyPluginUtilities.expandString(envVars, this.inputsFile);
-        String mapping = CloudifyPluginUtilities.expandString(envVars, this.mapping);
-        String mappingFile = CloudifyPluginUtilities.expandString(envVars, this.mappingFile);
-        String outputFile = CloudifyPluginUtilities.expandString(envVars, this.outputFile);
+	public boolean isDebugOutput() {
+		return debugOutput;
+	}
 
-        EnvironmentBuildAction action = new EnvironmentBuildAction();
-        action.setBlueprintId(blueprintId);
-        action.setDeploymentId(deploymentId);
-        run.addOrReplaceAction(action);
+	@DataBoundSetter
+	public void setDebugOutput(boolean debugOutput) {
+		this.debugOutput = debugOutput;
+	}
 
-        CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(
-                listener, workspace, cloudifyClient, blueprintId, deploymentId, inputs, inputsFile,
-                mapping, mappingFile, outputFile, echoInputs, echoOutputs, debugOutput);
-        action.applyEnvironmentData(envData);
-    }
+	@Override
+	protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
+			final FilePath workspace, final EnvVars envVars, final CloudifyClient cloudifyClient) throws Exception {
+		String blueprintId = CloudifyPluginUtilities.expandString(envVars, this.blueprintId);
+		String deploymentId = CloudifyPluginUtilities.expandString(envVars, this.deploymentId);
+		String inputs = CloudifyPluginUtilities.expandString(envVars, this.inputs);
+		String inputsFile = CloudifyPluginUtilities.expandString(envVars, this.inputsFile);
+		String mapping = CloudifyPluginUtilities.expandString(envVars, this.mapping);
+		String mappingFile = CloudifyPluginUtilities.expandString(envVars, this.mappingFile);
+		String outputFile = CloudifyPluginUtilities.expandString(envVars, this.outputFile);
 
-    @Symbol("createCloudifyEnv")
-    @Extension
-    public static class Descriptor extends BuildStepDescriptor<Builder> {
-        @Override
-        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-            return true;
-        }
+		EnvironmentBuildAction action = new EnvironmentBuildAction();
+		action.setBlueprintId(blueprintId);
+		action.setDeploymentId(deploymentId);
+		run.addOrReplaceAction(action);
 
-        public FormValidation doCheckBlueprintId(@QueryParameter String value) {
-            return FormValidation.validateRequired(value);
-        }
+		CloudifyEnvironmentData envData = CloudifyPluginUtilities.createEnvironment(listener, workspace, cloudifyClient,
+				blueprintId, deploymentId, inputs, inputsFile, mapping, mappingFile, outputFile, skipInstall,
+				echoInputs, echoOutputs, debugOutput, x -> true);
+		action.applyEnvironmentData(envData);
+	}
 
-        public FormValidation doCheckDeploymentId(@QueryParameter String value) {
-            return FormValidation.validateRequired(value);
-        }
+	@Symbol("createCloudifyEnv")
+	@Extension
+	public static class Descriptor extends BuildStepDescriptor<Builder> {
+		@Override
+		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+			return true;
+		}
 
-        public FormValidation doCheckInputs(@QueryParameter String value) {
-            // This may consist of expansion parameters (such as "${inputs}")
-            // so we can't really validate anything at this stage.
+		public FormValidation doCheckBlueprintId(@QueryParameter String value) {
+			return FormValidation.validateRequired(value);
+		}
+
+		public FormValidation doCheckDeploymentId(@QueryParameter String value) {
+			return FormValidation.validateRequired(value);
+		}
+
+		public FormValidation doCheckInputs(@QueryParameter String value) {
+			// This may consist of expansion parameters (such as "${inputs}")
+			// so we can't really validate anything at this stage.
 //			return CloudifyPluginUtilities.validateStringIsYamlOrJson(value);
-            return FormValidation.ok();
-        }
+			return FormValidation.ok();
+		}
 
-        private FormValidation checkMappingParams(final String mapping, final String mappingFile) {
-            if (StringUtils.isNotBlank(mapping) && StringUtils.isNotBlank(mappingFile)) {
-                return FormValidation.error("Either mapping or mapping file may be specified, not both");
-            }
-            return FormValidation.ok();
-        }
+		private FormValidation checkMappingParams(final String mapping, final String mappingFile) {
+			if (StringUtils.isNotBlank(mapping) && StringUtils.isNotBlank(mappingFile)) {
+				return FormValidation.error("Either mapping or mapping file may be specified, not both");
+			}
+			return FormValidation.ok();
+		}
 
-        public FormValidation doCheckMapping(@QueryParameter String value, @QueryParameter String mappingFile) {
-            return checkMappingParams(value, mappingFile);
-        }
+		public FormValidation doCheckMapping(@QueryParameter String value, @QueryParameter String mappingFile) {
+			return checkMappingParams(value, mappingFile);
+		}
 
-        public FormValidation doCheckMappingFile(@QueryParameter String value, @QueryParameter String mapping) {
-            return checkMappingParams(mapping, value);
-        }
+		public FormValidation doCheckMappingFile(@QueryParameter String value, @QueryParameter String mapping) {
+			return checkMappingParams(mapping, value);
+		}
 
-        @Override
-        public String getDisplayName() {
-            return Messages.CreateEnvironmentBuildStep_DescriptorImpl_displayName();
-        }
-    }
+		@Override
+		public String getDisplayName() {
+			return Messages.CreateEnvironmentBuildStep_DescriptorImpl_displayName();
+		}
+	}
 
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this)
-                .appendSuper(super.toString())
-                .append("blueprintId", blueprintId)
-                .append("deploymentId", deploymentId)
-                .append("inputs", inputs)
-                .append("inputsFile", inputsFile)
-                .append("mapping", mapping)
-                .append("mappingFile", mappingFile)
-                .append("outputFile", outputFile)
-                .append("echoInputs", echoInputs)
-                .append("echoOutputs", echoOutputs)
-                .append("debugOutput", debugOutput)
-                .toString();
-    }
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this).appendSuper(super.toString()).append("blueprintId", blueprintId)
+				.append("deploymentId", deploymentId).append("inputs", inputs).append("inputsFile", inputsFile)
+				.append("mapping", mapping).append("mappingFile", mappingFile).append("outputFile", outputFile)
+				.append("skipInstall", skipInstall).append("echoInputs", echoInputs).append("echoOutputs", echoOutputs)
+				.append("debugOutput", debugOutput).toString();
+	}
 }

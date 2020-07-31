@@ -31,6 +31,7 @@ import hudson.util.FormValidation;
  */
 public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
     private String deploymentId;
+    private boolean skipUninstall;
     private boolean deleteBlueprintIfLast;
     private boolean ignoreFailure;
     private boolean debugOutput;
@@ -49,6 +50,15 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
         this.deploymentId = deploymentId;
     }
 
+    public boolean isSkipUninstall() {
+		return skipUninstall;
+	}
+    
+    @DataBoundSetter
+    public void setSkipUninstall(boolean skipUninstall) {
+		this.skipUninstall = skipUninstall;
+	}
+    
     public boolean isDeleteBlueprintIfLast() {
         return deleteBlueprintIfLast;
     }
@@ -86,7 +96,7 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
         DeploymentsClient deploymentsClient = cloudifyClient.getDeploymentsClient();
         Deployment deployment = deploymentsClient.get(deploymentId);
         CloudifyPluginUtilities.deleteEnvironment(listener, cloudifyClient, deploymentId,
-                DeploymentsHelper.DEFAULT_POLLING_INTERVAL, ignoreFailure, debugOutput);
+                DeploymentsHelper.DEFAULT_POLLING_INTERVAL, skipUninstall, ignoreFailure, debugOutput);
 
         if (deleteBlueprintIfLast) {
             String blueprintId = deployment.getBlueprintId();
@@ -124,6 +134,7 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
                 .append("deploymentId", deploymentId)
+                .append("skipUninstall", skipUninstall)
                 .append("deleteBlueprintIfLast", deleteBlueprintIfLast)
                 .append("ignoreFailure", ignoreFailure)
                 .append("debugOutput", debugOutput)

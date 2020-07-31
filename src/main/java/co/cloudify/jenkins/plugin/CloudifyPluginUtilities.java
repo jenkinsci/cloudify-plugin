@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -21,6 +23,8 @@ import javax.json.stream.JsonGenerator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.jenkinsci.plugins.plaincredentials.FileCredentials;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.IdCredentials;
@@ -57,8 +61,17 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class CloudifyPluginUtilities {
-	public static StandardUsernamePasswordCredentials getCredentials(final String credentialsId, final Run<?, ?> run) {
+	public static StandardUsernamePasswordCredentials getUsernamePasswordCredentials(final String credentialsId,
+			final Run<?, ?> run) {
 		return getCredentials(credentialsId, StandardUsernamePasswordCredentials.class, run);
+	}
+
+	public static StringCredentials getStringCredentials(final String credentialsId, final Run<?, ?> run) {
+		return getCredentials(credentialsId, StringCredentials.class, run);
+	}
+
+	public static FileCredentials getFileCredentials(final String credentialsId, final Run<?, ?> run) {
+		return getCredentials(credentialsId, FileCredentials.class, run);
 	}
 
 	public static <T extends IdCredentials> T getCredentials(final String credentialsId,
@@ -307,22 +320,31 @@ public class CloudifyPluginUtilities {
 
 	public static CloudifyEnvironmentData createEnvironment(TaskListener listener, FilePath workspace,
 			CloudifyClient client, String blueprintId, String deploymentId, Map<String, Object> inputs,
-			String outputsLocation, boolean echoInputs, boolean echoOutputs, boolean debugOutput)
-			throws IOException, InterruptedException {
+			String outputsLocation, boolean skipInstall, boolean echoInputs, boolean echoOutputs, boolean debugOutput,
+			Predicate<String> inputPrintPredicate) throws IOException, InterruptedException {
 		PrintStream logger = listener.getLogger();
 		ExecutionFollowCallback follower = CloudifyPluginUtilities.getExecutionFollowCallback(true, debugOutput, client,
 				logger);
 
 		try {
-			logger.println(echoInputs
-					? String.format("Creating deployment '%s' from blueprint '%s' using the following inputs: %s",
-							deploymentId, blueprintId, JSONObject.fromObject(inputs).toString(4))
-					: String.format("Creating deployment '%s' from blueprint '%s'", deploymentId, blueprintId));
+			String creatingMessage = String.format("Creating deployment '%s' from blueprint '%s'", deploymentId,
+					blueprintId);
+			if (echoInputs) {
+				Map<String, Object> printedInputs = inputs.entrySet().stream().collect(Collectors.toMap(
+						Map.Entry::getKey, x -> inputPrintPredicate.test(x.getKey()) ? x.getValue() : "<hidden>"));
+				creatingMessage = String.format("%s using the following inputs: %s", creatingMessage,
+						JSONObject.fromObject(printedInputs).toString(4));
+			}
+
+			logger.println(creatingMessage);
 			Deployment deployment = DeploymentsHelper.createDeploymentAndWait(client, deploymentId, blueprintId, inputs,
 					follower, ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
-			Execution execution = ExecutionsHelper.install(client, deployment.getId(), follower,
-					ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
-			ExecutionsHelper.validateCompleted(execution, "Environment setup failed");
+			if (!skipInstall) {
+				logger.println("Executing the 'install' workflow");
+				Execution execution = ExecutionsHelper.install(client, deployment.getId(), follower,
+						ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
+				ExecutionsHelper.validateCompleted(execution, "Environment setup failed");
+			}
 
 			DeploymentsClient deploymentsClient = client.getDeploymentsClient();
 			Map<String, Object> outputs = deploymentsClient.getOutputs(deployment);
@@ -353,20 +375,24 @@ public class CloudifyPluginUtilities {
 	/**
 	 * Create a Cloudify environment.
 	 * 
-	 * @param listener        Jenkins task listener
-	 * @param workspace       Jenkins workspace location
-	 * @param client          Cloudify client object
-	 * @param blueprintId     blueprint ID
-	 * @param deploymentId    deployment ID
-	 * @param inputs          deployment inputs
-	 * @param inputsLocation  location of file containing deployment inputs
-	 * @param mapping         YAML/JSON string containing input mappings
-	 * @param mappingLocation location of input mappings file
-	 * @param outputsLocation location of outputs file
-	 * @param echoInputs      whether to echo the deployment's inputs to the build
-	 *                        log
-	 * @param echoOutputs     whether to echo outputs to the build log
-	 * @param debugOutput     whether to emit debug-level logging
+	 * @param listener            Jenkins task listener
+	 * @param workspace           Jenkins workspace location
+	 * @param client              Cloudify client object
+	 * @param blueprintId         blueprint ID
+	 * @param deploymentId        deployment ID
+	 * @param inputs              deployment inputs
+	 * @param inputsLocation      location of file containing deployment inputs
+	 * @param mapping             YAML/JSON string containing input mappings
+	 * @param mappingLocation     location of input mappings file
+	 * @param outputsLocation     location of outputs file
+	 * @param skipInstall         whether to skip executing the <code>install</code>
+	 *                            workflow
+	 * @param echoInputs          whether to echo the deployment's inputs to the
+	 *                            build log
+	 * @param echoOutputs         whether to echo outputs to the build log
+	 * @param debugOutput         whether to emit debug-level logging
+	 * @param inputPrintPredicate a predicate to test whether an input value should
+	 *                            be printed
 	 * 
 	 * @return A {@link CloudifyEnvironmentData} instance containing information
 	 *         about the new environment.
@@ -376,12 +402,13 @@ public class CloudifyPluginUtilities {
 	 */
 	public static CloudifyEnvironmentData createEnvironment(TaskListener listener, FilePath workspace,
 			CloudifyClient client, String blueprintId, String deploymentId, String inputs, String inputsLocation,
-			String mapping, String mappingLocation, String outputsLocation, boolean echoInputs, boolean echoOutputs,
-			boolean debugOutput) throws IOException, InterruptedException {
+			String mapping, String mappingLocation, String outputsLocation, boolean skipInstall, boolean echoInputs,
+			boolean echoOutputs, boolean debugOutput, Predicate<String> inputPrintPredicate)
+			throws IOException, InterruptedException {
 		Map<String, Object> inputsMap = CloudifyPluginUtilities.createInputsMap(workspace, listener, inputs,
 				inputsLocation, mapping, mappingLocation);
 		return createEnvironment(listener, workspace, client, blueprintId, deploymentId, inputsMap, outputsLocation,
-				echoInputs, echoOutputs, debugOutput);
+				skipInstall, echoInputs, echoOutputs, debugOutput, inputPrintPredicate);
 	}
 
 	/**
@@ -392,6 +419,7 @@ public class CloudifyPluginUtilities {
 	 * @param deploymentId    deployment ID
 	 * @param pollingInterval number of milliseconds to wait between polling
 	 *                        iterations
+	 * @param skipUninstall   skip running the <code>uninstall</code> workflow
 	 * @param ignoreFailure   whether to ignore failures during deletion
 	 * @param debugOutput     emit debug statements
 	 * 
@@ -399,16 +427,18 @@ public class CloudifyPluginUtilities {
 	 * @throws InterruptedException Percolated from called code
 	 */
 	public static void deleteEnvironment(final TaskListener listener, final CloudifyClient client,
-			final String deploymentId, final long pollingInterval, final Boolean ignoreFailure,
-			final boolean debugOutput) throws IOException, InterruptedException {
+			final String deploymentId, final long pollingInterval, final boolean skipUninstall,
+			final Boolean ignoreFailure, final boolean debugOutput) throws IOException, InterruptedException {
 		PrintStream logger = listener.getLogger();
 		ExecutionFollowCallback follower = CloudifyPluginUtilities.getExecutionFollowCallback(true, debugOutput, client,
 				logger);
 		try {
-			logger.println(String.format("Uninstalling Cloudify environment; deployment ID: %s", deploymentId));
-			Execution execution = ExecutionsHelper.uninstall(client, deploymentId, ignoreFailure, follower,
-					ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
-			ExecutionsHelper.validateCompleted(execution, "Failed tearing down environment");
+			if (!skipUninstall) {
+				logger.println("Executing the 'uninstall' workflow");
+				Execution execution = ExecutionsHelper.uninstall(client, deploymentId, ignoreFailure, follower,
+						ExecutionsHelper.DEFAULT_POLLING_INTERVAL);
+				ExecutionsHelper.validateCompleted(execution, "Failed tearing down environment");
+			}
 			logger.println(String.format("Deleting deployment: %s", deploymentId));
 			DeploymentsHelper.deleteDeploymentAndWait(client, deploymentId, pollingInterval);
 		} catch (Exception ex) {
@@ -470,9 +500,10 @@ public class CloudifyPluginUtilities {
 	 * @return Expanded value.
 	 */
 	public static String expandString(final EnvVars envVars, final String value) {
+		String returnValue = value;
 		if (envVars != null) {
-			return StringUtils.trimToNull(envVars.expand(value));
+			returnValue = envVars.expand(value);
 		}
-		return value;
+		return StringUtils.trimToNull(returnValue);
 	}
 }

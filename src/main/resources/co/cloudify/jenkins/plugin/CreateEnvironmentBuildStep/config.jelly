@@ -28,6 +28,9 @@
     <f:entry title="${%Output file}" field="outputFile">
         <f:textbox />
     </f:entry>
+    <f:entry title="${%Skip install workflow}" field="skipInstall">
+        <f:checkbox />
+    </f:entry>
     <f:entry title="${%Print environment inputs}" field="echoInputs">
         <f:checkbox />
     </f:entry>
