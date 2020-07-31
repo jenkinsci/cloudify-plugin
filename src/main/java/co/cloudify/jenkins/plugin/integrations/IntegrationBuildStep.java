@@ -128,8 +128,14 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).appendSuper(super.toString()).append("deploymentId", deploymentId)
-                .append("debugOutput", debugOutput).append("echoInputs", echoInputs).append("echoEnvData", echoEnvData)
-                .append("operationInputs", operationInputs).append("envDataLocation", envDataLocation).toString();
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("deploymentId", deploymentId)
+                .append("debugOutput", debugOutput)
+                .append("echoInputs", echoInputs)
+                .append("echoEnvData", echoEnvData)
+                .append("operationInputs", operationInputs)
+                .append("envDataLocation", envDataLocation)
+                .toString();
     }
 }
