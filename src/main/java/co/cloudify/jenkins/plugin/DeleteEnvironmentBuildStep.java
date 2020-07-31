@@ -51,14 +51,14 @@ public class DeleteEnvironmentBuildStep extends CloudifyBuildStep {
     }
 
     public boolean isSkipUninstall() {
-		return skipUninstall;
-	}
-    
+        return skipUninstall;
+    }
+
     @DataBoundSetter
     public void setSkipUninstall(boolean skipUninstall) {
-		this.skipUninstall = skipUninstall;
-	}
-    
+        this.skipUninstall = skipUninstall;
+    }
+
     public boolean isDeleteBlueprintIfLast() {
         return deleteBlueprintIfLast;
     }
