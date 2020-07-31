@@ -5,37 +5,23 @@ imports:
   - plugin:cloudify-kubernetes-plugin
 
 inputs:
-  gcp_credentials:
-    type: string
-  kubernetes_master:
-    type: string
-  verify_ssl:
-    type: boolean
-  debug:
-    type: boolean
+  client_config:
+    type: dict
+  definition:
+    type: dict
+  options:
+    type: dict
   validate_status:
     type: boolean
   allow_node_redefinition:
     type: boolean
-  resource_path:
-    type: string
-  resource_template_variables:
-    type: dict
 
 node_templates:
   resource:
-    type: cloudify.kubernetes.resources.FileDefinedResource
+    type: cloudify.kubernetes.resources.Deployment
     properties:
-      client_config:
-        authentication:
-          gcp_service_account: { get_secret: gcp_credentials }
-        configuration:
-          api_options:
-            host: { get_input: kubernetes_master }
-            verify_ssl: { get_input: verify_ssl }
-            debug: { get_input: debug }
+      client_config: { get_input: client_config }
+      definition: { get_input: definition }
+      options: { get_input: options }
       validate_resource_status: { get_input: validate_status }
       allow_node_redefinition: { get_input: allow_node_redefinition }
-      file:
-        resource_path: { get_input: resource_path }
-        template_variables: { get_input: resource_template_variables }

@@ -2,6 +2,8 @@ package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -31,220 +33,293 @@ import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 
 /**
- * A build step for applying a Terraform template.
+ * A build step for creating Kubernetes resources.
  * 
  * @author Isaac Shabtay
  */
 public class KubernetesBuildStep extends IntegrationBuildStep {
-	private static final String INPUT_GCP_CREDENTIALS = "gcp_credentials";
+    private static final String INPUT_CLIENT_CONFIG = "client_config";
+    private static final String INPUT_DEFINITION = "definition";
+    private static final String INPUT_OPTIONS = "options";
+    private static final String INPUT_VALIDATE_STATUS = "validate_status";
+    private static final String INPUT_ALLOW_NODE_REDEFINITION = "allow_node_redefinition";
 
-	private String gcpCredentialsId;
-	private String gcpCredentialsFile;
-	private String k8sMaster;
-	private boolean verifySsl = true;
-	private boolean debug = false;
-	private boolean validateStatus = true;
-	private boolean allowNodeRedefinition = false;
-	private String resourcePath;
-	private String variablesAsString;
-	private String variablesFile;
-	private Map<String, Object> variables;
+    private String gcpCredentialsId;
+    private String gcpCredentialsFile;
+    private String k8sMaster;
+    private String apiOptionsAsString;
+    private String apiOptionsFile;
+    private Map<String, Object> apiOptions;
+    private String definitionAsString;
+    private String definitionFile;
+    private Map<String, Object> definition;
+    private String optionsAsString;
+    private String optionsFile;
+    private Map<String, Object> options;
+    private boolean validateStatus = true;
+    private boolean allowNodeRedefinition = false;
 
-	@DataBoundConstructor
-	public KubernetesBuildStep() {
-		super();
-	}
+    @DataBoundConstructor
+    public KubernetesBuildStep() {
+        super();
+    }
 
-	public String getGcpCredentialsId() {
-		return gcpCredentialsId;
-	}
+    public String getGcpCredentialsId() {
+        return gcpCredentialsId;
+    }
 
-	@DataBoundSetter
-	public void setGcpCredentialsId(String gcpCredentialsId) {
-		this.gcpCredentialsId = gcpCredentialsId;
-	}
+    @DataBoundSetter
+    public void setGcpCredentialsId(String gcpCredentialsId) {
+        this.gcpCredentialsId = gcpCredentialsId;
+    }
 
-	public String getGcpCredentialsFile() {
-		return gcpCredentialsFile;
-	}
+    public String getGcpCredentialsFile() {
+        return gcpCredentialsFile;
+    }
 
-	@DataBoundSetter
-	public void setGcpCredentialsFile(String gcpCredentialsFile) {
-		this.gcpCredentialsFile = gcpCredentialsFile;
-	}
+    @DataBoundSetter
+    public void setGcpCredentialsFile(String gcpCredentialsFile) {
+        this.gcpCredentialsFile = gcpCredentialsFile;
+    }
 
-	public String getK8sMaster() {
-		return k8sMaster;
-	}
+    public String getK8sMaster() {
+        return k8sMaster;
+    }
 
-	@DataBoundSetter
-	public void setK8sMaster(String k8sMaster) {
-		this.k8sMaster = k8sMaster;
-	}
+    @DataBoundSetter
+    public void setK8sMaster(String k8sMaster) {
+        this.k8sMaster = k8sMaster;
+    }
 
-	public boolean isVerifySsl() {
-		return verifySsl;
-	}
+    public String getApiOptionsAsString() {
+        return apiOptionsAsString;
+    }
 
-	@DataBoundSetter
-	public void setVerifySsl(boolean verifySsl) {
-		this.verifySsl = verifySsl;
-	}
+    @DataBoundSetter
+    public void setApiOptionsAsString(String apiOptionsAsString) {
+        this.apiOptionsAsString = apiOptionsAsString;
+    }
 
-	public boolean isDebug() {
-		return debug;
-	}
+    public String getApiOptionsFile() {
+        return apiOptionsFile;
+    }
 
-	@DataBoundSetter
-	public void setDebug(boolean debug) {
-		this.debug = debug;
-	}
+    @DataBoundSetter
+    public void setApiOptionsFile(String apiOptionsFile) {
+        this.apiOptionsFile = apiOptionsFile;
+    }
 
-	public boolean isValidateStatus() {
-		return validateStatus;
-	}
+    public Map<String, Object> getApiOptions() {
+        return apiOptions;
+    }
 
-	@DataBoundSetter
-	public void setValidateStatus(boolean validateStatus) {
-		this.validateStatus = validateStatus;
-	}
+    @DataBoundSetter
+    public void setApiOptions(Map<String, Object> apiOptions) {
+        this.apiOptions = apiOptions;
+    }
 
-	public boolean isAllowNodeRedefinition() {
-		return allowNodeRedefinition;
-	}
+    public String getDefinitionAsString() {
+        return definitionAsString;
+    }
 
-	@DataBoundSetter
-	public void setAllowNodeRedefinition(boolean allowNodeRedefinition) {
-		this.allowNodeRedefinition = allowNodeRedefinition;
-	}
+    @DataBoundSetter
+    public void setDefinitionAsString(String definitionAsString) {
+        this.definitionAsString = definitionAsString;
+    }
 
-	public String getResourcePath() {
-		return resourcePath;
-	}
+    public String getDefinitionFile() {
+        return definitionFile;
+    }
 
-	@DataBoundSetter
-	public void setResourcePath(String resourcePath) {
-		this.resourcePath = resourcePath;
-	}
+    @DataBoundSetter
+    public void setDefinitionFile(String definitionFile) {
+        this.definitionFile = definitionFile;
+    }
 
-	public String getVariablesAsString() {
-		return variablesAsString;
-	}
+    public Map<String, Object> getDefinition() {
+        return definition;
+    }
 
-	@DataBoundSetter
-	public void setVariablesAsString(String parameters) {
-		this.variablesAsString = parameters;
-	}
+    @DataBoundSetter
+    public void setDefinition(Map<String, Object> definition) {
+        this.definition = definition;
+    }
 
-	public String getVariablesFile() {
-		return variablesFile;
-	}
+    public String getOptionsAsString() {
+        return optionsAsString;
+    }
 
-	@DataBoundSetter
-	public void setVariablesFile(String variablesFile) {
-		this.variablesFile = variablesFile;
-	}
+    @DataBoundSetter
+    public void setOptionsAsString(String optionsAsString) {
+        this.optionsAsString = optionsAsString;
+    }
 
-	public Map<String, Object> getVariables() {
-		return variables;
-	}
+    public String getOptionsFile() {
+        return optionsFile;
+    }
 
-	@DataBoundSetter
-	public void setVariables(Map<String, Object> variables) {
-		this.variables = variables;
-	}
+    @DataBoundSetter
+    public void setOptionsFile(String optionsFile) {
+        this.optionsFile = optionsFile;
+    }
 
-	@Override
-	protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
-			final FilePath workspace, final EnvVars envVars, final CloudifyClient cloudifyClient) throws Exception {
-		String gcpCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsId);
-		String gcpCredentialsFile = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsFile);
-		String k8sMaster = CloudifyPluginUtilities.expandString(envVars, this.k8sMaster);
-		String resourcePath = CloudifyPluginUtilities.expandString(envVars, this.resourcePath);
-		String variablesFile = CloudifyPluginUtilities.expandString(envVars, this.variablesFile);
-		String variablesAsString = CloudifyPluginUtilities.expandString(envVars, this.variablesAsString);
+    public Map<String, Object> getOptions() {
+        return options;
+    }
 
-		Map<String, Object> gcpCredentials;
-		if (gcpCredentialsId != null) {
-			IdCredentials gcpIdCredentials = CloudifyPluginUtilities.getCredentials(gcpCredentialsId,
-					IdCredentials.class, run);
-			if (gcpIdCredentials == null) {
-				throw new IllegalArgumentException(String.format("Credentials not found: %s", gcpIdCredentials));
-			}
-			if (gcpIdCredentials instanceof StringCredentials) {
-				gcpCredentials = JSONObject
-						.fromObject(((StringCredentials) gcpIdCredentials).getSecret().getPlainText());
-			} else if (gcpIdCredentials instanceof FileCredentials) {
-				try (InputStream is = ((FileCredentials) gcpIdCredentials).getContent()) {
-					gcpCredentials = JSONObject.fromObject(is);
-				}
-			} else {
-				throw new IllegalArgumentException(String.format("Credentials '%s' are of an unhandled type: %s",
-						gcpCredentialsId, gcpIdCredentials.getClass().getName()));
-			}
+    @DataBoundSetter
+    public void setOptions(Map<String, Object> options) {
+        this.options = options;
+    }
 
-		} else if (gcpCredentialsFile != null) {
-			gcpCredentials = CloudifyPluginUtilities.readYamlOrJson(workspace.child(gcpCredentialsFile));
-		} else {
-			throw new IllegalArgumentException("Either credentials ID or file must be provided");
-		}
+    public boolean isValidateStatus() {
+        return validateStatus;
+    }
 
-		Map<String, Object> variablesMap = CloudifyPluginUtilities.getCombinedMap(workspace, variablesFile,
-				variablesAsString, this.variables);
+    @DataBoundSetter
+    public void setValidateStatus(boolean validateStatus) {
+        this.validateStatus = validateStatus;
+    }
 
-		putIfNonNullValue(operationInputs, INPUT_GCP_CREDENTIALS, JSONObject.fromObject(gcpCredentials).toString(4));
-		putIfNonNullValue(operationInputs, "kubernetes_master", k8sMaster);
-		putIfNonNullValue(operationInputs, "verify_ssl", verifySsl);
-		putIfNonNullValue(operationInputs, "debug", debug);
-		putIfNonNullValue(operationInputs, "validate_status", validateStatus);
-		putIfNonNullValue(operationInputs, "allow_node_redefinition", allowNodeRedefinition);
-		putIfNonNullValue(operationInputs, "resource_path", resourcePath);
-		putIfNonNullValue(operationInputs, "resource_template_variables", variablesMap);
+    public boolean isAllowNodeRedefinition() {
+        return allowNodeRedefinition;
+    }
 
-		inputPrintPredicate = x -> !x.equals(INPUT_GCP_CREDENTIALS);
-		super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
-	}
+    @DataBoundSetter
+    public void setAllowNodeRedefinition(boolean allowNodeRedefinition) {
+        this.allowNodeRedefinition = allowNodeRedefinition;
+    }
 
-	@Override
-	protected String getIntegrationName() {
-		return "kubernetes";
-	}
+    @Override
+    protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
+            final FilePath workspace, final EnvVars envVars, final CloudifyClient cloudifyClient) throws Exception {
+        String gcpCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsId);
+        String gcpCredentialsFile = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsFile);
+        String apiOptionsAsString = CloudifyPluginUtilities.expandString(envVars, this.apiOptionsAsString);
+        String apiOptionsFile = CloudifyPluginUtilities.expandString(envVars, this.apiOptionsFile);
+        String k8sMaster = CloudifyPluginUtilities.expandString(envVars, this.k8sMaster);
+        String definitionAsString = CloudifyPluginUtilities.expandString(envVars, this.definitionAsString);
+        String definitionFile = CloudifyPluginUtilities.expandString(envVars, this.definitionFile);
+        String optionsAsString = CloudifyPluginUtilities.expandString(envVars, this.optionsAsString);
+        String optionsFile = CloudifyPluginUtilities.expandString(envVars, this.optionsFile);
 
-	@Override
-	protected String getIntegrationVersion() {
-		return "1.0";
-	}
+        Map<String, Object> apiOptionsMap = CloudifyPluginUtilities.getCombinedMap(workspace, apiOptionsFile,
+                apiOptionsAsString,
+                this.apiOptions);
+        Map<String, Object> definitionMap = CloudifyPluginUtilities.getCombinedMap(workspace, definitionFile,
+                definitionAsString, this.definition);
+        Map<String, Object> optionsMap = CloudifyPluginUtilities.getCombinedMap(workspace, optionsFile,
+                optionsAsString, this.options);
 
-	@Override
-	protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
-		return new BlueprintUploadSpec("/blueprints/k8s/blueprint.yaml");
-	}
+        // Prepare the Client Config.
 
-	@Symbol("cfyKubernetes")
-	@Extension
-	public static class Descriptor extends BuildStepDescriptor<Builder> {
-		@Override
-		public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
-			return true;
-		}
+        Map<String, Object> clientConfig = new HashMap<>();
 
-		public FormValidation doCheckTemplateUrl(@QueryParameter String value) {
-			return FormValidation.validateRequired(value);
-		}
+        Map<String, Object> gcpCredentials = null;
+        if (gcpCredentialsId != null) {
+            IdCredentials gcpIdCredentials = CloudifyPluginUtilities.getCredentials(gcpCredentialsId,
+                    IdCredentials.class, run);
+            if (gcpIdCredentials == null) {
+                throw new IllegalArgumentException(String.format("Credentials not found: %s", gcpIdCredentials));
+            }
+            if (gcpIdCredentials instanceof StringCredentials) {
+                gcpCredentials = JSONObject
+                        .fromObject(((StringCredentials) gcpIdCredentials).getSecret().getPlainText());
+            } else if (gcpIdCredentials instanceof FileCredentials) {
+                try (InputStream is = ((FileCredentials) gcpIdCredentials).getContent()) {
+                    gcpCredentials = JSONObject.fromObject(is);
+                }
+            } else {
+                throw new IllegalArgumentException(String.format("Credentials '%s' are of an unhandled type: %s",
+                        gcpCredentialsId, gcpIdCredentials.getClass().getName()));
+            }
 
-		@Override
-		public String getDisplayName() {
-			return Messages.KubernetesBuildStep_DescriptorImpl_displayName();
-		}
-	}
+        } else if (gcpCredentialsFile != null) {
+            gcpCredentials = CloudifyPluginUtilities.readYamlOrJson(workspace.child(gcpCredentialsFile));
+        }
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this).appendSuper(super.toString()).append("gcpCredentialsId", gcpCredentialsId)
-				.append("gcpCredentialsFile", gcpCredentialsFile).append("k8sMaster", k8sMaster)
-				.append("verifySsl", verifySsl).append("debug", debug).append("validateStatus", validateStatus)
-				.append("allowNodeRedefinition", allowNodeRedefinition).append("resourcePath", resourcePath)
-				.append("variablesAsString", variablesAsString).append("variablesFile", variablesFile)
-				.append("variables", variables).toString();
-	}
+        // If GCP authentication was provided, then put "authentication" in Client Config.
+
+        if (gcpCredentials != null) {
+            clientConfig.put("authentication", Collections.singletonMap("gcp_service_account", gcpCredentials));
+        }
+
+        Map<String, Object> clientConfigConfiguration = new HashMap<>();
+
+        if (k8sMaster != null) {
+            apiOptionsMap.put("host", k8sMaster);
+        }
+
+        // Only add to ClientConfig->Configuration if not empty.
+        if (!apiOptionsMap.isEmpty()) {
+            clientConfigConfiguration.put("api_options", apiOptionsMap);
+        }
+        // Only add to ClientConfig if not empty.
+        if (!clientConfigConfiguration.isEmpty()) {
+            clientConfig.put("configuration", clientConfigConfiguration);
+        }
+
+        operationInputs.put(INPUT_CLIENT_CONFIG, clientConfig);
+        operationInputs.put(INPUT_DEFINITION, definitionMap);
+        operationInputs.put(INPUT_OPTIONS, optionsMap);
+        putIfNonNullValue(operationInputs, INPUT_VALIDATE_STATUS, validateStatus);
+        putIfNonNullValue(operationInputs, INPUT_ALLOW_NODE_REDEFINITION, allowNodeRedefinition);
+
+        inputPrintPredicate = x -> !x.equals(INPUT_CLIENT_CONFIG);
+        super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
+    }
+
+    @Override
+    protected String getIntegrationName() {
+        return "kubernetes";
+    }
+
+    @Override
+    protected String getIntegrationVersion() {
+        return "1.0";
+    }
+
+    @Override
+    protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
+        return new BlueprintUploadSpec("/blueprints/k8s/blueprint.yaml");
+    }
+
+    @Symbol("cfyKubernetes")
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Builder> {
+        @Override
+        public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            return true;
+        }
+
+        public FormValidation doCheckTemplateUrl(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.KubernetesBuildStep_DescriptorImpl_displayName();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .appendSuper(super.toString())
+                .append("gcpCredentialsId", gcpCredentialsId)
+                .append("gcpCredentialsFile", gcpCredentialsFile)
+                .append("k8sMaster", k8sMaster)
+                .append("apiOptionsAsString", apiOptionsAsString)
+                .append("apiOptionsFile", apiOptionsFile)
+                .append("apiOptions", apiOptions)
+                .append("definitionAsString", definitionAsString)
+                .append("definitionFile", definitionFile)
+                .append("definition", definition)
+                .append("optionsAsString", optionsAsString)
+                .append("optionsFile", optionsFile)
+                .append("options", options)
+                .append("validateStatus", validateStatus)
+                .append("allowNodeRedefinition", allowNodeRedefinition)
+                .toString();
+    }
 }

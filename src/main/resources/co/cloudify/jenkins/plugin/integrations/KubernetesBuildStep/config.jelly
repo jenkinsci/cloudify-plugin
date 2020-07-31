@@ -16,23 +16,29 @@
     <f:entry title="${%Kubernetes Master}" field="k8sMaster">
         <f:textbox />
     </f:entry>
-    <f:entry title="${%Verify SSL}" field="verifySsl">
-        <f:checkbox />
+    <f:entry title="${%API Options}" field="apiOptionsAsString">
+        <f:textarea />
     </f:entry>
-    <f:entry title="${%Debug K8S Output}" field="debug">
-        <f:checkbox />
+    <f:entry title="${%API Options File}" field="apiOptionsFile">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Application Definition}" field="definitionAsString">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Applicaiton Definition File}" field="definitionFile">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Options}" field="optionsAsString">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Options File}" field="optionsFile">
+        <f:textbox />
     </f:entry>
     <f:entry title="${%Validate Status}" field="validateStatus">
         <f:checkbox />
     </f:entry>
     <f:entry title="${%Allow Node Redefinition}" field="allowNodeRedefinition">
         <f:checkbox />
-    </f:entry>
-    <f:entry title="${%Resource Path}" field="resourcePath">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Variables}" field="variablesAsString">
-        <f:textarea />
     </f:entry>
     <f:entry title="${%Environment Data Output Path}" field="envDataLocation">
         <f:textbox />
