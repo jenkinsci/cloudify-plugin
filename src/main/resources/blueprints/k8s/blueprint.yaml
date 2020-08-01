@@ -25,3 +25,7 @@ node_templates:
       options: { get_input: options }
       validate_resource_status: { get_input: validate_status }
       allow_node_redefinition: { get_input: allow_node_redefinition }
+
+outputs:
+  kubernetes:
+    value: { get_attribute: [ resource, kubernetes ] }
