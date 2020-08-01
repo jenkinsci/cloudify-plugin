@@ -16,6 +16,9 @@
     <f:entry title="${%Kubernetes Master}" field="k8sMaster">
         <f:textbox />
     </f:entry>
+    <f:entry title="${%API Key Credentials}" field="apiKeyCredentialId">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%API Options}" field="apiOptionsAsString">
         <f:textarea />
     </f:entry>

@@ -1,20 +1,16 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.plaincredentials.FileCredentials;
-import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import com.cloudbees.plugins.credentials.common.IdCredentials;
 
 import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
@@ -30,7 +26,6 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-import net.sf.json.JSONObject;
 
 /**
  * A build step for creating Kubernetes resources.
@@ -38,6 +33,7 @@ import net.sf.json.JSONObject;
  * @author Isaac Shabtay
  */
 public class KubernetesBuildStep extends IntegrationBuildStep {
+    private static final String API_OPTIONS_API_KEY = "api_key";
     private static final String INPUT_CLIENT_CONFIG = "client_config";
     private static final String INPUT_DEFINITION = "definition";
     private static final String INPUT_OPTIONS = "options";
@@ -47,6 +43,8 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     private String gcpCredentialsId;
     private String gcpCredentialsFile;
     private String k8sMaster;
+    private String apiKeyCredentialId;
+    private String apiKeyCredentialFile;
     private String apiOptionsAsString;
     private String apiOptionsFile;
     private Map<String, Object> apiOptions;
@@ -89,6 +87,24 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     @DataBoundSetter
     public void setK8sMaster(String k8sMaster) {
         this.k8sMaster = k8sMaster;
+    }
+
+    public String getApiKeyCredentialId() {
+        return apiKeyCredentialId;
+    }
+
+    @DataBoundSetter
+    public void setApiKeyCredentialId(String apiKeyCredentialId) {
+        this.apiKeyCredentialId = apiKeyCredentialId;
+    }
+
+    public String getApiKeyCredentialFile() {
+        return apiKeyCredentialFile;
+    }
+
+    @DataBoundSetter
+    public void setApiKeyCredentialFile(String apiKeyCredentialFile) {
+        this.apiKeyCredentialFile = apiKeyCredentialFile;
     }
 
     public String getApiOptionsAsString() {
@@ -193,11 +209,15 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     @Override
     protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
             final FilePath workspace, final EnvVars envVars, final CloudifyClient cloudifyClient) throws Exception {
+        PrintStream logger = listener.getLogger();
+
         String gcpCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsId);
         String gcpCredentialsFile = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsFile);
         String apiOptionsAsString = CloudifyPluginUtilities.expandString(envVars, this.apiOptionsAsString);
         String apiOptionsFile = CloudifyPluginUtilities.expandString(envVars, this.apiOptionsFile);
         String k8sMaster = CloudifyPluginUtilities.expandString(envVars, this.k8sMaster);
+        String apiKeyCredentialId = CloudifyPluginUtilities.expandString(envVars, this.apiKeyCredentialId);
+        String apiKeyCredentialFile = CloudifyPluginUtilities.expandString(envVars, this.apiKeyCredentialFile);
         String definitionAsString = CloudifyPluginUtilities.expandString(envVars, this.definitionAsString);
         String definitionFile = CloudifyPluginUtilities.expandString(envVars, this.definitionFile);
         String optionsAsString = CloudifyPluginUtilities.expandString(envVars, this.optionsAsString);
@@ -215,28 +235,8 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
 
         Map<String, Object> clientConfig = new HashMap<>();
 
-        Map<String, Object> gcpCredentials = null;
-        if (gcpCredentialsId != null) {
-            IdCredentials gcpIdCredentials = CloudifyPluginUtilities.getCredentials(gcpCredentialsId,
-                    IdCredentials.class, run);
-            if (gcpIdCredentials == null) {
-                throw new IllegalArgumentException(String.format("Credentials not found: %s", gcpIdCredentials));
-            }
-            if (gcpIdCredentials instanceof StringCredentials) {
-                gcpCredentials = JSONObject
-                        .fromObject(((StringCredentials) gcpIdCredentials).getSecret().getPlainText());
-            } else if (gcpIdCredentials instanceof FileCredentials) {
-                try (InputStream is = ((FileCredentials) gcpIdCredentials).getContent()) {
-                    gcpCredentials = JSONObject.fromObject(is);
-                }
-            } else {
-                throw new IllegalArgumentException(String.format("Credentials '%s' are of an unhandled type: %s",
-                        gcpCredentialsId, gcpIdCredentials.getClass().getName()));
-            }
-
-        } else if (gcpCredentialsFile != null) {
-            gcpCredentials = CloudifyPluginUtilities.readYamlOrJson(workspace.child(gcpCredentialsFile));
-        }
+        Map<String, Object> gcpCredentials = CloudifyPluginUtilities.readYamlOrJsonCredentials(run, workspace,
+                gcpCredentialsId, gcpCredentialsFile);
 
         // If GCP authentication was provided, then put "authentication" in Client Config.
 
@@ -248,6 +248,20 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
 
         if (k8sMaster != null) {
             apiOptionsMap.put("host", k8sMaster);
+        }
+
+        // If API key credentials were provided, add them, but only if none
+        // were provided already.
+
+        String apiKeyCredentials = CloudifyPluginUtilities.readStringCredentials(run, workspace, apiKeyCredentialId,
+                apiKeyCredentialFile);
+        if (apiKeyCredentials != null) {
+            if (apiOptionsMap.containsKey(API_OPTIONS_API_KEY)) {
+                logger.println(
+                        "Note: API key credentials provided through designated parameter, but ignored as they are already provided through api_options");
+            } else {
+                apiOptionsMap.put(API_OPTIONS_API_KEY, apiKeyCredentials);
+            }
         }
 
         // Only add to ClientConfig->Configuration if not empty.
@@ -309,6 +323,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
                 .append("gcpCredentialsId", gcpCredentialsId)
                 .append("gcpCredentialsFile", gcpCredentialsFile)
                 .append("k8sMaster", k8sMaster)
+                .append("apiKeyCredentialId", apiKeyCredentialId)
                 .append("apiOptionsAsString", apiOptionsAsString)
                 .append("apiOptionsFile", apiOptionsFile)
                 .append("apiOptions", apiOptions)

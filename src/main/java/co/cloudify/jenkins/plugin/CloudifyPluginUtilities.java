@@ -88,6 +88,40 @@ public class CloudifyPluginUtilities {
         return creds;
     }
 
+    public static Map<String, Object> readYamlOrJsonCredentials(final Run<?, ?> run, final FilePath workspace,
+            final String id, final String file) throws IOException, InterruptedException {
+        String credentialsAsString = readStringCredentials(run, workspace, id, file);
+        return credentialsAsString != null ? readYamlOrJson(credentialsAsString) : null;
+    }
+
+    public static String readStringCredentials(final Run<?, ?> run, final FilePath workspace,
+            final String id, final String file) throws IOException, InterruptedException {
+        String credentials = null;
+
+        if (id != null) {
+            IdCredentials idCredentials = CloudifyPluginUtilities.getCredentials(id,
+                    IdCredentials.class, run);
+            if (idCredentials == null) {
+                throw new IllegalArgumentException(String.format("Credentials not found: %s", id));
+            }
+            if (idCredentials instanceof StringCredentials) {
+                credentials = ((StringCredentials) idCredentials).getSecret().getPlainText();
+            } else if (idCredentials instanceof FileCredentials) {
+                try (InputStream is = ((FileCredentials) idCredentials).getContent()) {
+                    credentials = IOUtils.toString(is, StandardCharsets.UTF_8);
+                }
+            } else {
+                throw new IllegalArgumentException(String.format("Credentials '%s' are of an unhandled type: %s",
+                        id, idCredentials.getClass().getName()));
+            }
+
+        } else if (file != null) {
+            credentials = workspace.child(file).readToString();
+        }
+
+        return credentials;
+    }
+
     /**
      * Returns a combined map from file contents, string contents and an actual
      * {@link Map}.
