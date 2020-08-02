@@ -43,8 +43,8 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     private String gcpCredentialsId;
     private String gcpCredentialsFile;
     private String k8sMaster;
-    private String apiKeyCredentialId;
-    private String apiKeyCredentialFile;
+    private String apiKeyCredentialsId;
+    private String apiKeyCredentialsFile;
     private String apiOptionsAsString;
     private String apiOptionsFile;
     private Map<String, Object> apiOptions;
@@ -89,22 +89,22 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         this.k8sMaster = k8sMaster;
     }
 
-    public String getApiKeyCredentialId() {
-        return apiKeyCredentialId;
+    public String getApiKeyCredentialsId() {
+        return apiKeyCredentialsId;
     }
 
     @DataBoundSetter
-    public void setApiKeyCredentialId(String apiKeyCredentialId) {
-        this.apiKeyCredentialId = apiKeyCredentialId;
+    public void setApiKeyCredentialsId(String apiKeyCredentialsId) {
+        this.apiKeyCredentialsId = apiKeyCredentialsId;
     }
 
-    public String getApiKeyCredentialFile() {
-        return apiKeyCredentialFile;
+    public String getApiKeyCredentialsFile() {
+        return apiKeyCredentialsFile;
     }
 
     @DataBoundSetter
-    public void setApiKeyCredentialFile(String apiKeyCredentialFile) {
-        this.apiKeyCredentialFile = apiKeyCredentialFile;
+    public void setApiKeyCredentialsFile(String apiKeyCredentialsFile) {
+        this.apiKeyCredentialsFile = apiKeyCredentialsFile;
     }
 
     public String getApiOptionsAsString() {
@@ -216,8 +216,8 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         String apiOptionsAsString = CloudifyPluginUtilities.expandString(envVars, this.apiOptionsAsString);
         String apiOptionsFile = CloudifyPluginUtilities.expandString(envVars, this.apiOptionsFile);
         String k8sMaster = CloudifyPluginUtilities.expandString(envVars, this.k8sMaster);
-        String apiKeyCredentialId = CloudifyPluginUtilities.expandString(envVars, this.apiKeyCredentialId);
-        String apiKeyCredentialFile = CloudifyPluginUtilities.expandString(envVars, this.apiKeyCredentialFile);
+        String apiKeyCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.apiKeyCredentialsId);
+        String apiKeyCredentialsFile = CloudifyPluginUtilities.expandString(envVars, this.apiKeyCredentialsFile);
         String definitionAsString = CloudifyPluginUtilities.expandString(envVars, this.definitionAsString);
         String definitionFile = CloudifyPluginUtilities.expandString(envVars, this.definitionFile);
         String optionsAsString = CloudifyPluginUtilities.expandString(envVars, this.optionsAsString);
@@ -253,8 +253,8 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         // If API key credentials were provided, add them, but only if none
         // were provided already.
 
-        String apiKeyCredentials = CloudifyPluginUtilities.readStringCredentials(run, workspace, apiKeyCredentialId,
-                apiKeyCredentialFile);
+        String apiKeyCredentials = CloudifyPluginUtilities.readStringCredentials(run, workspace, apiKeyCredentialsId,
+                apiKeyCredentialsFile);
         if (apiKeyCredentials != null) {
             if (apiOptionsMap.containsKey(API_OPTIONS_API_KEY)) {
                 logger.println(
@@ -323,7 +323,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
                 .append("gcpCredentialsId", gcpCredentialsId)
                 .append("gcpCredentialsFile", gcpCredentialsFile)
                 .append("k8sMaster", k8sMaster)
-                .append("apiKeyCredentialId", apiKeyCredentialId)
+                .append("apiKeyCredentialId", apiKeyCredentialsId)
                 .append("apiOptionsAsString", apiOptionsAsString)
                 .append("apiOptionsFile", apiOptionsFile)
                 .append("apiOptions", apiOptions)

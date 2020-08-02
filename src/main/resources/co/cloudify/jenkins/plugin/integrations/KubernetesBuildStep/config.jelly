@@ -16,7 +16,10 @@
     <f:entry title="${%Kubernetes Master}" field="k8sMaster">
         <f:textbox />
     </f:entry>
-    <f:entry title="${%API Key Credentials}" field="apiKeyCredentialId">
+    <f:entry title="${%API Key Credentials}" field="apiKeyCredentialsId">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%API Key Credentials File}" field="apiKeyCredentialsFile">
         <f:textbox />
     </f:entry>
     <f:entry title="${%API Options}" field="apiOptionsAsString">
@@ -28,7 +31,7 @@
     <f:entry title="${%Application Definition}" field="definitionAsString">
         <f:textarea />
     </f:entry>
-    <f:entry title="${%Applicaiton Definition File}" field="definitionFile">
+    <f:entry title="${%Application Definition File}" field="definitionFile">
         <f:textbox />
     </f:entry>
     <f:entry title="${%Options}" field="optionsAsString">
