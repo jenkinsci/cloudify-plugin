@@ -34,7 +34,7 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
     protected String envDataLocation;
     protected Map<String, Object> operationInputs = new LinkedHashMap<String, Object>();
     /** Predicate to determine whether an input should be printed out, or be masked. */
-    protected Predicate<String> inputPrintPredicate = x -> true;
+    protected Predicate<String> inputPrintPredicate;
 
     public boolean isEchoInputs() {
         return echoInputs;
@@ -105,7 +105,8 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
 
         String envDataLocation = CloudifyPluginUtilities.expandString(envVars, this.envDataLocation);
         CloudifyPluginUtilities.createEnvironment(listener, workspace, cloudifyClient, blueprint.getId(), deploymentId,
-                operationInputs, envDataLocation, false, echoInputs, echoEnvData, debugOutput, inputPrintPredicate);
+                operationInputs, envDataLocation, false, echoInputs, echoEnvData, debugOutput,
+                inputPrintPredicate != null ? inputPrintPredicate : x -> true);
     }
 
     protected void putIfNonNullValue(final Map<String, Object> map, final String key, final Object value) {
