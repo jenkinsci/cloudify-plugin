@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
@@ -45,8 +46,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>co.cloudify</groupId>
-			<artifactId>rest-client</artifactId>
-			<version>5.0.5</version>
+			<artifactId>cloudify-rest-client</artifactId>
+			<version>5.0.5.1</version>
 		</dependency>
 		<!-- Other Jenkins plugins that we depend on. -->
 		<dependency>
@@ -238,76 +239,4 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	<profiles>
-		<profile>
-			<id>dev</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<dependencies>
-				<!-- In development mode, include some convenience plugins. These aren't
-					mandatory for release. -->
-				<dependency>
-					<groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
-					<artifactId>rebuild</artifactId>
-					<version>1.31</version>
-				</dependency>
-				<dependency>
-					<groupId>org.jenkins-ci.plugins</groupId>
-					<artifactId>git</artifactId>
-					<version>3.9.4</version>
-				</dependency>
-				<dependency>
-					<groupId>org.jenkins-ci.plugins.workflow</groupId>
-					<artifactId>workflow-aggregator</artifactId>
-					<version>2.5</version>
-				</dependency>
-				<dependency>
-					<groupId>jp.ikedam.jenkins.plugins</groupId>
-					<artifactId>extensible-choice-parameter</artifactId>
-					<version>1.6.0</version>
-				</dependency>
-			</dependencies>
-			<dependencyManagement>
-				<dependencies>
-					<!-- Pin these versions, to make the plugins above work nicely together. -->
-					<dependency>
-						<groupId>org.jenkins-ci.plugins</groupId>
-						<artifactId>junit</artifactId>
-						<version>1.20</version>
-					</dependency>
-					<dependency>
-						<groupId>org.jenkins-ci</groupId>
-						<artifactId>annotation-indexer</artifactId>
-						<version>1.12</version>
-					</dependency>
-					<dependency>
-						<groupId>com.jcraft</groupId>
-						<artifactId>jsch</artifactId>
-						<version>0.1.54</version>
-					</dependency>
-					<dependency>
-						<groupId>com.squareup.okhttp3</groupId>
-						<artifactId>okhttp</artifactId>
-						<version>3.12.6</version>
-					</dependency>
-					<dependency>
-						<groupId>org.jenkins-ci.plugins</groupId>
-						<artifactId>script-security</artifactId>
-						<version>1.53</version>
-					</dependency>
-					<dependency>
-						<groupId>org.jenkins-ci.plugins</groupId>
-						<artifactId>structs</artifactId>
-						<version>1.20</version>
-					</dependency>
-					<dependency>
-						<groupId>org.jenkins-ci.plugins</groupId>
-						<artifactId>cloudbees-folder</artifactId>
-						<version>6.14</version>
-					</dependency>
-				</dependencies>
-			</dependencyManagement>
-		</profile>
-	</profiles>
 </project>
