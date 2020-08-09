@@ -1,7 +1,6 @@
-<?xml version='1.1' encoding='UTF-8'?>
-<project>
+<?xml version="1.1" encoding="UTF-8"?><project>
   <actions/>
-  <description></description>
+  <description/>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
@@ -14,44 +13,44 @@
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
           <description>Cloudify credentials</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>environment_id</name>
           <description>ID of environment to create (optional; automatically generated if not provided)</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>region_name</name>
           <description>AWS region to use</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>stack_name</name>
           <description>Name of the new stack</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>template_url</name>
           <description>URL of Terraform template</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>template_parameters</name>
           <description>Template parameters (in YAML/JSON format)</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>aws_credentials</name>
           <description>AWS credentials to use</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
@@ -78,7 +77,7 @@
       <regionName>${region_name}</regionName>
       <stackName>${stack_name}</stackName>
       <parametersAsString>${template_parameters}</parametersAsString>
-      <parametersFile></parametersFile>
+      <parametersFile/>
       <templateUrl>${template_url}</templateUrl>
     </co.cloudify.jenkins.plugin.integrations.CloudFormationBuildStep>
   </builders>

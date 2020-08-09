@@ -1,5 +1,4 @@
-<?xml version='1.1' encoding='UTF-8'?>
-<flow-definition plugin="workflow-job@2.37">
+<?xml version="1.1" encoding="UTF-8"?><flow-definition plugin="workflow-job@2.37">
   <actions>
     <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.6.0"/>
     <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.6.0">
@@ -12,7 +11,7 @@
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
   </actions>
-  <description></description>
+  <description/>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
@@ -39,42 +38,42 @@
     agent any
     
     parameters {
-        choice(name: &apos;sdlc_type&apos;, choices: [&apos;qa&apos;, &apos;production&apos;], description: &apos;SDLC stage to deploy for&apos;)
-        string(name: &apos;deployment_id&apos;, description: &apos;Name of environment to create&apos;, trim: true)
+        choice(name: 'sdlc_type', choices: ['qa', 'production'], description: 'SDLC stage to deploy for')
+        string(name: 'deployment_id', description: 'Name of environment to create', trim: true)
     }
     stages {
-        stage(&apos;Build Cloudify Environment&apos;) {
+        stage('Build Cloudify Environment') {
             steps {
                 script {
-                    switch(params[&apos;sdlc_type&apos;]) {
-                        case &apos;qa&apos;:
-                            def infra_blueprint = &apos;aws-terraform&apos;
+                    switch(params['sdlc_type']) {
+                        case 'qa':
+                            def infra_blueprint = 'aws-terraform'
                             break
-                        case &apos;production&apos;:
-                            def infra_blueprint = &apos;openstack&apos;
+                        case 'production':
+                            def infra_blueprint = 'openstack'
                             break
                         default:
-                            throw new Exception(&quot;Unhandled value: &quot; + params[&apos;sdlc_type&apos;])
+                            throw new Exception("Unhandled value: " + params['sdlc_type'])
                     }
                 }
                 echo infra_blueprint
-                // createCloudifyEnv blueprintId: &quot;mc-jboss&quot;,
-                //     deploymentId: &quot;${params.deployment_id}&quot;,
-                //     inputs: &quot;{ }&quot;
+                // createCloudifyEnv blueprintId: "mc-jboss",
+                //     deploymentId: "${params.deployment_id}",
+                //     inputs: "{ }"
                 //     echoOutputs: true,
-                //     outputFile: &apos;outputs.json&apos;
+                //     outputFile: 'outputs.json'
             }
         }
-        stage(&apos;Wait for Input&apos;) {
+        stage('Wait for Input') {
             steps {
-                // input message: &apos;Proceed&apos;
-                echo &quot;Ba&quot;
+                // input message: 'Proceed'
+                echo "Ba"
             }
         }
-        stage(&apos;Delete Cloudify Environment&apos;) {
+        stage('Delete Cloudify Environment') {
             steps {
-                echo &quot;Boo&quot;
-                // deleteCloudifyEnv deploymentId: &quot;${params.deployment_id}&quot;
+                echo "Boo"
+                // deleteCloudifyEnv deploymentId: "${params.deployment_id}"
             }
         }
     }

@@ -1,7 +1,6 @@
-<?xml version='1.1' encoding='UTF-8'?>
-<project>
+<?xml version="1.1" encoding="UTF-8"?><project>
   <actions/>
-  <description>This job demonstrates the usage of the &quot;Create Cloudify Environment&quot; build step, in combination with the &quot;Cloudify Blueprint Selector&quot; parameter type.</description>
+  <description>This job demonstrates the usage of the "Create Cloudify Environment" build step, in combination with the "Cloudify Blueprint Selector" parameter type.</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
@@ -14,20 +13,20 @@
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
           <description>Cloudify credentials</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>blueprint_id</name>
           <description>Blueprint to create a deployment of</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>ID of deployment to create.</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.FileParameterDefinition>
@@ -37,12 +36,12 @@
         <hudson.model.TextParameterDefinition>
           <name>inputs</name>
           <description>YAML/JSON containing inputs for the new deployment. These inputs will be merged with the ones provided through a file (see above).</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>outputs_file</name>
-          <description>File to create, containing the new environment&apos;s outputs and capabilities.</description>
+          <description>File to create, containing the new environment's outputs and capabilities.</description>
           <defaultValue>outputs.json</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
@@ -59,13 +58,13 @@
   <builders>
     <co.cloudify.jenkins.plugin.CreateEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <credentialsId>${cfy_credentials}</credentialsId>
-      <tenant></tenant>
+      <tenant/>
       <blueprintId>${blueprint_id}</blueprintId>
       <deploymentId>${deployment_id}</deploymentId>
       <inputs>${inputs}</inputs>
       <inputsFile>${inputs_file}</inputsFile>
-      <mapping></mapping>
-      <mappingFile></mappingFile>
+      <mapping/>
+      <mappingFile/>
       <outputFile>${outputs_file}</outputFile>
       <echoInputs>false</echoInputs>
       <echoOutputs>true</echoOutputs>

@@ -12,9 +12,11 @@
 		"delete-blueprint",
 		"delete-environment",
 		"execute-workflow",
+		"kubernetes-build-step",
 		"mixed-pipeline-calling-steps",
 		"mixed-pipeline-calling-jobs",
 		"terraform-build-step",
+		"terraform-pipeline",
 		"upload-blueprint"
 	],
 	"views": [

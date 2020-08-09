@@ -1,9 +1,8 @@
-<?xml version='1.1' encoding='UTF-8'?>
-<project>
+<?xml version="1.1" encoding="UTF-8"?><project>
   <actions/>
-  <description>Shows basic usage of the Cloudify Build Wrapper.&#xd;
-&#xd;
-*NOTE*: this example requires that the &quot;jq&quot; utility is installed on the Jenkins machine that runs this job.</description>
+  <description>Shows basic usage of the Cloudify Build Wrapper.&#13;
+&#13;
+*NOTE*: this example requires that the "jq" utility is installed on the Jenkins machine that runs this job.</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
@@ -15,8 +14,8 @@
       <parameterDefinitions>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
-          <description></description>
-          <defaultValue></defaultValue>
+          <description/>
+          <defaultValue/>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
@@ -44,9 +43,9 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>endpoint=$(jq  -r &apos;.capabilities.endpoint&apos; outputs.json)
+      <command>endpoint=$(jq  -r '.capabilities.endpoint' outputs.json)
 
-echo &quot;Endpoint: ${endpoint}&quot;
+echo "Endpoint: ${endpoint}"
 </command>
     </hudson.tasks.Shell>
   </builders>
@@ -57,14 +56,14 @@ echo &quot;Endpoint: ${endpoint}&quot;
     </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
     <co.cloudify.jenkins.plugin.CloudifyBuildWrapper plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <credentialsId>${cfy_credentials}</credentialsId>
-      <tenant></tenant>
+      <tenant/>
       <blueprintId>blueprint-${BUILD_ID}</blueprintId>
-      <blueprintRootDirectory></blueprintRootDirectory>
+      <blueprintRootDirectory/>
       <blueprintArchiveUrl>${blueprint_url}</blueprintArchiveUrl>
       <blueprintMainFile>${blueprint_main_file}</blueprintMainFile>
       <deploymentId>deployment-${BUILD_ID}</deploymentId>
-      <inputs></inputs>
-      <inputsLocation></inputsLocation>
+      <inputs/>
+      <inputsLocation/>
       <outputsLocation>outputs.json</outputsLocation>
       <ignoreFailureOnTeardown>false</ignoreFailureOnTeardown>
       <echoInputs>true</echoInputs>

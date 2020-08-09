@@ -16,7 +16,6 @@
     <hudson.views.LastFailureColumn/>
     <hudson.views.LastDurationColumn/>
     <hudson.views.BuildButtonColumn/>
-    <hudson.plugins.favorite.column.FavoriteColumn plugin="favorite@2.3.2"/>
   </columns>
   <includeRegex>^terraform-.*</includeRegex>
   <recurse>false</recurse>

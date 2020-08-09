@@ -20,11 +20,11 @@ def get_examples(definitions_file, jar_path, jenkins_url, **kwargs):
     for definition in definitions['definitions']:
         print("Processing definition: %s" % definition)
         with open(os.path.join('jobs', '%s.xml' % definition), 'w') as output_file:
-            _run(['get-job', definition], stdout=output_file)
+            _run(jar_path, jenkins_url, ['get-job', definition], stdout=output_file)
     for view in definitions['views']:
         print("Processing view: %s" % view)
         with open(os.path.join('views', '%s.xml' % view), 'w') as output_file:
-            _run(['get-view', view], stdout=output_file)
+            _run(jar_path, jenkins_url, ['get-view', view], stdout=output_file)
 
 def add_examples(definitions_file, jar_path, jenkins_url, **kwargs):
     with open(definitions_file, 'r') as def_f:

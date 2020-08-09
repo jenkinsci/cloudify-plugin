@@ -1,0 +1,127 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.39">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.7.1"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.7.1">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>environment_id</string>
+        <string>tf_template_url</string>
+        <string>aws_credentials</string>
+        <string>tf_template_vars</string>
+        <string>cfy_credentials</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.11">
+          <name>cfy_credentials</name>
+          <description>Cloudify credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.11">
+          <name>aws_credentials</name>
+          <description>AWS credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>environment_id</name>
+          <description>Environment ID</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>tf_template_url</name>
+          <description>URL of the Terraform template archive</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>tf_template_vars</name>
+          <description>Terraform template variables (as YAML or JSON)</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.82">
+    <script>pipeline {
+    agent any
+    
+    parameters {
+        credentials(
+            credentialType: &apos;com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl&apos;,
+            defaultValue: &apos;&apos;,
+            description: &apos;Cloudify credentials&apos;,
+            name: &apos;cfy_credentials&apos;,
+            required: true)
+        credentials(
+            credentialType: &apos;com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl&apos;,
+            defaultValue: &apos;&apos;,
+            description: &apos;AWS credentials&apos;,
+            name: &apos;aws_credentials&apos;,
+            required: true)
+        string(name: &apos;environment_id&apos;, description: &apos;Environment ID&apos;, trim: true)
+        string(name: &apos;tf_template_url&apos;, description: &apos;URL of the Terraform template archive&apos;, trim: true)
+        text(name: &apos;tf_template_vars&apos;, description: &apos;Terraform template variables (as YAML or JSON)&apos;)
+    }
+
+    stages {
+        stage(&apos;AWS using Terraform&apos;) {
+            steps {
+                script {
+                    def template_vars_map = readYaml text: &quot;${params.tf_template_vars}&quot;
+                    
+                    withCredentials([[
+                        $class: &apos;AmazonWebServicesCredentialsBinding&apos;,
+                        accessKeyVariable: &apos;AWS_ACCESS_KEY_ID&apos;,
+                        credentialsId: &quot;${params.aws_credentials}&quot;,
+                        secretKeyVariable: &apos;AWS_SECRET_ACCESS_KEY&apos;]]) {
+                            
+                        template_vars_map[&apos;access_key&apos;] = &quot;${AWS_ACCESS_KEY_ID}&quot;
+                        template_vars_map[&apos;secret_key&apos;] = &quot;${AWS_SECRET_ACCESS_KEY}&quot;
+                        
+                        cfyTerraform credentialsId: &quot;${params.cfy_credentials}&quot;,
+                            deploymentId: &quot;${params.environment_id}&quot;,
+                            echoInputs: false,
+                            echoEnvData: true,
+                            envDataLocation: &apos;env-data-tf.json&apos;,
+                            templateUrl: &quot;${params.tf_template_url}&quot;,
+                            variables: template_vars_map
+                    }
+                }
+            }
+        }
+        stage(&apos;Run tests&apos;) {
+            steps {
+                input message: &apos;Proceed?&apos;
+            }
+        }
+        stage(&apos;Delete Terraform environment&apos;) {
+            steps {
+                deleteCloudifyEnv credentialsId: &quot;${params.cfy_credentials}&quot;,
+                    deleteBlueprintIfLast: false,
+                    deploymentId: &quot;${params.environment_id}&quot;,
+                    ignoreFailure: false
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

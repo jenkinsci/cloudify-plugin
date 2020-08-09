@@ -1,6 +1,5 @@
-<?xml version='1.1' encoding='UTF-8'?>
-<project>
-  <description></description>
+<?xml version="1.1" encoding="UTF-8"?><project>
+  <description/>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
@@ -9,7 +8,7 @@
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>Name of the new environment</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
@@ -27,9 +26,9 @@
       <blueprintId>mc-jboss</blueprintId>
       <deploymentId>${deployment_id}</deploymentId>
       <inputs>infra_name: ${environment_type}</inputs>
-      <inputsFile></inputsFile>
-      <mapping></mapping>
-      <mappingFile></mappingFile>
+      <inputsFile/>
+      <mapping/>
+      <mappingFile/>
       <outputFile>outputs.json</outputFile>
       <echoInputs>false</echoInputs>
       <echoOutputs>true</echoOutputs>

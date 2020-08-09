@@ -1,7 +1,6 @@
-<?xml version='1.1' encoding='UTF-8'?>
-<project>
+<?xml version="1.1" encoding="UTF-8"?><project>
   <actions/>
-  <description>This job demonstrates how to use the &quot;Delete Cloudify Environment&quot; build step, together with the &quot;Cloudify Deployment Selector&quot; parameter type.</description>
+  <description>This job demonstrates how to use the "Delete Cloudify Environment" build step, together with the "Cloudify Deployment Selector" parameter type.</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
@@ -14,14 +13,14 @@
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
           <description>Cloudify credentials</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>deployment_id</name>
           <description>ID of environment to delete</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
@@ -37,7 +36,7 @@
   <builders>
     <co.cloudify.jenkins.plugin.DeleteEnvironmentBuildStep plugin="cloudify-jenkins-plugin@1.0-SNAPSHOT">
       <credentialsId>${cfy_credentials}</credentialsId>
-      <tenant></tenant>
+      <tenant/>
       <deploymentId>${deployment_id}</deploymentId>
       <deleteBlueprintIfLast>false</deleteBlueprintIfLast>
       <ignoreFailure>true</ignoreFailure>

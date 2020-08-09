@@ -2,6 +2,7 @@
 	"plugins": [
 		"git:4.3.0",
 		"workflow-aggregator:2.6",
+		"pipeline-utility-steps:2.6.1",
 		"rebuild:1.31"
 	]
 }

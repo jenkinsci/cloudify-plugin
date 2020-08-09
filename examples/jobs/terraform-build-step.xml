@@ -1,7 +1,6 @@
-<?xml version='1.1' encoding='UTF-8'?>
-<project>
+<?xml version="1.1" encoding="UTF-8"?><project>
   <actions/>
-  <description></description>
+  <description/>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
@@ -14,32 +13,32 @@
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>cfy_credentials</name>
           <description>Cloudify credentials</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>environment_id</name>
           <description>ID of environment to create (optional; automatically generated if not provided)</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>template_url</name>
           <description>URL of Terraform template</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>variables</name>
           <description>Template variables (in YAML format)</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.7">
           <name>aws_credentials</name>
           <description>AWS credentials to use</description>
-          <defaultValue></defaultValue>
+          <defaultValue/>
           <credentialType>com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
@@ -66,7 +65,7 @@
       <variablesAsString>access_key: ${AWS_ACCESS_KEY_ID}
 secret_key: ${AWS_SECRET_ACCESS_KEY}
 ${variables}</variablesAsString>
-      <environmentVariablesAsString></environmentVariablesAsString>
+      <environmentVariablesAsString/>
     </co.cloudify.jenkins.plugin.integrations.TerraformBuildStep>
   </builders>
   <publishers/>
