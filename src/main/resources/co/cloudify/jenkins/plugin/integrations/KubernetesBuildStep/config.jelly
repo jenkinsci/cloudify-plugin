@@ -28,6 +28,12 @@
     <f:entry title="${%API Options File}" field="apiOptionsFile">
         <f:textbox />
     </f:entry>
+    <f:entry title="${%Kubernetes Configuration}" field="k8sConfigurationAsString">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Kubernetes Configuration File}" field="k8sConfigurationFile">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%Application Definition}" field="definitionAsString">
         <f:textarea />
     </f:entry>
