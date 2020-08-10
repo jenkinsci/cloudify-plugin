@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -51,6 +50,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     private Map<String, Object> apiOptions;
     private String k8sConfigurationAsString;
     private String k8sConfigurationFile;
+    private Map<String, Object> k8sConfiguration;
     private String definitionAsString;
     private String definitionFile;
     private Map<String, Object> definition;
@@ -146,6 +146,15 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         this.k8sConfigurationFile = k8sConfigurationFile;
     }
 
+    public Map<String, Object> getK8sConfiguration() {
+        return k8sConfiguration;
+    }
+    
+    @DataBoundSetter
+    public void setK8sConfiguration(Map<String, Object> k8sConfiguration) {
+        this.k8sConfiguration = k8sConfiguration;
+    }
+    
     public Map<String, Object> getApiOptions() {
         return apiOptions;
     }
@@ -251,6 +260,8 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
                 this.apiOptions);
         Map<String, Object> definitionMap = CloudifyPluginUtilities.getCombinedMap(workspace, definitionFile,
                 definitionAsString, this.definition);
+        Map<String, Object> k8sConfigurationMap = CloudifyPluginUtilities.getCombinedMap(workspace, k8sConfigurationFile,
+                k8sConfigurationAsString, this.k8sConfiguration);
         Map<String, Object> optionsMap = CloudifyPluginUtilities.getCombinedMap(workspace, optionsFile,
                 optionsAsString, this.options);
 
@@ -293,12 +304,8 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         }
 
         // Handle Kubernetes configuration.
-        String k8sConfiguration = k8sConfigurationAsString;
-        if (k8sConfiguration == null && k8sConfigurationFile != null) {
-            k8sConfiguration = workspace.child(k8sConfigurationFile).readToString();
-        }
-        if (StringUtils.isNotBlank(k8sConfiguration)) {
-            clientConfigConfiguration.put("file_content", k8sConfiguration);
+        if (k8sConfigurationMap != null) {
+            clientConfigConfiguration.put("file_content", k8sConfigurationMap);
         }
 
         // Only add to ClientConfig if not empty.
@@ -312,7 +319,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         operationInputs.put(INPUT_VALIDATE_STATUS, validateStatus);
         operationInputs.put(INPUT_ALLOW_NODE_REDEFINITION, allowNodeRedefinition);
 
-        inputPrintPredicate = x -> !x.equals(INPUT_CLIENT_CONFIG);
+//        inputPrintPredicate = x -> !x.equals(INPUT_CLIENT_CONFIG);
         super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
     }
 
@@ -363,6 +370,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
                 .append("apiOptions", apiOptions)
                 .append("k8sConfigurationAsString", k8sConfigurationAsString)
                 .append("k8sConfigurationFile", k8sConfigurationFile)
+                .append("k8sConfiguration", k8sConfiguration)
                 .append("definitionAsString", definitionAsString)
                 .append("definitionFile", definitionFile)
                 .append("definition", definition)
