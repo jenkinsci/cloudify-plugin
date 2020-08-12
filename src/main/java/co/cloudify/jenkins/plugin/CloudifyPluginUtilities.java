@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.IdCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -227,17 +229,24 @@ public class CloudifyPluginUtilities {
      * @throws InterruptedException May be thrown by underlying framework.
      */
     public static Map<String, Object> readYamlOrJson(final FilePath path) throws IOException, InterruptedException {
-        try {
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            try (InputStream is = path.read()) {
-                return mapper.readValue(is, JSONObject.class);
-            }
-        } catch (IOException ex) {
-            logger.info("Failed parsing {} as YAML; will try JSON (exception message: {})", path, ex);
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        try (InputStream is = path.read()) {
+            return mapper.readValue(is, JSONObject.class);
+        } catch (JsonParseException | JsonMappingException yamlEx) {
             try (InputStream is = path.read()) {
                 return JSONObject.fromObject(IOUtils.toString(is, StandardCharsets.UTF_8));
+            } catch (JSONException jEx) {
+                // We failed parsing as either YAML or JSON.
+                // Log the full stack traces of both exceptions, as we're going to lose them
+                // (we throw a RuntimeException from here, with no cause).
+                logger.error(String.format("Failed to parse %s as YAML", path), yamlEx);
+                logger.error(String.format("Failed to parse %s as JSON", path), jEx);
+                throw new RuntimeException(String.format(
+                        "Failed to parse %s as either YAML or JSON; YAML exception text: %s, JSON exception text: %s",
+                        path, yamlEx.getMessage(), jEx.getMessage()));
             }
         }
+        // All other IOException's should percolate.
     }
 
     /**
@@ -246,21 +255,30 @@ public class CloudifyPluginUtilities {
      * @param str some string
      * 
      * @return A {@link JSONObject} containing the parsed data.
+     *
+     * @throws IOException          May be thrown by underlying framework.
+     * @throws InterruptedException May be thrown by underlying framework.
      */
-    public static Map<String, Object> readYamlOrJson(final String str) {
+    public static Map<String, Object> readYamlOrJson(final String str) throws IOException, InterruptedException {
         if (StringUtils.isBlank(str)) {
             return Collections.emptyMap();
         }
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(str, JSONObject.class);
-        } catch (IOException ex) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Failed parsing string as YAML; will try JSON", ex);
-            } else {
-                logger.info("Failed parsing string as YAML; will try JSON (exception message: {})", ex.getMessage());
+        } catch (JsonParseException | JsonMappingException yamlEx) {
+            try {
+                return JSONObject.fromObject(str);
+            } catch (JSONException jEx) {
+                // We failed parsing as either YAML or JSON.
+                // Log the full stack traces of both exceptions, as we're going to lose them
+                // (we throw a RuntimeException from here, with no cause).
+                logger.error("Failed to parse string as YAML", yamlEx);
+                logger.error("Failed to parse string as JSON", jEx);
+                throw new RuntimeException(String.format(
+                        "Failed to parse string as either YAML or JSON; YAML exception text: %s, JSON exception text: %s",
+                        yamlEx.getMessage(), jEx.getMessage()));
             }
-            return JSONObject.fromObject(str);
         }
     }
 
@@ -504,7 +522,7 @@ public class CloudifyPluginUtilities {
         if (StringUtils.isNotBlank(value)) {
             try {
                 readYamlOrJson(value);
-            } catch (JSONException ex) {
+            } catch (Exception ex) {
                 return FormValidation.error("Invalid YAML/JSON string");
             }
         }
