@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonWriter;
@@ -80,7 +81,7 @@ public class CloudifyPluginUtilities {
         return getCredentials(credentialsId, FileCredentials.class, run);
     }
 
-    public static <T extends IdCredentials> T getCredentials(final String credentialsId,
+    public @Nonnull static <T extends IdCredentials> T getCredentials(final String credentialsId,
             final Class<T> credentialsClass, final Run<?, ?> run) {
         T creds = (T) CredentialsProvider.findCredentialById(credentialsId, credentialsClass, run,
                 Collections.EMPTY_LIST);
@@ -103,9 +104,6 @@ public class CloudifyPluginUtilities {
         if (id != null) {
             IdCredentials idCredentials = CloudifyPluginUtilities.getCredentials(id,
                     IdCredentials.class, run);
-            if (idCredentials == null) {
-                throw new IllegalArgumentException(String.format("Credentials not found: %s", id));
-            }
             if (idCredentials instanceof StringCredentials) {
                 credentials = ((StringCredentials) idCredentials).getSecret().getPlainText();
             } else if (idCredentials instanceof FileCredentials) {
@@ -116,7 +114,6 @@ public class CloudifyPluginUtilities {
                 throw new IllegalArgumentException(String.format("Credentials '%s' are of an unhandled type: %s",
                         id, idCredentials.getClass().getName()));
             }
-
         } else if (file != null) {
             credentials = workspace.child(file).readToString();
         }
