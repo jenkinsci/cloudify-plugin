@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>co.cloudify</groupId>
 			<artifactId>rest-client</artifactId>
-			<version>5.0.5.1</version>
+			<version>5.0.5.2-SNAPSHOT</version>
 		</dependency>
 		<!-- Other Jenkins plugins that we depend on. -->
 		<dependency>
