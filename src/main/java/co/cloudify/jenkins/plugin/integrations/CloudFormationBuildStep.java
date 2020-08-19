@@ -1,9 +1,11 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.MapUtils;
@@ -161,6 +163,11 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         return "1.0";
     }
 
+    @Override
+    protected Set<String> getRequiredPluginNames() {
+        return Collections.singleton("cloudify-aws-plugin");
+    }
+    
     @Override
     protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
         return new BlueprintUploadSpec("/blueprints/cfn/blueprint.yaml");

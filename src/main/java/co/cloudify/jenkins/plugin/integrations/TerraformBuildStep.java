@@ -1,7 +1,9 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -182,6 +184,11 @@ public class TerraformBuildStep extends IntegrationBuildStep {
         return "1.0";
     }
 
+    @Override
+    protected Set<String> getRequiredPluginNames() {
+        return Collections.singleton("cloudify-terraform-plugin");
+    }
+    
     @Override
     protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
         return new BlueprintUploadSpec("/blueprints/terraform/blueprint.yaml");

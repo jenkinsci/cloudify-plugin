@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
@@ -319,7 +320,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         operationInputs.put(INPUT_VALIDATE_STATUS, validateStatus);
         operationInputs.put(INPUT_ALLOW_NODE_REDEFINITION, allowNodeRedefinition);
 
-//        inputPrintPredicate = x -> !x.equals(INPUT_CLIENT_CONFIG);
+        inputPrintPredicate = x -> !x.equals(INPUT_CLIENT_CONFIG);
         super.performImpl(run, launcher, listener, workspace, envVars, cloudifyClient);
     }
 
@@ -333,6 +334,11 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         return "1.0";
     }
 
+    @Override
+    protected Set<String> getRequiredPluginNames() {
+        return Collections.singleton("cloudify-kubernetes-plugin");
+    }
+    
     @Override
     protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
         return new BlueprintUploadSpec("/blueprints/k8s/blueprint.yaml");

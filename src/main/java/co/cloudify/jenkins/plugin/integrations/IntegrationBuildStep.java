@@ -3,8 +3,12 @@ package co.cloudify.jenkins.plugin.integrations;
 import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -15,6 +19,9 @@ import co.cloudify.rest.client.BlueprintsClient;
 import co.cloudify.rest.client.CloudifyClient;
 import co.cloudify.rest.client.exceptions.BlueprintNotFoundException;
 import co.cloudify.rest.model.Blueprint;
+import co.cloudify.rest.model.ListResponse;
+import co.cloudify.rest.model.Plugin;
+import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -83,6 +90,8 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
 
     protected abstract BlueprintUploadSpec getBlueprintUploadSpec() throws Exception;
 
+    protected abstract Set<String> getRequiredPluginNames();
+
     @Override
     protected void performImpl(Run<?, ?> run, Launcher launcher, TaskListener listener, FilePath workspace,
             EnvVars envVars, CloudifyClient cloudifyClient) throws Exception {
@@ -97,7 +106,19 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
             logger.println(String.format("Loading blueprint: %s", blueprintId));
             blueprint = blueprintsClient.get(blueprintId);
         } catch (BlueprintNotFoundException ex) {
-            logger.println(String.format("Blueprint '%s' doesn't exist; uploading it...", blueprintId));
+            logger.println(String.format("Blueprint '%s' doesn't exist; will try to upload it", blueprintId));
+            Set<String> requiredPlugins = getRequiredPluginNames();
+            if (CollectionUtils.isNotEmpty(requiredPlugins)) {
+                ListResponse<Plugin> pluginsList = cloudifyClient.getPluginsClient().list();
+                Set<String> pluginsSet = pluginsList.stream().map(x -> x.getPackageName()).collect(Collectors.toSet());
+                requiredPlugins.removeAll(pluginsSet);
+                if (!requiredPlugins.isEmpty()) {
+                    logger.println("The following plugins are required in order to use this feature:");
+                    requiredPlugins.forEach(x -> logger.println(x));
+                    logger.println("Please ensure that the required plugin(s) are installed on Cloudify Manager and try again");
+                    throw new AbortException(String.format("Missing required plugins: %s", StringUtils.join(requiredPlugins, ", ")));
+                }
+            }
             try (BlueprintUploadSpec uploadSpec = getBlueprintUploadSpec()) {
                 blueprint = uploadSpec.upload(blueprintsClient, blueprintId);
             }
