@@ -1,0 +1,105 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.1.1"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.11">
+          <name>cfy_credentials</name>
+          <description>Credentials for Cloudify</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>deployment_id</name>
+          <description>Environment ID</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>k8s_master_host</name>
+          <description>Kubernetes Master Host</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>app_namespace</name>
+          <description>Application namespace</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>k8s_app_definition</name>
+          <description>Kubernetes application definition</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <co.cloudify.jenkins.plugin.integrations.KubernetesBuildStep plugin="cloudify@1.0.5-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
+      <deploymentId>${deployment_id}</deploymentId>
+      <echoInputs>true</echoInputs>
+      <echoEnvData>true</echoEnvData>
+      <debugOutput>false</debugOutput>
+      <envDataLocation>env-data.json</envDataLocation>
+      <operationInputs class="linked-hash-map"/>
+      <gcpCredentialsId></gcpCredentialsId>
+      <gcpCredentialsFile></gcpCredentialsFile>
+      <k8sMaster>${k8s_master_host}</k8sMaster>
+      <apiKeyCredentialsId></apiKeyCredentialsId>
+      <apiKeyFile></apiKeyFile>
+      <caCert></caCert>
+      <sslCertFile></sslCertFile>
+      <sslKeyFile></sslKeyFile>
+      <skipSslVerification>true</skipSslVerification>
+      <k8sDebug>false</k8sDebug>
+      <k8sConfigurationAsString>apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN5RENDQWJDZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJd01EY3lNREE0TkRRd05Wb1hEVE13TURjeE9EQTRORFF3TlZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTVNoClJ4QUJacTVCZnNvS2RSbUtMNWx5Z1JFak5UWmtncnBGb2lvQzRpMnJmemNlQVIvYmdoM0lQdms2WmZ5dk1yeVkKTFRMNFRYS0VwQU95dXhpVVYrdHR2bVhJWjBSeGt2cXA0enlQRThUUDdyTWtuOXVWbE5NU0JXbXFldjBybUorSgpXL1EvZWVaU0o4ODlaeVBBTzBVQlVENTltQzgwbGtrZ1FGd2hUWEVrZTBtZEh2OWNKcG1YcVdNWjd2bkMwRE5GCkRKZHRVRE55cFNobFhDNkdqNTZIdFdZZm1pcEQ0dVltVGhDYW5GZmhhalUzbkY2YStGdk5EOFpHQVpmRStPZ2wKcm9MZTlKQjl1b0dMc21JeGRCOVp6MU5XM2tqV3F0RUVka21ZUXhPVW9iY2JoS05NWGlEU0Z5bE1rM3JxSUx6VQpmME1lZkhPeXJ0UjdsTnVmYWtzQ0F3RUFBYU1qTUNFd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFHMVhWdW5IZnJKcnhqQzlCVzNVeXR3djg4Z0YKbTFpWmhuQjhGRzBjSHgvWHBheXpBY3ZQQkZ6ZDdxM3RZS2JLSkU2cERJdk1xbFNKUG13ZytON2d4UUE0aXZ1TQpndVJReWt5OWhRMEFBY3RTM2Q0TFpRS2hvcE1wUVVrOGFyT0cyNXo3ZDA1SHhDaGd6Z0FjVnRiRStzTzhFcjZICkN6NTNwcEczMGY5d2plb05aTnRIWVNadk0wdHJ4NjFkaVZSa01zclFpWXBIa0l1QjI5em0wSTZzYStQMVNINzcKM204cklTNWFEanNBL1hMS1ZpREF6ajhyV01rODJidnhOS05mUE9USVNkTU0ycHhMT0xybmdvOXVjTFNHRGE1ZwpqWDlxVEN2c3VMcldnajhiV3ptbHZWYTg1TGZsSCtUeFNFQVJOallLM3hrbVQ3Z2xVZ0RPQUg3cld1OD0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    server: https://10.10.0.167:6443
+  name: cluster.local
+contexts:
+- context:
+    cluster: cluster.local
+    user: kubernetes-admin
+  name: kubernetes-admin@cluster.local
+current-context: kubernetes-admin@cluster.local
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM4akNDQWRxZ0F3SUJBZ0lJR1grTWNrWlc0Z1V3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TURBM01qQXdPRFEwTURWYUZ3MHlNVEEzTWpBd09EUTBOVEZhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTFrYjZxWEdna1V5ckV4ZmwKTUNNTjFDeWY1ZVZwcjJUamlHd2F0M1QzOVkyLzRlQ2IzejU0Tk94dHk0ODN2SnBpVmxoNEJjUnc0dklrTi9KbgpzaHBDVHNlc1c5aEZGSk1RWExiWno2SE9uTHRTVGdXZ3h1OElnYzE0V3daMkhjWmZDTi9KVFFOWG51OTNvQVc5Cm9rK1RGK1R4blFEQ01vMnVieFNJOE83Sk5ra1B1MG9Dc285ZnVMdTZ4NlhjcmcwcnRUWU14U2NYR054U3YxaDMKbUZXNnNlN1cvdWdJOXFjSUlGTndXZ1pVdXplazk2RTNHRERLU1BRME5TaEFVZlFvODRUVk1Nd0pvWDBFa0FoMgo1MjRKbWVkb25kZGtrQkZaVTBhdkV3eDM0bEU4NXVCd2VRdEZra1hVcVl4RktwbmlHb3B6V0Nxd214V1RJWmZ2ClJURUxjUUlEQVFBQm95Y3dKVEFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFHQjBUNE92V0JOanBsL1EzSUI5TXI0U1lnQXVSTlBveVhWaQpmcUZEUkprbzFoVmowUW9melVEY09UeXp5WFZ1WGM3TmFxSkdJenpWdFA4bjFoM3czaXdXVmFnNEg0SEJsMThxCmdlSCt2MUtEa2tSMVBldGI4aW04OU9IajNqUjNZSE1kdFIyTHpDMzVGekZnMnZlcUNYY1piN0ViaHUyTmtzY0EKODhTMVVFOGwyc2VmcFZCY08ycDMwVVZJOUQwbWViakU3MC9tcjl4Q0YvN1VzM0JLSjd5QWUzWWVTY0hBY2JqYQpESGdqUUFSc1B0dUxpN2NFZ056YmR3K3hpRHpuaTJTUTNWSERYdGVkQTJEU3pXU3NYYjlvV05ocmp5bVlPS0hyCmdaVkxSUndsaWFoaEhVRlM1WkFoZ2FCTWRVVjFJT0FPMFFPODdLYkZyMVprb0VZaVgvYz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBMWtiNnFYR2drVXlyRXhmbE1DTU4xQ3lmNWVWcHIyVGppR3dhdDNUMzlZMi80ZUNiCjN6NTROT3h0eTQ4M3ZKcGlWbGg0QmNSdzR2SWtOL0puc2hwQ1RzZXNXOWhGRkpNUVhMYlp6NkhPbkx0U1RnV2cKeHU4SWdjMTRXd1oySGNaZkNOL0pUUU5YbnU5M29BVzlvaytURitUeG5RRENNbzJ1YnhTSThPN0pOa2tQdTBvQwpzbzlmdUx1Nng2WGNyZzBydFRZTXhTY1hHTnhTdjFoM21GVzZzZTdXL3VnSTlxY0lJRk53V2daVXV6ZWs5NkUzCkdEREtTUFEwTlNoQVVmUW84NFRWTU13Sm9YMEVrQWgyNTI0Sm1lZG9uZGRra0JGWlUwYXZFd3gzNGxFODV1QncKZVF0RmtrWFVxWXhGS3BuaUdvcHpXQ3F3bXhXVElaZnZSVEVMY1FJREFRQUJBb0lCQUZZY1JpV01EVXYyOUpVQwp1RTdrOTJ5NTFqUk1RbkdDNk5GdEtEdHJuUzRvSGVHSEl2elBIUDJmdWV2aERUUVZFc25DV2RGdmhUSWV2eUZnCm4vMTZBZ1dveG9KT1lreUhZVDd4R0kwUmFIZWg2OHlCQklDTmxPeWRCdTRGcGJnSGZTK1N4MUhVc3dTakZYN1EKYjhubmtxUTZsRUpWQ0xYS0xEeGxremJIcjBMSjByankrT3dzTlU2SlFoZGF4WFRNVkNBYUZ2cytyYklUajJ1NQovazk5Mmw2anBUZ0ZSVW5Nck9EUXJlWjFKQi9JY3h4bmlQd0I0Y2JzekZaTTJZRmJjUGxDMWpHSEZ2cXlUMXJOClh2TU1iSjliMWtacVNXQXJZZWF5RUFESmxKY3YxOWNSaHpjemZoSU1wbHgrelBIMEpuS3RFWElvM1dDanNGRU0KbkI3SEVIVUNnWUVBLzdRN2dnSHEzM2hVaUpuLzBvNkYrVy9ZMGVNWVhHdSsyYm4xRkVGRXVlUVFXZ3RrSWsxUApyR0NTUXNTS2hRRXZVKzJQb3pXZ0c2MGN5Qm1LK2hGNjVCLzBZdG82dEt5ajRYTk9Dbjk0MGNvOXpRYW9SMkpNCm1ReU1uQWtaWHlZaUxaakp4Y3B4R0RHWnBpYnR5Mzh0ZDh5dmxsdlBaOVhha3E2bzBzYlU0OE1DZ1lFQTFvWjQKdDFoWDVFWkp2T0VPRmdaYTM0ZGFMOUYzOE52Ylh1dHI4UUc5d0ZOV0o0aWVLWEswWFRQSjNHWlhKcW9pYW81aQpEQkhROGJWOHgzbjUxT3drWHFWbE1udWJ4cTg0UnhOanlrQU5qMzA3SnNCdzBJcGllRVMraWZKMXd0bVh3K0NkCjBDcG1yOWljeCt3VXplV3g2Umg4ZURIMTFHVk5NRWpST0Z1SDVMc0NnWUVBOWhRZlNLaEx2cS93dWwxcUF0cEMKT0tEWXluU0FWMEVodENydm5vU0pmVlBzSUp2aHk5a1hHYzcrTXQ4dVozMlNiSFNzek9hb3BMbmVmdnVGOGM2cwpzNm5FNlBVWGxoU215aXJMS2ZNdTlNWnEzMHJPMjVQUUgySWlWMit5U1ExTHl4SEU3R0k4b0luclVpa1lvOFJLCm40WU9YT2NTSE4yRHNiSUFxb2ZMRFQwQ2dZQVdZaFY2VzlkZjFBMmhqWUhndm0wQTRhaUJVTVBJOThlZDBjYUQKY1FFUmJpQ1JJMm9OUFJDZ29PU3hBR1NiZmlqMUlVSU5yRlkyd2c3dzZVTXQraTJaU255U2xkOGREZTg3UzBTZwpONnF5akFoOTlKcFF4LythT09JQWxyRyswT0ZLNk1iT2ozNERYd0NNdzQ4d0pJVTVvdnBwdUJ6RU9vV2hRaGZDClg1cUFQUUtCZ0hRdjJnNXhTb1Irb1F2RnZTOVIzL2pVNktyYnRmNG8zOVZDV1hEQWhiU1FjVnBoQVBtT3ZQeU4KWURXcmVFbFprd280YU00S0J0a29IS1hNRjNMeGsxdkZRRXNhYU94dkRDQURzcXd4dU1TbStCREU4WGJxdW4vSgpieEYxN050YzlHN3lBaGtkMlk1T05LMW81R1p4UFRKeStPd1ZjTmsxbURlZGNpaXg3U091Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==</k8sConfigurationAsString>
+      <k8sConfigurationFile></k8sConfigurationFile>
+      <definitionAsString>${k8s_app_definition}</definitionAsString>
+      <definitionFile></definitionFile>
+      <optionsAsString></optionsAsString>
+      <optionsFile></optionsFile>
+      <namespace>${app_namespace}</namespace>
+      <validateStatus>true</validateStatus>
+      <allowNodeRedefinition>false</allowNodeRedefinition>
+    </co.cloudify.jenkins.plugin.integrations.KubernetesBuildStep>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

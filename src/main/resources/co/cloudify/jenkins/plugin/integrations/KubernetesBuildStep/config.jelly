@@ -7,61 +7,79 @@
     <f:entry title="${%Environment ID}" field="deploymentId">
         <f:textbox />
     </f:entry>
-    <f:entry title="${%GCP Credentials ID}" field="gcpCredentialsId">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%GCP Credentials File}" field="gcpCredentialsFile">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Kubernetes Master}" field="k8sMaster">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%API Key Credentials ID}" field="apiKeyCredentialsId">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%API Key File}" field="apiKeyFile">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%API Options}" field="apiOptionsAsString">
-        <f:textarea />
-    </f:entry>
-    <f:entry title="${%API Options File}" field="apiOptionsFile">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Kubernetes Configuration}" field="k8sConfigurationAsString">
-        <f:textarea />
-    </f:entry>
-    <f:entry title="${%Kubernetes Configuration File}" field="k8sConfigurationFile">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Application Definition}" field="definitionAsString">
-        <f:textarea />
-    </f:entry>
-    <f:entry title="${%Application Definition File}" field="definitionFile">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Options}" field="optionsAsString">
-        <f:textarea />
-    </f:entry>
-    <f:entry title="${%Options File}" field="optionsFile">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Validate Status}" field="validateStatus">
-        <f:checkbox />
-    </f:entry>
-    <f:entry title="${%Allow Node Redefinition}" field="allowNodeRedefinition">
-        <f:checkbox />
-    </f:entry>
-    <f:entry title="${%Environment Data Output Path}" field="envDataLocation">
-        <f:textbox />
-    </f:entry>
-    <f:entry title="${%Print Environment Inputs}" field="echoInputs">
-        <f:checkbox />
-    </f:entry>
-    <f:entry title="${%Print Environment Data}" field="echoEnvData">
-        <f:checkbox />
-    </f:entry>
-    <f:entry title="${%Show Debug-Level Cloudify Output}" field="debugOutput">
-        <f:checkbox />
-    </f:entry>
+    <f:section title="GCP Options">
+        <f:entry title="${%GCP Credentials ID}" field="gcpCredentialsId">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%GCP Credentials File}" field="gcpCredentialsFile">
+            <f:textbox />
+        </f:entry>
+    </f:section>
+    <f:section title="Kubernetes Connection">
+        <f:entry title="${%Kubernetes Master}" field="k8sMaster">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%API Key Credentials ID}" field="apiKeyCredentialsId">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%API Key File}" field="apiKeyFile">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%SSL CA Certificate}" field="caCert">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%SSL Certificate File}" field="sslCertFile">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%SSL Key File}" field="sslKeyFile">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%Skip SSL Validation}" field="skipSslVerification">
+            <f:checkbox />
+        </f:entry>
+        <f:entry title="${%Debug Output}" field="k8sDebug">
+            <f:checkbox />
+        </f:entry>
+    </f:section>
+    <f:section title=" ">
+        <f:entry title="${%Kubernetes Configuration}" field="k8sConfigurationAsString">
+            <f:textarea />
+        </f:entry>
+        <f:entry title="${%Kubernetes Configuration File}" field="k8sConfigurationFile">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%Application Definition}" field="definitionAsString">
+            <f:textarea />
+        </f:entry>
+        <f:entry title="${%Application Definition File}" field="definitionFile">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%Namespace}" field="namespace">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%Options}" field="optionsAsString">
+            <f:textarea />
+        </f:entry>
+        <f:entry title="${%Options File}" field="optionsFile">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%Validate Status}" field="validateStatus">
+            <f:checkbox />
+        </f:entry>
+        <f:entry title="${%Allow Node Redefinition}" field="allowNodeRedefinition">
+            <f:checkbox />
+        </f:entry>
+        <f:entry title="${%Environment Data Output Path}" field="envDataLocation">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%Print Environment Inputs}" field="echoInputs">
+            <f:checkbox />
+        </f:entry>
+        <f:entry title="${%Print Environment Data}" field="echoEnvData">
+            <f:checkbox />
+        </f:entry>
+        <f:entry title="${%Show Debug-Level Cloudify Output}" field="debugOutput">
+            <f:checkbox />
+        </f:entry>
+    </f:section>
 </j:jelly>

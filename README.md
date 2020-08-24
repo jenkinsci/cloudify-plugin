@@ -38,6 +38,7 @@ To learn more about Cloudify: [https://cloudify.co](https://cloudify.co)
     * [Execute Cloudify Workflow](#execute-cloudify-workflow)
     * [Convert Cloudify Environment Outputs/Capabilities to Inputs](#convert-cloudify-environment-outputs-capabilities-to-inputs)
 * [Available Build Steps: Provisioners and Orchestrators](#available-build-steps-provisioners-and-orchestrators)
+    * [Create Kubernetes Resources](#create-kubernetes-resources)
     * [Run Ansible Playbook](#run-ansible-playbook)
     * [Create Azure ARM Deployment](#create-azure-arm-deployment)
     * [Create CloudFormation Stack](#create-cloudformation-stack)
@@ -253,12 +254,24 @@ Use this build-step to transform a Deployment Outputs File to a standard Deploym
 The plugin provides build-steps to facilitate the usage of popular provisioners and orchestrators, allowing
 job/pipeline authors to use such tools through Cloudify in a seamless manner.
 
+### Create Kubernetes Resources
+
+This build step receives a Kubernetes application definition, along with context parameters, and runs it using
+Cloudify's official Kubernetes plugin.
+
+#### Prerequisites
+
+* Cloudify's Kubernetes Plugin installed on Cloudify Manager
+
+#### Usage Notes
+
+
 ### Run Ansible Playbook
 
 This build step receives the path / URL of an Ansible playbook, along with other context parameters, and runs it using
 Cloudify's official Ansible plugin.
 
-Prerequisites:
+*Prerequisites*:
 
 * Cloudify's Ansible Plugin installed on Cloudify Manager
 
@@ -288,7 +301,7 @@ Certain parameters may be omitted, in which case the value will default to Cloud
 This build step receives the path / URL of an AWS CloudFormation template, as well as template parameters,
 and creates a CloudFormation Stack off it, using Cloudify's AWS plugin.
 
-Prerequisites:
+*Prerequisites*:
 
 * Cloudify's AWS Plugin installed on Cloudify Manager
 
@@ -307,7 +320,7 @@ Certain parameters may be omitted, in which case the value will default to Cloud
 This build step receives the path / URL of a Terraform module, as well as module variables, and
 applies the module, using Cloudify's Terraform plugin.
 
-Prerequisites:
+*Prerequisites*:
 
 * Cloudify's Terraform Plugin installed on Cloudify Manager
 * Terraform installed 

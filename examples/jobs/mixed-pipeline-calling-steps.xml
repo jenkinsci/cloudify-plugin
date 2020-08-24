@@ -9,14 +9,15 @@
         <string>arm_resource_group</string>
         <string>environment_prefix</string>
         <string>cfn_template_url</string>
-        <string>tf_template_url</string>
+        <string>kubernetes_master</string>
         <string>aws_credentials</string>
+        <string>arm_template_url</string>
+        <string>azure_credentials</string>
+        <string>tf_template_url</string>
         <string>cfn_template_vars</string>
         <string>cfn_stack_name</string>
         <string>tf_template_vars</string>
-        <string>arm_template_url</string>
         <string>cfy_credentials</string>
-        <string>azure_credentials</string>
         <string>arm_template_vars</string>
       </parameters>
       <options/>
@@ -55,55 +56,51 @@
         <hudson.model.StringParameterDefinition>
           <name>environment_prefix</name>
           <description>Environment identifier prefix</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>tf_template_url</name>
           <description>URL of the Terraform template archive</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>tf_template_vars</name>
           <description>Terraform template variables (as YAML or JSON)</description>
-          <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>cfn_stack_name</name>
           <description>CloudFormation stack name to create</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>cfn_template_url</name>
           <description>URL of the CloudFormation template</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>cfn_template_vars</name>
           <description>CloudFormation template variables (as YAML or JSON)</description>
-          <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>arm_template_url</name>
           <description>URL of the ARM template</description>
-          <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>arm_template_vars</name>
           <description>ARM template variables (as YAML or JSON)</description>
-          <defaultValue></defaultValue>
           <trim>false</trim>
         </hudson.model.TextParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>arm_resource_group</name>
           <description>Resource group to create on Azure</description>
-          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>kubernetes_master</name>
+          <description>Kubernetes master host</description>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>

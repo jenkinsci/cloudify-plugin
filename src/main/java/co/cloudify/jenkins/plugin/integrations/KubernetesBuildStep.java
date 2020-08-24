@@ -1,7 +1,6 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,9 +45,11 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     private String k8sMaster;
     private String apiKeyCredentialsId;
     private String apiKeyFile;
-    private String apiOptionsAsString;
-    private String apiOptionsFile;
-    private Map<String, Object> apiOptions;
+    private String caCert;
+    private String sslCertFile;
+    private String sslKeyFile;
+    private boolean skipSslVerification;
+    private boolean k8sDebug;
     private String k8sConfigurationAsString;
     private String k8sConfigurationFile;
     private Map<String, Object> k8sConfiguration;
@@ -58,6 +59,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     private String optionsAsString;
     private String optionsFile;
     private Map<String, Object> options;
+    private String namespace;
     private boolean validateStatus = false;
     private boolean allowNodeRedefinition = false;
 
@@ -111,22 +113,49 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         this.apiKeyFile = apiKeyFile;
     }
 
-    public String getApiOptionsAsString() {
-        return apiOptionsAsString;
+    public String getCaCert() {
+        return caCert;
     }
 
     @DataBoundSetter
-    public void setApiOptionsAsString(String apiOptionsAsString) {
-        this.apiOptionsAsString = apiOptionsAsString;
+    public void setCaCert(String caCert) {
+        this.caCert = caCert;
     }
 
-    public String getApiOptionsFile() {
-        return apiOptionsFile;
+    public String getSslCertFile() {
+        return sslCertFile;
     }
 
     @DataBoundSetter
-    public void setApiOptionsFile(String apiOptionsFile) {
-        this.apiOptionsFile = apiOptionsFile;
+    public void setSslCertFile(String sslCertFile) {
+        this.sslCertFile = sslCertFile;
+    }
+
+    public String getSslKeyFile() {
+        return sslKeyFile;
+    }
+
+    @DataBoundSetter
+    public void setSslKeyFile(String sslKeyFile) {
+        this.sslKeyFile = sslKeyFile;
+    }
+
+    public boolean isSkipSslVerification() {
+        return skipSslVerification;
+    }
+
+    @DataBoundSetter
+    public void setSkipSslVerification(boolean skipSslVerification) {
+        this.skipSslVerification = skipSslVerification;
+    }
+
+    public boolean isK8sDebug() {
+        return k8sDebug;
+    }
+
+    @DataBoundSetter
+    public void setK8sDebug(boolean k8sDebug) {
+        this.k8sDebug = k8sDebug;
     }
 
     public String getK8sConfigurationAsString() {
@@ -150,19 +179,10 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     public Map<String, Object> getK8sConfiguration() {
         return k8sConfiguration;
     }
-    
+
     @DataBoundSetter
     public void setK8sConfiguration(Map<String, Object> k8sConfiguration) {
         this.k8sConfiguration = k8sConfiguration;
-    }
-    
-    public Map<String, Object> getApiOptions() {
-        return apiOptions;
-    }
-
-    @DataBoundSetter
-    public void setApiOptions(Map<String, Object> apiOptions) {
-        this.apiOptions = apiOptions;
     }
 
     public String getDefinitionAsString() {
@@ -219,6 +239,15 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         this.options = options;
     }
 
+    public String getNamespace() {
+        return namespace;
+    }
+
+    @DataBoundSetter
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
     public boolean isValidateStatus() {
         return validateStatus;
     }
@@ -240,28 +269,26 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     @Override
     protected void performImpl(final Run<?, ?> run, final Launcher launcher, final TaskListener listener,
             final FilePath workspace, final EnvVars envVars, final CloudifyClient cloudifyClient) throws Exception {
-        PrintStream logger = listener.getLogger();
-
         String gcpCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsId);
         String gcpCredentialsFile = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsFile);
-        String apiOptionsAsString = CloudifyPluginUtilities.expandString(envVars, this.apiOptionsAsString);
-        String apiOptionsFile = CloudifyPluginUtilities.expandString(envVars, this.apiOptionsFile);
         String k8sConfigurationAsString = CloudifyPluginUtilities.expandString(envVars, this.k8sConfigurationAsString);
         String k8sConfigurationFile = CloudifyPluginUtilities.expandString(envVars, this.k8sConfigurationFile);
         String k8sMaster = CloudifyPluginUtilities.expandString(envVars, this.k8sMaster);
         String apiKeyCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.apiKeyCredentialsId);
         String apiKeyFile = CloudifyPluginUtilities.expandString(envVars, this.apiKeyFile);
+        String caCert = CloudifyPluginUtilities.expandString(envVars, this.caCert);
+        String sslCertFile = CloudifyPluginUtilities.expandString(envVars, this.sslCertFile);
+        String sslKeyFile = CloudifyPluginUtilities.expandString(envVars, this.sslKeyFile);
         String definitionAsString = CloudifyPluginUtilities.expandString(envVars, this.definitionAsString);
         String definitionFile = CloudifyPluginUtilities.expandString(envVars, this.definitionFile);
         String optionsAsString = CloudifyPluginUtilities.expandString(envVars, this.optionsAsString);
         String optionsFile = CloudifyPluginUtilities.expandString(envVars, this.optionsFile);
+        String namespace = CloudifyPluginUtilities.expandString(envVars, this.namespace);
 
-        Map<String, Object> apiOptionsMap = CloudifyPluginUtilities.getCombinedMap(workspace, apiOptionsFile,
-                apiOptionsAsString,
-                this.apiOptions);
         Map<String, Object> definitionMap = CloudifyPluginUtilities.getCombinedMap(workspace, definitionFile,
                 definitionAsString, this.definition);
-        Map<String, Object> k8sConfigurationMap = CloudifyPluginUtilities.getCombinedMap(workspace, k8sConfigurationFile,
+        Map<String, Object> k8sConfigurationMap = CloudifyPluginUtilities.getCombinedMap(workspace,
+                k8sConfigurationFile,
                 k8sConfigurationAsString, this.k8sConfiguration);
         Map<String, Object> optionsMap = CloudifyPluginUtilities.getCombinedMap(workspace, optionsFile,
                 optionsAsString, this.options);
@@ -279,7 +306,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
             clientConfig.put("authentication", Collections.singletonMap("gcp_service_account", gcpCredentials));
         }
 
-        Map<String, Object> clientConfigConfiguration = new HashMap<>();
+        Map<String, Object> apiOptionsMap = new HashMap<>();
 
         if (k8sMaster != null) {
             apiOptionsMap.put("host", k8sMaster);
@@ -290,28 +317,28 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
 
         String apiKeyCredentials = CloudifyPluginUtilities.readStringCredentials(run, workspace, apiKeyCredentialsId,
                 apiKeyFile);
-        if (apiKeyCredentials != null) {
-            if (apiOptionsMap.containsKey(API_OPTIONS_API_KEY)) {
-                logger.println(
-                        "Note: API key credentials provided through designated parameter, but ignored as they are already provided through api_options");
-            } else {
-                apiOptionsMap.put(API_OPTIONS_API_KEY, apiKeyCredentials);
-            }
-        }
 
-        // Only add to ClientConfig->Configuration if not empty.
-        if (!apiOptionsMap.isEmpty()) {
-            clientConfigConfiguration.put("api_options", apiOptionsMap);
-        }
+        putIfNonNullValue(apiOptionsMap, API_OPTIONS_API_KEY, apiKeyCredentials);
+        putIfNonNullValue(apiOptionsMap, "ssl_ca_cert", caCert);
+        putIfNonNullValue(apiOptionsMap, "cert_file", sslCertFile);
+        putIfNonNullValue(apiOptionsMap, "key_file", sslKeyFile);
+        apiOptionsMap.put("verify_ssl", !skipSslVerification);
+        apiOptionsMap.put("debug", k8sDebug);
+
+        Map<String, Object> clientConfigConfiguration = new HashMap<>();
+        clientConfigConfiguration.put("api_options", apiOptionsMap);
 
         // Handle Kubernetes configuration.
-        if (k8sConfigurationMap != null) {
+        if (!k8sConfigurationMap.isEmpty()) {
             clientConfigConfiguration.put("file_content", k8sConfigurationMap);
         }
 
-        // Only add to ClientConfig if not empty.
-        if (!clientConfigConfiguration.isEmpty()) {
-            clientConfig.put("configuration", clientConfigConfiguration);
+        clientConfig.put("configuration", clientConfigConfiguration);
+
+        // Handle options.
+        
+        if (namespace != null) {
+            optionsMap.put("namespace", namespace);
         }
 
         operationInputs.put(INPUT_CLIENT_CONFIG, clientConfig);
@@ -338,7 +365,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     protected Set<String> getRequiredPluginNames() {
         return Collections.singleton("cloudify-kubernetes-plugin");
     }
-    
+
     @Override
     protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
         return new BlueprintUploadSpec("/blueprints/k8s/blueprint.yaml");
@@ -371,9 +398,11 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
                 .append("k8sMaster", k8sMaster)
                 .append("apiKeyCredentialId", apiKeyCredentialsId)
                 .append("apiKeyFile", apiKeyFile)
-                .append("apiOptionsAsString", apiOptionsAsString)
-                .append("apiOptionsFile", apiOptionsFile)
-                .append("apiOptions", apiOptions)
+                .append("caCert", caCert)
+                .append("sslCertFile", sslCertFile)
+                .append("sslKeyFile", sslKeyFile)
+                .append("skipSslVerification", skipSslVerification)
+                .append("k8sDebug", k8sDebug)
                 .append("k8sConfigurationAsString", k8sConfigurationAsString)
                 .append("k8sConfigurationFile", k8sConfigurationFile)
                 .append("k8sConfiguration", k8sConfiguration)
@@ -383,6 +412,7 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
                 .append("optionsAsString", optionsAsString)
                 .append("optionsFile", optionsFile)
                 .append("options", options)
+                .append("namespace", namespace)
                 .append("validateStatus", validateStatus)
                 .append("allowNodeRedefinition", allowNodeRedefinition)
                 .toString();

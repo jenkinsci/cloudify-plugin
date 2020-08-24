@@ -6,9 +6,9 @@ imports:
 
 inputs:
   client_config:
-    type: dict
+    type: cloudify.kubernetes.types.ClientConfig
   definition:
-    type: dict
+    type: cloudify.kubernetes.types.ResourceDefinition
   options:
     type: dict
   validate_status:

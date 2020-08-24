@@ -1,0 +1,94 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.1.1"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.11">
+          <name>cfy_credentials</name>
+          <description>Credentials for Cloudify</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>deployment_id</name>
+          <description>Environment ID</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>k8s_master_host</name>
+          <description>Kubernetes Master Host</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.11">
+          <name>k8s_api_key</name>
+          <description>Kubernetes API key</description>
+          <defaultValue></defaultValue>
+          <credentialType>org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>app_namespace</name>
+          <description>Application namespace</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>k8s_app_definition</name>
+          <description>Kubernetes application definition</description>
+          <defaultValue></defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <co.cloudify.jenkins.plugin.integrations.KubernetesBuildStep plugin="cloudify@1.0.5-SNAPSHOT">
+      <credentialsId>${cfy_credentials}</credentialsId>
+      <deploymentId>${deployment_id}</deploymentId>
+      <echoInputs>true</echoInputs>
+      <echoEnvData>true</echoEnvData>
+      <debugOutput>false</debugOutput>
+      <envDataLocation>env-data.json</envDataLocation>
+      <operationInputs class="linked-hash-map"/>
+      <gcpCredentialsId></gcpCredentialsId>
+      <gcpCredentialsFile></gcpCredentialsFile>
+      <k8sMaster>${k8s_master_host}</k8sMaster>
+      <apiKeyCredentialsId>${k8s_api_key}</apiKeyCredentialsId>
+      <apiKeyFile></apiKeyFile>
+      <caCert></caCert>
+      <sslCertFile></sslCertFile>
+      <sslKeyFile></sslKeyFile>
+      <skipSslVerification>true</skipSslVerification>
+      <k8sDebug>false</k8sDebug>
+      <k8sConfigurationAsString></k8sConfigurationAsString>
+      <k8sConfigurationFile></k8sConfigurationFile>
+      <definitionAsString>${k8s_app_definition}</definitionAsString>
+      <definitionFile></definitionFile>
+      <optionsAsString></optionsAsString>
+      <optionsFile></optionsFile>
+      <namespace>${app_namespace}</namespace>
+      <validateStatus>true</validateStatus>
+      <allowNodeRedefinition>false</allowNodeRedefinition>
+    </co.cloudify.jenkins.plugin.integrations.KubernetesBuildStep>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

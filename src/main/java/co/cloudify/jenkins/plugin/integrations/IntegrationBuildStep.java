@@ -1,6 +1,7 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.PrintStream;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -107,7 +108,9 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
             blueprint = blueprintsClient.get(blueprintId);
         } catch (BlueprintNotFoundException ex) {
             logger.println(String.format("Blueprint '%s' doesn't exist; will try to upload it", blueprintId));
-            Set<String> requiredPlugins = getRequiredPluginNames();
+            //  Construct a new Set here, rather than use the returned value,
+            //  because we're goig to manipulate that set.
+            Set<String> requiredPlugins = new HashSet<String>(getRequiredPluginNames());
             if (CollectionUtils.isNotEmpty(requiredPlugins)) {
                 ListResponse<Plugin> pluginsList = cloudifyClient.getPluginsClient().list();
                 Set<String> pluginsSet = pluginsList.stream().map(x -> x.getPackageName()).collect(Collectors.toSet());
@@ -122,6 +125,7 @@ public abstract class IntegrationBuildStep extends CloudifyBuildStep {
             try (BlueprintUploadSpec uploadSpec = getBlueprintUploadSpec()) {
                 blueprint = uploadSpec.upload(blueprintsClient, blueprintId);
             }
+            logger.println(String.format("Blueprint '%s' uploaded", blueprintId));
         }
 
         String envDataLocation = CloudifyPluginUtilities.expandString(envVars, this.envDataLocation);
