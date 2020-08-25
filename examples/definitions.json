@@ -13,7 +13,7 @@
 		"delete-environment",
 		"execute-workflow",
 		"kubernetes-build-step-gke",
-		"kubernetes-build-step-kubecfg",
+		"kubernetes-build-step-token",
 		"kubernetes-build-step-token",
 		"mixed-pipeline-calling-steps",
 		"mixed-pipeline-calling-jobs",

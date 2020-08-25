@@ -50,9 +50,6 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     private String sslKeyFile;
     private boolean skipSslVerification;
     private boolean k8sDebug;
-    private String k8sConfigurationAsString;
-    private String k8sConfigurationFile;
-    private Map<String, Object> k8sConfiguration;
     private String definitionAsString;
     private String definitionFile;
     private Map<String, Object> definition;
@@ -158,33 +155,6 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         this.k8sDebug = k8sDebug;
     }
 
-    public String getK8sConfigurationAsString() {
-        return k8sConfigurationAsString;
-    }
-
-    @DataBoundSetter
-    public void setK8sConfigurationAsString(String k8sConfigurationAsString) {
-        this.k8sConfigurationAsString = k8sConfigurationAsString;
-    }
-
-    public String getK8sConfigurationFile() {
-        return k8sConfigurationFile;
-    }
-
-    @DataBoundSetter
-    public void setK8sConfigurationFile(String k8sConfigurationFile) {
-        this.k8sConfigurationFile = k8sConfigurationFile;
-    }
-
-    public Map<String, Object> getK8sConfiguration() {
-        return k8sConfiguration;
-    }
-
-    @DataBoundSetter
-    public void setK8sConfiguration(Map<String, Object> k8sConfiguration) {
-        this.k8sConfiguration = k8sConfiguration;
-    }
-
     public String getDefinitionAsString() {
         return definitionAsString;
     }
@@ -271,8 +241,6 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
             final FilePath workspace, final EnvVars envVars, final CloudifyClient cloudifyClient) throws Exception {
         String gcpCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsId);
         String gcpCredentialsFile = CloudifyPluginUtilities.expandString(envVars, this.gcpCredentialsFile);
-        String k8sConfigurationAsString = CloudifyPluginUtilities.expandString(envVars, this.k8sConfigurationAsString);
-        String k8sConfigurationFile = CloudifyPluginUtilities.expandString(envVars, this.k8sConfigurationFile);
         String k8sMaster = CloudifyPluginUtilities.expandString(envVars, this.k8sMaster);
         String apiKeyCredentialsId = CloudifyPluginUtilities.expandString(envVars, this.apiKeyCredentialsId);
         String apiKeyFile = CloudifyPluginUtilities.expandString(envVars, this.apiKeyFile);
@@ -287,9 +255,6 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
 
         Map<String, Object> definitionMap = CloudifyPluginUtilities.getCombinedMap(workspace, definitionFile,
                 definitionAsString, this.definition);
-        Map<String, Object> k8sConfigurationMap = CloudifyPluginUtilities.getCombinedMap(workspace,
-                k8sConfigurationFile,
-                k8sConfigurationAsString, this.k8sConfiguration);
         Map<String, Object> optionsMap = CloudifyPluginUtilities.getCombinedMap(workspace, optionsFile,
                 optionsAsString, this.options);
 
@@ -328,15 +293,10 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
         Map<String, Object> clientConfigConfiguration = new HashMap<>();
         clientConfigConfiguration.put("api_options", apiOptionsMap);
 
-        // Handle Kubernetes configuration.
-        if (!k8sConfigurationMap.isEmpty()) {
-            clientConfigConfiguration.put("file_content", k8sConfigurationMap);
-        }
-
         clientConfig.put("configuration", clientConfigConfiguration);
 
         // Handle options.
-        
+
         if (namespace != null) {
             optionsMap.put("namespace", namespace);
         }
@@ -403,9 +363,6 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
                 .append("sslKeyFile", sslKeyFile)
                 .append("skipSslVerification", skipSslVerification)
                 .append("k8sDebug", k8sDebug)
-                .append("k8sConfigurationAsString", k8sConfigurationAsString)
-                .append("k8sConfigurationFile", k8sConfigurationFile)
-                .append("k8sConfiguration", k8sConfiguration)
                 .append("definitionAsString", definitionAsString)
                 .append("definitionFile", definitionFile)
                 .append("definition", definition)
