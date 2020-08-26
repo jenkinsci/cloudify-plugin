@@ -64,6 +64,12 @@ public class BlueprintUploadSpec implements Serializable, AutoCloseable {
             File blueprintPath = new File(tempBlueprintDir, BLUEPRINT_FILE_NAME);
             ClassLoader classLoader = getClass().getClassLoader();  // Thread's context classloader won't work here
             try (InputStream resourceAsStream = classLoader.getResourceAsStream(blueprintResourceName)) {
+                if (resourceAsStream == null) {
+                    throw new RuntimeException(
+                            String.format("Failed locating blueprint resource (%s); classloader=%s",
+                                    blueprintResourceName,
+                                    classLoader));
+                }
                 Files.copy(resourceAsStream, blueprintPath.toPath());
             }
 
