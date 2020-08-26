@@ -19,7 +19,7 @@
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>deployment_id</name>
+          <name>environment_id</name>
           <description>Environment ID</description>
           <defaultValue></defaultValue>
           <trim>true</trim>
@@ -34,7 +34,7 @@
           <name>gcp_credentials</name>
           <description>GCP service account</description>
           <defaultValue></defaultValue>
-          <credentialType>org.jenkinsci.plugins.plaincredentials.impl.FileCredentialsImpl</credentialType>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
@@ -62,7 +62,7 @@
   <builders>
     <co.cloudify.jenkins.plugin.integrations.KubernetesBuildStep plugin="cloudify@1.0.5-SNAPSHOT">
       <credentialsId>${cfy_credentials}</credentialsId>
-      <deploymentId>${deployment_id}</deploymentId>
+      <deploymentId>${environment_id}</deploymentId>
       <echoInputs>true</echoInputs>
       <echoEnvData>true</echoEnvData>
       <debugOutput>false</debugOutput>
@@ -78,8 +78,6 @@
       <sslKeyFile></sslKeyFile>
       <skipSslVerification>true</skipSslVerification>
       <k8sDebug>false</k8sDebug>
-      <k8sConfigurationAsString></k8sConfigurationAsString>
-      <k8sConfigurationFile></k8sConfigurationFile>
       <definitionAsString>${k8s_app_definition}</definitionAsString>
       <definitionFile></definitionFile>
       <optionsAsString></optionsAsString>

@@ -1,0 +1,122 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.39">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.7.1"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.7.1">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>k8s_api_key</string>
+        <string>k8s_master_host</string>
+        <string>deployment_id</string>
+        <string>k8s_app_definition</string>
+        <string>app_namespace</string>
+        <string>cfy_credentials</string>
+      </parameters>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.1.1"/>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.31">
+      <autoRebuild>false</autoRebuild>
+      <rebuildDisabled>false</rebuildDisabled>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.11">
+          <name>cfy_credentials</name>
+          <description>Cloudify credentials</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>deployment_id</name>
+          <description>Cloudify deployment ID</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>k8s_master_host</name>
+          <description>Kubernetes Master host</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.3.11">
+          <name>k8s_api_key</name>
+          <description>Kubernetes API token</description>
+          <defaultValue></defaultValue>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>app_namespace</name>
+          <description>Application namespace</description>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>k8s_app_definition</name>
+          <description>Kubernetes application definition</description>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.82">
+    <script>pipeline {
+    agent any
+    
+    parameters {
+        credentials(
+            credentialType: &apos;com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl&apos;,
+            defaultValue: &apos;&apos;,
+            description: &apos;Cloudify credentials&apos;,
+            name: &apos;cfy_credentials&apos;,
+            required: true)
+        string(name: &apos;deployment_id&apos;, description: &apos;Cloudify deployment ID&apos;, trim: true)
+        string(name: &apos;k8s_master_host&apos;, description: &apos;Kubernetes Master host&apos;, trim: true)
+        credentials(
+            defaultValue: &apos;&apos;,
+            description: &apos;Kubernetes API token&apos;,
+            name: &apos;k8s_api_key&apos;,
+            required: true)
+        string(name: &apos;app_namespace&apos;, description: &apos;Application namespace&apos;, trim: true)
+        text(name: &apos;k8s_app_definition&apos;, description: &apos;Kubernetes application definition&apos;)
+    }
+
+    stages {
+        stage(&apos;Build Kubernetes Application&apos;) {
+            steps {
+                cfyKubernetes credentialsId: &quot;${params.cfy_credentials}&quot;,
+                    definitionAsString: &quot;${params.k8s_app_definition}&quot;,
+                    deploymentId: &quot;${params.deployment_id}&quot;,
+                    echoEnvData: true,
+                    echoInputs: true,
+                    envDataLocation: &apos;env-data.json&apos;,
+                    apiKeyCredentialsId: &quot;${params.k8s_api_key}&quot;,
+                    k8sMaster: &quot;${params.k8s_master_host}&quot;,
+                    namespace: &quot;${params.app_namespace}&quot;,
+                    skipSslVerification: true,
+                    validateStatus: true
+            }
+        }
+        stage(&apos;Run tests&apos;) {
+            steps {
+                input message: &apos;Proceed?&apos;
+            }
+        }
+        stage(&apos;Delete Kubernetes Environment&apos;) {
+            steps {
+                deleteCloudifyEnv credentialsId: &quot;${params.cfy_credentials}&quot;,
+                    deleteBlueprintIfLast: false,
+                    deploymentId: &quot;${params.deployment_id}&quot;
+            }
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
