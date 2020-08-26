@@ -8,11 +8,9 @@ inputs:
 
   aws_access_key_id:
     type: string
-    default: { get_secret: aws_access_key_id }
 
   aws_secret_access_key:
     type: string
-    default: { get_secret: aws_secret_access_key }
 
   aws_region_name:
     type: string

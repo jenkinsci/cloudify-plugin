@@ -7,16 +7,12 @@ imports:
 inputs:
   azure_subscription_id:
     type: string
-    default: { get_secret: azure_subscription_id }
   azure_tenant_id:
     type: string
-    default: { get_secret: azure_tenant_id }
   azure_client_id:
     type: string
-    default: { get_secret: azure_client_id }
   azure_client_secret:
     type: string
-    default: { get_secret: azure_client_secret }    
   location:
     type: string
     description: Your Azure Region

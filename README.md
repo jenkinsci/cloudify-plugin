@@ -296,7 +296,7 @@ parameters.
 This build step receives the path / URL of an Ansible playbook, along with other context parameters, and runs it using
 Cloudify's official Ansible plugin.
 
-*Prerequisites*:
+#### Prerequisites
 
 * Cloudify's Ansible Plugin installed on Cloudify Manager
 
@@ -305,20 +305,16 @@ Cloudify's official Ansible plugin.
 This build step receives the path / URL of an Azure ARM template, and template parameters. The template is then
 deployed on Azure, using Cloudify's Azure plugin.
 
-*Prerequisites:*
+#### Prerequisites
 
 * Cloudify's Azure Plugin installed on Cloudify Manager
 
-*Notes:*
+#### Usage
 
 Certain parameters may be omitted, in which case the value will default to Cloudify secrets:
 
 | Omitted Value   | Cloudify Secret Used as Default |
 |-----------------|---------------------------------|
-| Subscription ID | `azure_subscription_id`      |
-| Tenant ID       | `azure_tenant_id`             |
-| Client ID       | `azure_client_id`             |
-| Client Secret   | `azure_client_secret`        |
 | Location        | `azure_default_location`     |
 
 ### Create CloudFormation Stack
@@ -326,18 +322,16 @@ Certain parameters may be omitted, in which case the value will default to Cloud
 This build step receives the path / URL of an AWS CloudFormation template, as well as template parameters,
 and creates a CloudFormation Stack off it, using Cloudify's AWS plugin.
 
-*Prerequisites*:
+#### Prerequisites
 
 * Cloudify's AWS Plugin installed on Cloudify Manager
 
-*Notes:*
+#### Usage
 
 Certain parameters may be omitted, in which case the value will default to Cloudify secrets:
 
 | Omitted Value     | Cloudify Secret Used as Default |
 |-------------------|---------------------------------|
-| Access Key ID     | `aws_access_key_id`           |
-| Secret Access Key | `aws_secret_access_key`      |
 | Region Name       | `aws_region_name`             |
 
 ### Apply Terraform Module
@@ -345,12 +339,12 @@ Certain parameters may be omitted, in which case the value will default to Cloud
 This build step receives the path / URL of a Terraform module, as well as module variables, and
 applies the module, using Cloudify's Terraform plugin.
 
-*Prerequisites*:
+#### Prerequisites
 
 * Cloudify's Terraform Plugin installed on Cloudify Manager
 * Terraform installed 
 
-*Notes:*
+#### Usage
 
 Certain parameters may be omitted, in which case the value will default to Cloudify secrets:
 
@@ -359,7 +353,6 @@ Certain parameters may be omitted, in which case the value will default to Cloud
 | Terraform Executable        | `terraform_executable`       |
 | Terraform Plugins Directory | `terraform_plugins_dir`      |
 | Terraform Storage Directory | `terraform_storage_dir`      |
-
  
 ## Cloudify's Build Wrapper
 
