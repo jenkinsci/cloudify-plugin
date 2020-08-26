@@ -263,8 +263,33 @@ Cloudify's official Kubernetes plugin.
 
 * Cloudify's Kubernetes Plugin installed on Cloudify Manager
 
-#### Usage Notes
+#### Authentication
 
+The Kubernetes build step is flexible to accommodate two methods of authenticating to Kubernetes:
+
+* Using a token
+* Using GCP Service Account credentials
+
+**In order to use a token**, there are two options:
+
+* Providing the ID of a Jenkins credential entry to the "API Key Credentials ID" / "`apiKeycredentialsId`" parameter. The credentials entry must either be of type "string" ("Secret Text") or type "file" ("Secret File").
+
+* Providing the path to a file containing the token. The path must be relative to the Jenkins workspace root.
+
+**In order to use a GCP Service Account**, there are two options:
+
+* Providing the ID of a Jenkins credential entry to the "GCP Credentials ID" / "`gcpCredentialsId`"
+parameter. The credentials entry must either be of type "string" ("Secret Text") or type "file" ("Secret File").
+
+* Providing the path to a YAML/JSON file containing the service account details. The path must be relative to the Jenkins workspace root.
+
+#### Kubernetes Connection
+
+At a minimum, you should provide a value to the "Kubernetes Master" / "`k8sMaster`" parameter, pointing at the
+Kubernetes Master.
+
+In addition, you can provide additional parameters to control the connection to the Kubernetes Master, such as SSL
+parameters.
 
 ### Run Ansible Playbook
 

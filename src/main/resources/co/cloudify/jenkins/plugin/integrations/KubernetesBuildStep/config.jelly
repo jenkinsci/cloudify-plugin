@@ -7,7 +7,7 @@
     <f:entry title="${%Environment ID}" field="deploymentId">
         <f:textbox />
     </f:entry>
-    <f:section title="GCP Options">
+    <f:section title="GCP Authentication">
         <f:entry title="${%GCP Credentials ID}" field="gcpCredentialsId">
             <f:textbox />
         </f:entry>
@@ -15,14 +15,16 @@
             <f:textbox />
         </f:entry>
     </f:section>
-    <f:section title="Kubernetes Connection">
-        <f:entry title="${%Kubernetes Master}" field="k8sMaster">
-            <f:textbox />
-        </f:entry>
+    <f:section title="Token Authentication">
         <f:entry title="${%API Key Credentials ID}" field="apiKeyCredentialsId">
             <f:textbox />
         </f:entry>
         <f:entry title="${%API Key File}" field="apiKeyFile">
+            <f:textbox />
+        </f:entry>
+    </f:section>
+    <f:section title="Kubernetes Connection">
+        <f:entry title="${%Kubernetes Master}" field="k8sMaster">
             <f:textbox />
         </f:entry>
         <f:entry title="${%SSL CA Certificate}" field="caCert">
