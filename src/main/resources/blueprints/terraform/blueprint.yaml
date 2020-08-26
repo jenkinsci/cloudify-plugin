@@ -25,17 +25,24 @@ inputs:
     default: {}
 
 node_templates:
+  terraform:
+    type: cloudify.nodes.terraform
+    properties:
+      terraform_config:
+        executable_path: { get_input: terraform_executable }
+        storage_path: { get_input: terraform_storage_dir }
+        plugins_dir: { get_input: terraform_plugins_dir }
+
   terraform_module:
     type: cloudify.nodes.terraform.Module
     properties:
-      use_existing_resource: true
-      executable_path: { get_input: terraform_executable }
-      plugins_dir: { get_input: terraform_plugins_dir }
-      storage_path: { get_input: terraform_storage_dir }
       resource_config:
         environment_variables: { get_input: environment_variables }
         variables: { get_input: variables }
         source: { get_input: module_source }
+    relationships:
+      - target: terraform
+        type: cloudify.terraform.relationships.run_on_host
 
 outputs:
   resources:
