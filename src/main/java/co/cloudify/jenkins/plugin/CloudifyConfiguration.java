@@ -38,6 +38,7 @@ import jenkins.model.Jenkins;
 public class CloudifyConfiguration extends GlobalConfiguration {
     private String host;
     private Boolean secured = Boolean.TRUE;
+    private Boolean trustAllCerts = Boolean.FALSE;
     private String defaultTenant;
 
     @DataBoundConstructor
@@ -64,6 +65,15 @@ public class CloudifyConfiguration extends GlobalConfiguration {
     public void setSecured(boolean secured) {
         this.secured = secured;
         save();
+    }
+    
+    public boolean isTrustAllCerts() {
+        return trustAllCerts;
+    }
+    
+    @DataBoundSetter
+    public void setTrustAllCerts(boolean trustAllCerts) {
+        this.trustAllCerts = trustAllCerts;
     }
 
     public String getDefaultTenant() {

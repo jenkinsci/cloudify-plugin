@@ -13,6 +13,18 @@
     <f:entry title="${%Template URL}" field="templateUrl">
         <f:textbox />
     </f:entry>
+    <f:entry title="${%Template File}" field="templateFile">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Template Body}" field="templateBody">
+        <f:textarea />
+    </f:entry>
+    <f:entry title="${%Template Bucket Name}" field="templateBucketName">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Template Resource Name}" field="templateResourceName">
+        <f:textbox />
+    </f:entry>
     <f:entry title="${%Template parameters}" field="parametersAsString">
         <f:textarea />
     </f:entry>

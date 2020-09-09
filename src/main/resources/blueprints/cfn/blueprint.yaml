@@ -16,19 +16,8 @@ inputs:
     type: string
     default: { get_secret: aws_region_name }
 
-  stack_name:
-    type: string
-
-  parameters:
-    default: []
-    description: >
-      Parameters to pass. At the moment, this should be a list of dictionaries,
-      each one consisting of a "ParameterName" field and a "ParameterValue" field.
-
-  template_url:
-    type: string
-    description: >
-      URL to template.
+  resource_config:
+    type: dict
 
 dsl_definitions:
   client_config: &client_config
@@ -41,11 +30,7 @@ node_templates:
     type: cloudify.nodes.aws.CloudFormation.Stack
     properties:
       client_config: *client_config
-      resource_config:
-        kwargs:
-          StackName: { get_input: stack_name }
-          Parameters: { get_input: parameters }
-          TemplateURL: { get_input: template_url }
+      resource_config: { get_input: resource_config }
 
 outputs:
   stack_outputs:
