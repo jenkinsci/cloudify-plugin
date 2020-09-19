@@ -33,6 +33,6 @@ node_templates:
       resource_config: { get_input: resource_config }
 
 outputs:
-  stack_outputs:
+  stack:
     description: Outputs of the CloudFormation stack
     value: { get_attribute: [ stack, Outputs ] }

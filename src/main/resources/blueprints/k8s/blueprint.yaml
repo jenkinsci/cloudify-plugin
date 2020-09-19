@@ -13,8 +13,10 @@ inputs:
     type: dict
   validate_status:
     type: boolean
+    default: false
   allow_node_redefinition:
     type: boolean
+    default: false
 
 node_templates:
   resource:
@@ -26,6 +28,7 @@ node_templates:
       validate_resource_status: { get_input: validate_status }
       allow_node_redefinition: { get_input: allow_node_redefinition }
 
-capabilities:
+outputs:
   kubernetes:
+    description: Kubernetes environment description
     value: { get_attribute: [ resource, kubernetes ] }

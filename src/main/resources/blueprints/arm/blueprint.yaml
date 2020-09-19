@@ -43,6 +43,6 @@ node_templates:
       template_file: { get_input: template_file }
 
 outputs:
-  outputs:
+  arm:
     description: Azure deployment's outputs
     value: { get_attribute: [ deployment, outputs ] }
