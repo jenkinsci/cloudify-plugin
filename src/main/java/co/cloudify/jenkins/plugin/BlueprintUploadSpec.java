@@ -73,6 +73,7 @@ public class BlueprintUploadSpec implements Serializable, AutoCloseable {
             return client.upload(id, tempBlueprintDir, BLUEPRINT_FILE_NAME);
         }
         if (archiveUrl != null) {
+            logger.info("Uploading blueprint '{}' from {}, main filename: {}", id, archiveUrl, mainFileName);
             return client.upload(id, archiveUrl, mainFileName);
         }
         return client.uploadArchive(id, archivePath, mainFileName);

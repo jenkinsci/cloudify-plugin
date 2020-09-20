@@ -1,9 +1,7 @@
 package co.cloudify.jenkins.plugin.integrations;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -13,6 +11,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
+import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
 import co.cloudify.rest.client.CloudifyClient;
@@ -177,21 +176,6 @@ public class TerraformBuildStep extends IntegrationBuildStep {
     @Override
     protected String getIntegrationName() {
         return "terraform";
-    }
-
-    @Override
-    protected String getIntegrationVersion() {
-        return "1.0";
-    }
-
-    @Override
-    protected Set<String> getRequiredPluginNames() {
-        return Collections.singleton("cloudify-terraform-plugin");
-    }
-    
-    @Override
-    protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
-        return new BlueprintUploadSpec("/blueprints/terraform/blueprint.yaml");
     }
 
     @Symbol("cfyTerraform")

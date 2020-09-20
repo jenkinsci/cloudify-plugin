@@ -12,6 +12,11 @@
             <f:checkbox />
         </f:entry>
     </f:section>
+    <f:section title="${%Integration}">
+        <f:entry field="integrationBlueprintsArchiveUrl" title="${%Integration blueprints bundle URL}">
+            <f:textbox />
+        </f:entry>
+    </f:section>
     <f:section title="${%Test connection}">
         <p><b>Note:</b>The values below are only used for testing connection to Cloudify Manager. They will not be stored.</p>
         <f:entry field="credentialsId" title="${%Credentials}">

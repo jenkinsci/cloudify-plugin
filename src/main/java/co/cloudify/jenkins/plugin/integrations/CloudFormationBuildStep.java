@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.MapUtils;
@@ -23,6 +22,7 @@ import com.amazonaws.auth.AWSCredentials;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 
 import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
+import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
 import co.cloudify.rest.client.CloudifyClient;
@@ -123,38 +123,38 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
     public void setTemplateUrl(String templateUrl) {
         this.templateUrl = templateUrl;
     }
-    
+
     public String getTemplateFile() {
         return templateFile;
     }
-    
+
     @DataBoundSetter
     public void setTemplateFile(String templateFile) {
         this.templateFile = templateFile;
     }
-    
+
     public String getTemplateBucketName() {
         return templateBucketName;
     }
-    
+
     @DataBoundSetter
     public void setTemplateBucketName(String templateBucketName) {
         this.templateBucketName = templateBucketName;
     }
-    
+
     public String getTemplateResourceName() {
         return templateResourceName;
     }
-    
+
     @DataBoundSetter
     public void setTemplateResourceName(String templateResourceName) {
         this.templateResourceName = templateResourceName;
     }
-    
+
     public String getTemplateBody() {
         return templateBody;
     }
-    
+
     @DataBoundSetter
     public void setTemplateBody(String templateBody) {
         this.templateBody = templateBody;
@@ -180,17 +180,15 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
                 templateUrl != null,
                 templateFile != null,
                 templateBucketName != null && templateResourceName != null,
-                templateBody != null
-                ).stream().filter(p -> p).count() != 1) {
+                templateBody != null).stream().filter(p -> p).count() != 1) {
             throw new AbortException(
                     String.format(
                             "Template must be specified in exactly one of the following ways: by URL, by file name, "
-                            + "by template body, or by a combination of bucket name and resource name. Provided values: "
-                            + "url=%s, file=%s, bucket name=%s, resource name=%s, body=%s",
-                            templateUrl, templateFile, templateBucketName, templateResourceName, templateBody)
-                    );
+                                    + "by template body, or by a combination of bucket name and resource name. Provided values: "
+                                    + "url=%s, file=%s, bucket name=%s, resource name=%s, body=%s",
+                            templateUrl, templateFile, templateBucketName, templateResourceName, templateBody));
         }
-        
+
         Map<String, Object> parametersMap = CloudifyPluginUtilities.getCombinedMap(workspace, parametersFile,
                 parametersAsString,
                 this.parameters);
@@ -217,7 +215,7 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
         putIfNonNullValue(operationInputs, "resource_config", resourceConfig);
         putIfNonNullValue(resourceConfigKwargs, "StackName", stackName);
         putIfNonNullValue(resourceConfigKwargs, "Parameters", parametersAsList);
-        
+
         if (templateUrl != null) {
             resourceConfigKwargs.put("TemplateURL", templateUrl);
         } else if (templateBucketName != null && templateResourceName != null) {
@@ -242,21 +240,6 @@ public class CloudFormationBuildStep extends IntegrationBuildStep {
     @Override
     protected String getIntegrationName() {
         return "cloudformation";
-    }
-
-    @Override
-    protected String getIntegrationVersion() {
-        return "1.0";
-    }
-
-    @Override
-    protected Set<String> getRequiredPluginNames() {
-        return Collections.singleton("cloudify-aws-plugin");
-    }
-    
-    @Override
-    protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
-        return new BlueprintUploadSpec("/blueprints/cfn/blueprint.yaml");
     }
 
     @Symbol("cfyCloudFormation")

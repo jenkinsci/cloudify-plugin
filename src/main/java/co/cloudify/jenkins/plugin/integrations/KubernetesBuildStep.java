@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.Symbol;
@@ -13,6 +12,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
+import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
 import co.cloudify.rest.client.CloudifyClient;
@@ -314,21 +314,6 @@ public class KubernetesBuildStep extends IntegrationBuildStep {
     @Override
     protected String getIntegrationName() {
         return "kubernetes";
-    }
-
-    @Override
-    protected String getIntegrationVersion() {
-        return "1.0";
-    }
-
-    @Override
-    protected Set<String> getRequiredPluginNames() {
-        return Collections.singleton("cloudify-kubernetes-plugin");
-    }
-
-    @Override
-    protected BlueprintUploadSpec getBlueprintUploadSpec() throws IOException {
-        return new BlueprintUploadSpec("/blueprints/k8s/blueprint.yaml");
     }
 
     @Symbol("cfyKubernetes")
