@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,8 +10,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
-import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
 import co.cloudify.rest.client.CloudifyClient;

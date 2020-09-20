@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -21,8 +20,6 @@ import org.kohsuke.stapler.QueryParameter;
 import com.amazonaws.auth.AWSCredentials;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 
-import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
-import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
 import co.cloudify.rest.client.CloudifyClient;

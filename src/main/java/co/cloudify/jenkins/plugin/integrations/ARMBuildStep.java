@@ -1,6 +1,5 @@
 package co.cloudify.jenkins.plugin.integrations;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -10,8 +9,6 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import com.microsoft.azure.util.AzureCredentials;
 
-import co.cloudify.jenkins.plugin.BlueprintUploadSpec;
-import co.cloudify.jenkins.plugin.CloudifyConfiguration;
 import co.cloudify.jenkins.plugin.CloudifyPluginUtilities;
 import co.cloudify.jenkins.plugin.Messages;
 import co.cloudify.rest.client.CloudifyClient;
