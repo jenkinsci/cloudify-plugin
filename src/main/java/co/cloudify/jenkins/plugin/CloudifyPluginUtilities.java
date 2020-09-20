@@ -409,7 +409,7 @@ public class CloudifyPluginUtilities {
             Map<String, Object> outputs = deploymentsClient.getOutputs(deployment);
             Map<String, Object> capabilities = deploymentsClient.getCapabilities(deployment);
 
-            CloudifyEnvironmentData data = new CloudifyEnvironmentData(deployment, outputs, capabilities);
+            CloudifyEnvironmentData data = new CloudifyEnvironmentData(blueprintId, deployment, outputs, capabilities);
 
             JsonObject dataJsonObject = data.toJson();
 

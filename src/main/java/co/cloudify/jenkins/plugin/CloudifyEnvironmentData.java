@@ -20,16 +20,24 @@ public class CloudifyEnvironmentData implements Serializable {
     /** Serialization UID. */
     private static final long serialVersionUID = 1L;
 
+    private String blueprintId;
     private Deployment deployment;
     private Map<String, Object> outputs;
     private Map<String, Object> capabilities;
 
-    public CloudifyEnvironmentData(final Deployment deployment,
+    public CloudifyEnvironmentData(
+            final String blueprintId,
+            final Deployment deployment,
             final Map<String, Object> outputs,
             final Map<String, Object> capabilities) {
+        this.blueprintId = blueprintId;
         this.deployment = deployment;
         this.outputs = outputs;
         this.capabilities = capabilities;
+    }
+
+    public String getBlueprintId() {
+        return blueprintId;
     }
 
     public Deployment getDeployment() {
@@ -49,6 +57,7 @@ public class CloudifyEnvironmentData implements Serializable {
     // using JAXB?
     public JsonObject toJson() {
         JsonObject contents = Json.createObjectBuilder()
+                .add("blueprint", blueprintId)
                 .add("deployment",
                         Json.createObjectBuilder().add("id", deployment.getId()))
                 .add("outputs", CloudifyPluginUtilities.jsonFromMap(outputs))
@@ -60,6 +69,7 @@ public class CloudifyEnvironmentData implements Serializable {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
+                .append("blueprintId", blueprintId)
                 .append("deployment", deployment)
                 .append("outputs", outputs)
                 .append("capabilities", capabilities)
