@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.python.pydev.debug.regularLaunchConfigurationType">
-<stringAttribute key="org.eclipse.debug.core.ATTR_REFRESH_SCOPE" value="${workspace}"/>
-<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/cloudify/examples/utilities.py"/>
-</listAttribute>
-<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
-<listEntry value="1"/>
-</listAttribute>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${project_loc:cloudify}/examples/utilities.py"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_OTHER_WORKING_DIRECTORY" value="${project_loc:cloudify}/examples"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="install-plugins http://local-jenkins:8080/jenkins ${project_loc:cloudify}/target/jetty/webapp/WEB-INF/lib/cli-2.222.4.jar plugins.json"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${project_loc:cloudify}/examples"/>
-<stringAttribute key="org.python.pydev.debug.ATTR_INTERPRETER" value="__default"/>
-<stringAttribute key="org.python.pydev.debug.ATTR_PROJECT" value="cloudify"/>
-<stringAttribute key="process_factory_id" value="org.python.pydev.debug.processfactory.PyProcessFactory"/>
+    <stringAttribute key="org.eclipse.debug.core.ATTR_REFRESH_SCOPE" value="${workspace}"/>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/cloudify/examples/utilities.py"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="1"/>
+    </listAttribute>
+    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${project_loc:cloudify}/examples/utilities.py"/>
+    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_OTHER_WORKING_DIRECTORY" value="${project_loc:cloudify}/examples"/>
+    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="install-plugins http://local-jenkins:8080/jenkins ${project_loc:cloudify}/target/jetty/webapp/WEB-INF/lib/cli-2.222.1.jar plugins.json"/>
+    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${project_loc:cloudify}/examples"/>
+    <stringAttribute key="org.python.pydev.debug.ATTR_INTERPRETER" value="__default"/>
+    <stringAttribute key="org.python.pydev.debug.ATTR_PROJECT" value="cloudify"/>
+    <stringAttribute key="process_factory_id" value="org.python.pydev.debug.processfactory.PyProcessFactory"/>
 </launchConfiguration>
