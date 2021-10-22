@@ -19,7 +19,7 @@
         <java.level>8</java.level>
         <slf4jVersion>1.7.30</slf4jVersion>
         <jersey.version>2.31</jersey.version>
-        <jackson.version>2.11.1</jackson.version>
+        <jackson.version>2.13.0</jackson.version>
         <credentials.version>2.3.7</credentials.version>
         <azure-credentials.version>4.0.2</azure-credentials.version>
         <azure-commons.version>1.0.4</azure-commons.version>
@@ -193,7 +193,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -206,7 +206,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -219,7 +219,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -232,7 +232,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
