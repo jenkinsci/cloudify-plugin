@@ -3,6 +3,7 @@
 .settings/
 target/
 .idea/
+cloudify.iml
 
 # Jenkins work directory
 work/
