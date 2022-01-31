@@ -9,7 +9,7 @@
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>cloudify</artifactId>
-    <version>1.0.10-SNAPSHOT</version>
+    <version>1.0.10</version>
     <packaging>hpi</packaging>
     <properties>
         <!--
@@ -44,7 +44,7 @@
         <connection>scm:git:ssh://git@github.com/jenkinsci/cloudify-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/cloudify-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/cloudify-plugin.git</url>
-        <tag>cloudify-1.0.9</tag>
+        <tag>cloudify-1.0.10</tag>
     </scm>
     <url>https://github.com/jenkinsci/cloudify-plugin/tree/${project.artifactId}-${project.version}</url>
     <dependencies>
