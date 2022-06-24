@@ -170,7 +170,7 @@
             <dependency>
                 <groupId>org.jenkins-ci.plugins</groupId>
                 <artifactId>script-security</artifactId>
-                <version>1.73</version>
+                <version>1.75</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
