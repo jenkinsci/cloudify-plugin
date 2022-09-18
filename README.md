@@ -16,7 +16,7 @@ To download Cloudify Community Edition (for CentOS / RHEL), refer to: [https://d
 
 To download Cloudify Community Edition's Docker image: [https://hub.docker.com/r/cloudifyplatform/community](https://hub.docker.com/r/cloudifyplatform/community)
 
-To learn more about Cloudify: [https://cloudify.co](https://cloudify.co)
+To learn more about Cloudify: [https://cloudify.co](https://cloudify.co) 
 
 ## Table of Contents
 
@@ -53,13 +53,13 @@ You can find them in [examples/jobs](examples/jobs).
 To import these definitions into Jenkins, use the Jenkins CLI. For example:
 
 ```bash
-java -jar jenkins-cli.jar -s <jenkins_url> create-job <job_name> < path_to_job_xml_file 
+java -jar jenkins-cli.jar -s <jenkins_url> create-job <job_name> < path_to_job_xml_file
 ```
 
 For example:
 
 ```bash
-java -jar jenkins-cli.jar -s <jenkins_url> create-job <job_name> < examples/jobs/cloudify-wrapper-with-git.xml 
+java -jar jenkins-cli.jar -s <jenkins_url> create-job <job_name> < examples/jobs/cloudify-wrapper-with-git.xml
 ```
 
 ## Terminology
@@ -211,7 +211,7 @@ withCredentials([usernamePassword(credentialsId: "${params.cfy_credentials}", us
         ...
 }
 ```
- 
+
 ## Available Build Steps: Basic
 
 ### Upload Cloudify Plugin
@@ -342,7 +342,7 @@ applies the module, using Cloudify's Terraform plugin.
 #### Prerequisites
 
 * Cloudify's Terraform Plugin installed on Cloudify Manager
-* Terraform installed 
+* Terraform installed
 
 #### Usage
 
@@ -353,7 +353,7 @@ Certain parameters may be omitted, in which case the value will default to Cloud
 | Terraform Executable        | `terraform_executable`       |
 | Terraform Plugins Directory | `terraform_plugins_dir`      |
 | Terraform Storage Directory | `terraform_storage_dir`      |
- 
+
 ## Cloudify's Build Wrapper
 
 The Cloudify Plugin for Jenkins also provides a Jenkins *Build Wrapper*. The wrapper provides a convenience
