@@ -24,7 +24,7 @@
         <credentials.version>2.3.7</credentials.version>
         <azure-credentials.version>4.0.2</azure-credentials.version>
         <azure-commons.version>1.0.4</azure-commons.version>
-        <aws-credentials.version>1.28</aws-credentials.version>
+        <aws-credentials.version>1.28.1</aws-credentials.version>
     </properties>
     <name>Cloudify</name>
     <licenses>
