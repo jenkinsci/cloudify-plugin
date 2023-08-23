@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.ResourceBundle;
 
 import javax.servlet.ServletException;
-import javax.ws.rs.WebApplicationException;
+import jakarta.ws.rs.WebApplicationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -34,7 +34,7 @@ import jenkins.model.Jenkins;
 
 /**
  * Configuration object for Cloudify.
- * 
+ *
  * @author Isaac Shabtay
  */
 @Extension
